@@ -1,8 +1,8 @@
 #include "inputcheck.h"
 
 int typeOfArgument(char *value){
-	int res;
-	if(value[0] == '-')
+	int res;	
+	if(value[0] == '-' && strlen(value) == 2)	
 		res = COMMAND;
 	else if(value[strlen(value) - 1] == '/')
 		res = DIRS;
@@ -61,17 +61,14 @@ int executeCommand(int type, int *n, int *m, int argc, int i, char *value){
 
 	}
 	else if(type == HELP){
-		execvp("/bin/more", args);
-		{
+		if(execvp("/bin/more", args)){	//fare in modo che continui esecuzione ?  Finezza controllare alla fine magari
 			fprintf(stderr, "Cannot open man file %s\n", errorFile);
-			char *argstest[] = {"ls"};
-			execvp("/bin/ls", argstest);
 			exit(-1);
 		}
 	}
 	else{
-		if(i == argc){
-			char dummy[2] = "0";
+		if(i == argc - 1){
+			char *dummy = "0";
 			changeNOrM(type, n, m, dummy);
 		}
 		else{
@@ -132,7 +129,7 @@ void readInput(int argc, char *argv[], char ***files, char ***dirs, int *nfiles,
 		}
 		i++;
 	}
-	*files = getNames(argv, pos_files, *nfiles);
-	*dirs = getNames(argv, pos_dir, *ndir);
+	(*files) = getNames(argv, pos_files, *nfiles);
+	(*dirs) = getNames(argv, pos_dir, *ndir);
 }
 
