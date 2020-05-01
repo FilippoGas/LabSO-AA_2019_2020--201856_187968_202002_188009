@@ -1,0 +1,17 @@
+ANALIZER(1)	User Command
+NAME
+	analizer - analize character frequency in listed files or directory.
+SYNOPSYS
+	analizer [OPTION]... [FILES]... [DIRECTORIES/]...
+DESCRIPTION
+	Analize character frequency in listed files.			
+	
+	Directories must end with '/'
+	
+	With no FILE or DIRECTORY doesn't do anything.
+	
+	-n Modify subset of files
+	
+	-m Modify processes per file
+
+	 
