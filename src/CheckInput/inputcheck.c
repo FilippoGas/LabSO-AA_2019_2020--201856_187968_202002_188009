@@ -4,10 +4,8 @@ int typeOfArgument(char *value){
 	int res;	
 	if(value[0] == '-' && strlen(value) == 2)	
 		res = COMMAND;
-	else if(value[strlen(value) - 1] == '/')
-		res = DIRS;
 	else
-		res = FILES;
+		res = NOTCOMMAND;
 	return res;
 }
 
@@ -20,6 +18,8 @@ int typeOfCommand(char *value){
 			res = SETM;
 		else if(value[1] == 'h')
 			res = HELP;
+		else if(value[1] == 'r')
+			res = SETREC;
 	}
 	return res;
 }
@@ -47,7 +47,7 @@ void changeNOrM(int type, int *n, int *m, char *value){
 		optionM(m, value);
 }
 
-int executeCommand(int type, int *n, int *m, int argc, int i, char *value){
+int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *recursive){
 	int res = 0;
 	char errorFile[WSIZE] = MANPATH;
 	strcat(errorFile, "analizer_usage.txt");
@@ -65,6 +65,9 @@ int executeCommand(int type, int *n, int *m, int argc, int i, char *value){
 			fprintf(stderr, "Cannot open man file %s\n", errorFile);
 			exit(-1);
 		}
+	}
+	else if(type == SETREC){
+		(*recursive) = 1;
 	}
 	else{
 		if(i == argc - 1){
@@ -106,86 +109,104 @@ char **getNames(char *argv[], int *pos, int n){
 	return res;
 }
 
-void readInput(int argc, char *argv[], char ***files, char ***dirs, int *nfiles, int *ndir, int *n, int *m){
+void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive){
+	(*recursive) = 0;
 	int i = 1;
-	int pos_files[argc];
-	int pos_dir[argc];
-	(*nfiles) = 0;
-	(*ndir) = 0;
+	int pos[argc];
+	(*ninput)= 0;
 	while(i < argc){
 		int type = typeOfArgument(argv[i]);
 		if(type == COMMAND){
 			int command = typeOfCommand(argv[i]);
-			if(executeCommand(command, n, m, argc, i, argv[i + 1]))
+			if(executeCommand(command, n, m, argc, i, argv[i + 1], recursive))
 				i++;
 		}	
-		else if(type == DIRS){
-			pos_dir[(*ndir)] = i;
-			(*ndir)++;
+		else{
+			pos[(*ninput)] = i;
+			(*ninput)++;
+		}
+		i++;
+	}
+	(*input) = getNames(argv, pos, *ninput);
+}
+
+void validateInput(char **input, int ninput, char ***files, char ***dirs, int *nfiles, int *ndirs){
+	int file_pos[ninput], dir_pos[ninput];
+	(*nfiles) = 0;
+	(*ndirs) = 0;
+	int i = 0;
+	while(i < ninput){
+		int type = inputType(input[i]);
+		if(type == DIRECTORY){
+			dir_pos[(*ndirs)] = i;
+			(*ndirs)++;	
 		}
 		else if(type == FILES){
-			pos_files[(*nfiles)] = i;
-			(*nfiles)++;
+			file_pos[(*nfiles)] = i;
+			(*nfiles)++;	
 		}
 		i++;
 	}
-	(*files) = getNames(argv, pos_files, *nfiles);
-	(*dirs) = getNames(argv, pos_dir, *ndir);
+	(*files) = getNames(input, file_pos, *nfiles);
+	(*dirs) = getNames(input, dir_pos, *ndirs);
+	freeStringArray(input, ninput);
 }
 
-void validateInput(char ***files, char ***dirs, int *nfiles, int *ndirs){
-
-	int *existingFiles, *existingDirs, newnfiles, newndirs; 
-
-	existingFiles=checkExistance(*files, *nfiles,0,&newnfiles);
-	existingDirs=checkExistance(*dirs, *ndirs,1,&newndirs);
-
-}
-
-int *checkExistance(char **list, int n, int option, int *newcount){
-
-	int i = 0, dim = 0;
-	int *res = malloc(n*sizeof(int));
-
-	while(i < n){
-
-		struct stat s;
-		int err = stat(list[i], &s);
-		if(-1 == err) {
-			if(ENOENT == errno) {
-				
-				fprintf(stderr,"\nFile %s doesn't exist, file ingored.\n",list[i]);
-
-			}else{
-				
-				perror("stat");
-				exit(1);
-			
-			}
-
-		}else{
-			
-			if(S_ISDIR(s.st_mode) && option != FILE) {
-			
-				res[dim] = i;
-				dim++;
-
-			}else if(S_ISDIR(s.st_mode)){
-
-				fprintf(stderr,"\n%s is a directory not a file, ingored.\n",list[i]);
-				
-			}else{
-				
-				
-
-			}
-		}
-
-		i++;
+int inputType(char *in){
+	struct stat s;
+	int res = stat(in, &s);
 	
+	if(res == -1){
+		if(errno == ENOENT){
+			fprintf(stderr, "Object %s doesn't, exist, ignored.\n", in);
+		}
+		else{
+			perror("stat");
+			exit(1);
+		}
 	}
+	else{
+		if(S_ISDIR(s.st_mode))
+			res = DIRECTORY;
+		else if(S_ISREG(s.st_mode))
+			res = FILES;
+		else{
+			res = 10;
+			fprintf(stderr, "Object %s is neither a file nor a directory, ignored.\n", in);
+		}
+	}
+	return res;
+}
 
+void freeStringArray(char **in, int n){
+	int i = 0;
+	while(i < n){
+		free(in[i]);
+		i++;
+	}
+	free(in);
+}
 
+struct idfile getfile(char *in){
+	char *abspath = realpath(in, NULL);
+	char *path, *name;
+	int i = strlen(abspath) - 1;
+	while(abspath[i] != '/')
+		i--;
+	strncat(path, abspath, i);
+	strcat(name, (abspath + i +1));
+	struct idfile res;
+	res.nomefile = name;
+	res.pathfile = path;
 	return res;
 
+}
+//ALLOCAZIONE DINAMICA DI TUTTO PORCO DIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+void getfiles(char **file_list, int nfiles, struct idfile **files, int *filesize){
+	int i = 0;
+	(*filesize) = nfiles;
+	(*files) = malloc((*filesize) * sizeof(struct idfile));
+	while(i < nfiles){
+		(*files)[i] = getfile(file_list[i]);
+	}
 }

@@ -1,13 +1,13 @@
 #include "utility.h"
 
-void printInput(int m, int n, char **files, char **dirs, int nfiles, int ndir){
+void printInput(int m, int n, char **input, int ninput, int rec){
 	printf("m ha valore: %d\nn ha valore: %d\n", m, n);
-	printf("Ci sono %d files\nFILES:\n", nfiles);
-	printStringArray(files, nfiles);
-	printf("Ci sono %d directory\nDIRECTORIES\n", ndir);
-	printStringArray(dirs, ndir);
-
-
+	printf("Ci sono %d input\nINPUTS:\n", ninput);
+	printStringArray(input, ninput);
+	if(rec)
+		printf("La ricerca deve essere ricorsiva\n");
+	else
+		printf("La ricerca non deve essere ricorsiva\n");
 }
 
 void printStringArray(char **in, int n){

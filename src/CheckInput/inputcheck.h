@@ -9,18 +9,26 @@
 #define SETN 0		//Code of command to set n
 #define SETM 1		//Code of command to set m
 #define HELP 2		//Code of command for help
+#define SETREC 3	//Code for setting recursive search in directories
 #define COMMAND 0	//Code of argument as command
-#define FILES 1		//Code of argument as file
-#define DIRS 2		//Code of argument as directory
+#define NOTCOMMAND 1
 #define WSIZE 81	//Dimension of word
-#define FILE 1      //boolean check used in checkExistance()
+#define FILES 0      	//Code for a found file in input
+#define DIRECTORY 1	//Code for a found directory in input
 #define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files
 
+struct idfile{
+
+	char* nomefile;
+	char* pathfile;
+
+};
+
 /* Read the input (n = argc, arguments = argv)for the Analizer process, changes the value 
- * for n and m and save files in array files (nfiles = dim) and directory in dirs
- * (ndirs = dim)
+ * for n and m and save files not command argument in input (size = ninput), set if the
+ * search in listed directory has to be recursive
  */
-void readInput(int argc, char *argv[], char ***files, char ***dirs, int *nfiles, int *ndir, int *n, int *m);
+void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive);
 
 /* Changes the value for the option n with number contained in string value
 */
@@ -41,7 +49,7 @@ int typeOfCommand(char *value);
 /* Execute the command, already recognized by typeOfCommand in case of unrecognised command
  * prints the help file and exit
  */
-int executeCommand(int type, int *n, int *m, int argc, int i, char *value);
+int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *recursive);
 
 /* Recognize if string is completely a number
  */
@@ -51,21 +59,23 @@ int isNumber(char *value);
  */
 void changeNOrM(int type, int *n, int *m, char *value);
 
-/* takes argv and the index chosen previously in pos and save them in an array of string
+/* Takes argv and the index chosen previously in pos and save them in an array of string
  * (the return value), n is the dimension of pos
  */
 char **getNames(char *argv[], int *pos, int n);
 
+/* Free the array of string dynamically allocated in of size n
+ */
+void freeStringArray(char **in, int n);
 
-/*Check consistency of input, existency of files and dirs
-*args: list of file and dirs
+/* Check consistency of input, existency of files and dirs
 */
-void validateInput(char ***files, char ***dirs, int *nfiles, int *ndirs);
+void validateInput(char **input, int ninput, char ***files, char ***dirs, int *nfiles, int *ndirs);
 
-/*
-*checks existance of files and directories
-*args: the list of file, the list of dir, and te option (0 or 1) to specify if i'm checking a file or a dir, and a pointer to variable
-*holding the number of existing files/dirs
-*returns an int array with the position of existing files/dirs in the original array
-*/
-int *checkExistance(char **list, int n, int option, int *newcount);
+/*Check type of in: if exists, if file, directory or other
+ */
+int inputType(char *in);
+
+void getfiles(char **file_list, int nfiles, struct idfile **files, int *filesize);	
+
+struct idfile getfile(char *in);
