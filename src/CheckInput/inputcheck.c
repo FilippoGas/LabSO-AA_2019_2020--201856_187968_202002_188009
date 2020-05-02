@@ -133,3 +133,59 @@ void readInput(int argc, char *argv[], char ***files, char ***dirs, int *nfiles,
 	(*dirs) = getNames(argv, pos_dir, *ndir);
 }
 
+void validateInput(char ***files, char ***dirs, int *nfiles, int *ndirs){
+
+	int *existingFiles, *existingDirs, newnfiles, newndirs; 
+
+	existingFiles=checkExistance(*files, *nfiles,0,&newnfiles);
+	existingDirs=checkExistance(*dirs, *ndirs,1,&newndirs);
+
+}
+
+int *checkExistance(char **list, int n, int option, int *newcount){
+
+	int i = 0, dim = 0;
+	int *res = malloc(n*sizeof(int));
+
+	while(i < n){
+
+		struct stat s;
+		int err = stat(list[i], &s);
+		if(-1 == err) {
+			if(ENOENT == errno) {
+				
+				fprintf(stderr,"\nFile %s doesn't exist, file ingored.\n",list[i]);
+
+			}else{
+				
+				perror("stat");
+				exit(1);
+			
+			}
+
+		}else{
+			
+			if(S_ISDIR(s.st_mode) && option != FILE) {
+			
+				res[dim] = i;
+				dim++;
+
+			}else if(S_ISDIR(s.st_mode)){
+
+				fprintf(stderr,"\n%s is a directory not a file, ingored.\n",list[i]);
+				
+			}else{
+				
+				
+
+			}
+		}
+
+		i++;
+	
+	}
+
+
+	return res;
+
+}

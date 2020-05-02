@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/errno.h>
 
 #define SETN 0		//Code of command to set n
 #define SETM 1		//Code of command to set m
@@ -10,6 +13,7 @@
 #define FILES 1		//Code of argument as file
 #define DIRS 2		//Code of argument as directory
 #define WSIZE 81	//Dimension of word
+#define FILE 1      //boolean check used in checkExistance()
 #define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files
 
 /* Read the input (n = argc, arguments = argv)for the Analizer process, changes the value 
@@ -52,3 +56,16 @@ void changeNOrM(int type, int *n, int *m, char *value);
  */
 char **getNames(char *argv[], int *pos, int n);
 
+
+/*Check consistency of input, existency of files and dirs
+*args: list of file and dirs
+*/
+void validateInput(char ***files, char ***dirs, int *nfiles, int *ndirs);
+
+/*
+*checks existance of files and directories
+*args: the list of file, the list of dir, and te option (0 or 1) to specify if i'm checking a file or a dir, and a pointer to variable
+*holding the number of existing files/dirs
+*returns an int array with the position of existing files/dirs in the original array
+*/
+int *checkExistance(char **list, int n, int option, int *newcount);
