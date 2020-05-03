@@ -49,7 +49,7 @@ void changeNOrM(int type, int *n, int *m, char *value){
 
 int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *recursive){
 	int res = 0;
-	char errorFile[WSIZE] = MANPATH;
+	char errorFile[PATH_MAX] = MANPATH;
 	strcat(errorFile, "analizer_usage.txt");
 	char *args[] = {"more", errorFile, NULL};
 	if(type == -1){
@@ -102,7 +102,7 @@ char **getNames(char *argv[], int *pos, int n){
 	char **res = malloc(n * sizeof(char *));
 	while(i < n){
 		int j = pos[i];
-		res[i] = malloc(sizeof(char) * WSIZE);
+		res[i] = malloc(sizeof(char) * (PATH_MAX + 1));
 		strcpy(res[i], argv[j]);
 		i++;
 	}
@@ -187,26 +187,188 @@ void freeStringArray(char **in, int n){
 	free(in);
 }
 
-struct idfile getfile(char *in){
-	char *abspath = realpath(in, NULL);
-	char *path, *name;
-	int i = strlen(abspath) - 1;
-	while(abspath[i] != '/')
-		i--;
-	strncat(path, abspath, i);
-	strcat(name, (abspath + i +1));
-	struct idfile res;
-	res.nomefile = name;
-	res.pathfile = path;
-	return res;
-
-}
-//ALLOCAZIONE DINAMICA DI TUTTO PORCO DIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-void getfiles(char **file_list, int nfiles, struct idfile **files, int *filesize){
+char **concatStringArray(char **first, char **second, int nfirst, int nsecond, int *resdim){
+	(*resdim) = nfirst + nsecond;
+	char **res = malloc((*resdim) * sizeof(char *));
 	int i = 0;
-	(*filesize) = nfiles;
-	(*files) = malloc((*filesize) * sizeof(struct idfile));
-	while(i < nfiles){
-		(*files)[i] = getfile(file_list[i]);
+	while(i < (*resdim)){
+		res[i] = malloc((PATH_MAX + 1) * sizeof(char));
+		if(i < nfirst)
+			strcpy(res[i], first[i]);
+		else
+			strcpy(res[i], second[i-nfirst]);
+		i++;
+	} 
+	return res;
+}
+
+int countElementInDir(char *dir){
+	DIR *streamdir = opendir(dir);
+	struct dirent *next;
+	int count = 0;
+	while((next = readdir(streamdir)) != NULL){
+		count++;
+	}
+	closedir(streamdir);
+	return count; //Tolgo link a . e a .. ?????
+}
+
+char **initStringArray(int dimArray, int dimString){
+	char **res = malloc(dimArray * sizeof(char *));
+	int i = 0;
+	while(i < dimArray){
+		res[i] = calloc(dimString, sizeof(char));
+		i++;
+	}
+	return res;
+}
+
+int isNotParOrSameDir(char *in){
+	return strcmp(in, "..") && strcmp(in, ".");
+}
+
+
+char **lsDir(char *dir, int rec, int *n){
+	
+	(*n) = countElementInDir(dir);
+	
+	char **res = initStringArray((*n), PATH_MAX + 1);
+
+	DIR *streamdir = opendir(dir);
+	struct dirent *next;
+	
+	int i = 0;
+	while((next = readdir(streamdir)) != NULL){
+		char temp[PATH_MAX + 1];
+		sprintf(temp, "%s%s", dir, next->d_name);
+		int type = inputType(temp);
+		if(type == DIRECTORY && rec && isNotParOrSameDir(next->d_name)){
+			addSlashToDir(temp);	
+			int tempdim;
+			char **newfiles = lsDir(temp, rec, &tempdim);
+
+			char **tempres = concatStringArray(res, newfiles, *n, tempdim, n);
+			freeStringArray(res, tempdim);
+			res = tempres;
+		}
+		else  if(type == FILES){
+			int temp32;
+			memcpy(res[i], temp, strlen(temp));
+			i++;
+		}
+	
+	}
+	return res;
+}
+
+void addSlashToDir(char *dir){
+	int last = strlen(dir) - 1;
+	if(dir[last] != '/'){
+		dir[last + 1] = '/';
+		dir[last + 2] = '\0';
 	}
 }
+
+void addSlashToDirs(char **dirs, int ndirs){
+	int i = 0;
+	while(i < ndirs){
+		addSlashToDir(dirs[i]);
+		i++;
+	}
+}
+
+
+char **getContentOfDirs(char **dirs, int ndirs, int rec, int *resdim){
+	addSlashToDirs(dirs, ndirs);
+	int i = 0;
+	char **res = initStringArray(1, 1);
+	(*resdim) = 0;
+	while(i < ndirs){
+		int ndir;
+		char **dir_content = lsDir(dirs[i], rec, &ndir);
+		int ntemp;
+		int dimtemp = (*resdim);
+		char **temp = concatStringArray(res, dir_content, *resdim, ndir, &ntemp);
+		freeStringArray(res, dimtemp);
+		freeStringArray(dir_content, ndir);
+		res = temp;
+		(*resdim) = ntemp;
+		i++;
+	}
+	return res;
+}
+
+char **getAllFullPath(char **file_list, int nfiles, char **dir_content, int dir_content_size, int *res_dim){
+	(*res_dim) = nfiles;
+	int file_in_dir[dir_content_size];
+	int i = 0;
+	while(i < dir_content_size){
+		if(strcmp(dir_content[i], "\0")){
+			file_in_dir[(*res_dim) - nfiles] = i;
+			(*res_dim)++;
+		}
+		i++;
+	}
+	char **res = initStringArray((*res_dim), PATH_MAX + 1);
+	i = 0;
+	while(i < nfiles){
+		sprintf(res[i], "%s", realpath(file_list[i], NULL));
+		i++;
+	}
+	while(i < (*res_dim)){
+		sprintf(res[i], "%s", realpath(dir_content[file_in_dir[i - nfiles]], NULL));
+		i++;
+	}
+	return res;
+}
+
+void getPathAndName(char *file, char **path, char **name){
+	int j = strlen(file) - 1;
+	while(file[j] != '/')
+		j--;
+	(*path) = calloc((j + 2),  sizeof(char));
+	(*name) = calloc(((strlen(file) - j) + 1),  sizeof(char));
+	printf("%s\n", file);
+	strncat((*path), file, j + 1);
+	printf("%s\n", *path);
+	strcat((*name), (file + j + 1));
+}
+
+struct idfile *initIdFile(char *path, char *name){
+	struct idfile *res = malloc(sizeof(struct idfile *));
+	res->name = malloc((strlen(name) + 1) * sizeof(char));
+	sprintf(res->name, "%s", name);
+	res->path = malloc((strlen(path) + 1) * sizeof(char));
+	sprintf(res->path, "%s", path);
+	return res;
+}
+
+struct idfile **polishFileList(char **file_list, int size){
+	struct idfile **res = malloc(size * sizeof(struct idfile *));
+	int i = 0; 
+	while(i < size){
+		char *path, *name;
+		getPathAndName(file_list[i], &path, &name);
+		res[i] = initIdFile(path, name);
+		free(path);
+		free(name);
+		i++;
+	}
+	return res;
+}
+
+void freeIdFile(struct idfile *in){
+	free(in->name);
+	free(in->path);
+	free(in);
+}
+
+void freeIdFileArray(struct idfile **in, int n){
+	int i = 0;
+	while(i < n){
+		freeIdFile(in[i]);
+		i++;
+	}
+	free(in);
+}
+

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h> //NON SICURA POSSA ESISTERE
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/errno.h>
@@ -12,15 +13,14 @@
 #define SETREC 3	//Code for setting recursive search in directories
 #define COMMAND 0	//Code of argument as command
 #define NOTCOMMAND 1
-#define WSIZE 81	//Dimension of word
 #define FILES 0      	//Code for a found file in input
 #define DIRECTORY 1	//Code for a found directory in input
 #define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files
 
 struct idfile{
 
-	char* nomefile;
-	char* pathfile;
+	char* name;
+	char* path;
 
 };
 
@@ -76,6 +76,64 @@ void validateInput(char **input, int ninput, char ***files, char ***dirs, int *n
  */
 int inputType(char *in);
 
-void getfiles(char **file_list, int nfiles, struct idfile **files, int *filesize);	
+/* Concatenate second array of string onto the first, saving new array dynamically 
+ * allcated and new size in resdim
+ */
+char **concatStringArray(char **first, char **second, int nfirst, int nsecond, int *resdim);
+ 
+/* Get all files in dir and concatenate them, returning a new allocated array of string
+ */
+char **getContentOfDirs(char **dirs, int ndirs, int rec, int *resdim);
 
-struct idfile getfile(char *in);
+/* Save content of directory in array of string of dimension n, rec decides if the search
+ * is recursive
+ */
+char **lsDir(char *dir, int rec, int *n);
+
+/* Takes a string and if there isn't add to it a terminal /
+ */
+void addSlashToDir(char *dir);
+
+/* Takes an array of string and if there isn't add to each string a terminal /
+ */
+void addSlashToDirs(char **dirs, int ndirs);
+
+/* Takes a directory and return an array of string containing all files in it
+ * (if rec analize also subdirectories
+ */
+char **lsDir(char *dir, int rec, int *n);
+
+/* Check if string is not . (same directory) and not .. (parent directory)
+ */
+int isNotParOrSameDir(char *in);
+
+/* dynamically allocate an array of string containing null values of dimension dimArray, 
+ * with string long dimString
+ */
+char **initStringArray(int dimArray, int dimString);
+
+/* Returns number of elements in directory dir
+ */
+int countElementInDir(char *dir);
+
+char **getAllFullPath(char **file_list, int nfiles, char **dir_content, int dir_content_size, int *res_dim);
+
+/* Takes the list of file definitive and form them in an array of idfile
+ */
+struct idfile **polishFileList(char **file_list, int size);
+
+/* Takes a full path for a file and dynamically allocate its path and name
+ */
+void getPathAndName(char *file, char **path, char **name);
+
+/* Takes a path and a name for a file and returns the corrispondent struct idfile
+ */
+struct idfile *initIdFile(char *path, char *name);
+
+/* Free a dynamically allocated struct idfile
+ */
+void freeIdFile(struct idfile *in);
+
+/* Free a dynamically allocated arrau of struct idfile
+ */
+void freeIdFileArray(struct idfile **in, int n);
