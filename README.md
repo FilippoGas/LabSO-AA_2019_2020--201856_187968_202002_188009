@@ -5,4 +5,6 @@ Progetto del corso di Sistemi Operativi presso Università degli Studi di Trento
 	* Prestare attenzione a tutte le allocazioni dinamiche, non vorrei essermi dimenticato qualcosa --giacomo
 
 ## BUGS:
-	* In src/CheckInput/inputcheck.c si deve allocare dinamicamente tutte le stuct idfile
+
+##Possibili migliorie:
+	* Controllare inputcheck, migliorabile in molte parti, specialmente allocazioni dinamiche e magari distribuire meglio le funzioni
