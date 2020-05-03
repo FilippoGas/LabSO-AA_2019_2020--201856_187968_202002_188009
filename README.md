@@ -6,5 +6,5 @@ Progetto del corso di Sistemi Operativi presso Università degli Studi di Trento
 
 ## BUGS:
 
-##Possibili migliorie:
+## Possibili migliorie:
 	* Controllare inputcheck, migliorabile in molte parti, specialmente allocazioni dinamiche e magari distribuire meglio le funzioni
