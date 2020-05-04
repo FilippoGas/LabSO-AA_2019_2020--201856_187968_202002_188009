@@ -252,7 +252,6 @@ char **lsDir(char *dir, int rec, int *n){
 			res = tempres;
 		}
 		else  if(type == FILES){
-			int temp32;
 			memcpy(res[i], temp, strlen(temp));
 			i++;
 		}
@@ -328,9 +327,7 @@ void getPathAndName(char *file, char **path, char **name){
 		j--;
 	(*path) = calloc((j + 2),  sizeof(char));
 	(*name) = calloc(((strlen(file) - j) + 1),  sizeof(char));
-	printf("%s\n", file);
 	strncat((*path), file, j + 1);
-	printf("%s\n", *path);
 	strcat((*name), (file + j + 1));
 }
 
@@ -363,7 +360,7 @@ void freeIdFile(struct idfile *in){
 	free(in);
 }
 
-void freeIdFileArray(struct idfile **in, int n){
+void freeIdfileArray(struct idfile **in, int n){
 	int i = 0;
 	while(i < n){
 		freeIdFile(in[i]);

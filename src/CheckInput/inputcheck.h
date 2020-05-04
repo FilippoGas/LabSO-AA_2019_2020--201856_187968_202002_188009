@@ -136,4 +136,4 @@ void freeIdFile(struct idfile *in);
 
 /* Free a dynamically allocated arrau of struct idfile
  */
-void freeIdFileArray(struct idfile **in, int n);
+void freeIdfileArray(struct idfile **in, int n);

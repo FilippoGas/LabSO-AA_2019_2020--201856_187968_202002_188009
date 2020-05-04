@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 	//genero m processi Q
 
 	//Libero memoria allocata dinamicamente
-	//freeIdfileArray(files, file_size);
+	freeIdfileArray(files, file_size);
 	return ret;
 
 }
