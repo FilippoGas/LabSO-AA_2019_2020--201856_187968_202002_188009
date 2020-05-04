@@ -229,7 +229,6 @@ int isNotParOrSameDir(char *in){
 
 
 char **lsDir(char *dir, int rec, int *n){
-	
 	(*n) = countElementInDir(dir);
 	
 	char **res = initStringArray((*n), PATH_MAX + 1);
@@ -244,19 +243,19 @@ char **lsDir(char *dir, int rec, int *n){
 		int type = inputType(temp);
 		if(type == DIRECTORY && rec && isNotParOrSameDir(next->d_name)){
 			addSlashToDir(temp);	
-			int tempdim;
+			int tempdim, tempresdim = *n;
 			char **newfiles = lsDir(temp, rec, &tempdim);
-
-			char **tempres = concatStringArray(res, newfiles, *n, tempdim, n);
-			freeStringArray(res, tempdim);
+			char **tempres = concatStringArray(res, newfiles, tempresdim, tempdim, n);
+			freeStringArray(res, tempresdim);
 			res = tempres;
 		}
 		else  if(type == FILES){
-			memcpy(res[i], temp, strlen(temp));
+			sprintf(res[i], "%s", temp);
 			i++;
 		}
 	
 	}
+	closedir(streamdir);
 	return res;
 }
 
@@ -281,7 +280,7 @@ char **getContentOfDirs(char **dirs, int ndirs, int rec, int *resdim){
 	addSlashToDirs(dirs, ndirs);
 	int i = 0;
 	char **res = initStringArray(1, 1);
-	(*resdim) = 0;
+	(*resdim) = 1;
 	while(i < ndirs){
 		int ndir;
 		char **dir_content = lsDir(dirs[i], rec, &ndir);
