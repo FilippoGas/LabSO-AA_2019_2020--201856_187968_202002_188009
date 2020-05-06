@@ -2,10 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h> //NON SICURA POSSA ESISTERE
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/errno.h>
+#include <limits.h>
 
 #define SETN 0		//Code of command to set n
 #define SETM 1		//Code of command to set m
@@ -22,6 +22,14 @@ struct idfile{
 	char* name;
 	char* path;
 
+};
+struct dirent {
+    ino_t          d_ino;       /* inode number */
+    off_t          d_off;       /* offset to the next dirent */
+    unsigned short d_reclen;    /* length of this record */
+    unsigned char  d_type;      /* type of file; not supported
+                                   by all file system types */
+    char           d_name[256]; /* filename */
 };
 
 /* Read the input (n = argc, arguments = argv)for the Analizer process, changes the value 

@@ -1,4 +1,4 @@
-#include "inputcheck.h"
+#include "../CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
 
 void printIdfileArray(struct idfile **in, int size){
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
 	freeStringArray(def_file_list, def_file_list_size); 		//libero def_file_list
 	
 	//genero n processi P
-
+		
 	//genero m processi Q
 
 	//Libero memoria allocata dinamicamente

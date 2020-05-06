@@ -201,7 +201,7 @@ char **concatStringArray(char **first, char **second, int nfirst, int nsecond, i
 	} 
 	return res;
 }
-
+/*
 int countElementInDir(char *dir){
 	DIR *streamdir = opendir(dir);
 	struct dirent *next;
@@ -212,7 +212,7 @@ int countElementInDir(char *dir){
 	closedir(streamdir);
 	return count; //Tolgo link a . e a .. ?????
 }
-
+*/
 char **initStringArray(int dimArray, int dimString){
 	char **res = malloc(dimArray * sizeof(char *));
 	int i = 0;
@@ -227,21 +227,28 @@ int isNotParOrSameDir(char *in){
 	return strcmp(in, "..") && strcmp(in, ".");
 }
 
+int file_select(struct dirent   *entry) {
+	if ((strcmp(entry->d_name, ".") == 0) ||(strcmp(entry->d_name, "..") == 0))
+		 return 0;
+	else
+		return 1;
+}
+
 
 char **lsDir(char *dir, int rec, int *n){
-	(*n) = countElementInDir(dir);
-	
+	struct dirent **test;
+	int sizedir = scandir(dir, &test, file_select, 0);	//////////////////////////////////////////////////////////////////	
+	(*n) = sizedir;
 	char **res = initStringArray((*n), PATH_MAX + 1);
 
-	DIR *streamdir = opendir(dir);
-	struct dirent *next;
 	
 	int i = 0;
-	while((next = readdir(streamdir)) != NULL){
+	int j = 0;
+	while(j < sizedir){
 		char temp[PATH_MAX + 1];
-		sprintf(temp, "%s%s", dir, next->d_name);
+		sprintf(temp, "%s%s", dir, test[j]->d_name);
 		int type = inputType(temp);
-		if(type == DIRECTORY && rec && isNotParOrSameDir(next->d_name)){
+		if(type == DIRECTORY && rec && isNotParOrSameDir(test[j]->d_name)){
 			addSlashToDir(temp);	
 			int tempdim, tempresdim = *n;
 			char **newfiles = lsDir(temp, rec, &tempdim);
@@ -253,9 +260,8 @@ char **lsDir(char *dir, int rec, int *n){
 			sprintf(res[i], "%s", temp);
 			i++;
 		}
-	
+		j++;	
 	}
-	closedir(streamdir);
 	return res;
 }
 
