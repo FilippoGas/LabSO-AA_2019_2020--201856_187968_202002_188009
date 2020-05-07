@@ -18,3 +18,18 @@ void printStringArray(char **in, int n){
 	}
 
 }
+
+void printStringMatrix(char ***matrix,int row, int total){
+	int i=0, j=0;
+	int fileTotali = total;
+	printf("\n");
+	while(i<row && i<total && fileTotali){
+		printf("Il processo %d ha il file %s \n",i,matrix[i][j]);
+		fileTotali--;
+		i++;
+		if(i==row){
+			i=0;
+			j++;
+		}
+	}
+}

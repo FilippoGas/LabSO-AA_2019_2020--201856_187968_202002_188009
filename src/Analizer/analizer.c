@@ -1,5 +1,6 @@
 #include "../CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
+#include "../CheckInput/pPreprocessing.h"
 
 void printIdfileArray(struct idfile **in, int size){
 	int i = 0;
@@ -19,44 +20,51 @@ int main(int argc, char *argv[]){
 
 	//legge l'input, alloca dinamicamente **input
 	readInput(argc, argv, &input, &ninput, &n, &m, &recursive);
-	
+
 	printInput(m, n, input, ninput, recursive);
-	
+
 	//recupera vere cartelle e file nell'input, libera **input, alloca dinamicamente **dir_list e **file_list
 	validateInput(input, ninput, &file_list, &dir_list, &nfiles, &ndirs);
-	
+
 	printf("Directories:\n");
 	printStringArray(dir_list, ndirs);
 	printf("Files:\n");
 	printStringArray(file_list, nfiles);
-	
+
 	//Recupera i contenuti delle directory
 	int dir_content_size;
 	char **dir_content = getContentOfDirs(dir_list, ndirs, recursive, &dir_content_size);
 	freeStringArray(dir_list, ndirs);	//libero dir_list
 	printf("Files in directories:\n");
 	printStringArray(dir_content, dir_content_size);
-	
-	//Unisce i file in file_list e in dir_content e salva in un array tutti i percorsi reali;	
+
+	//Unisce i file in file_list e in dir_content e salva in un array tutti i percorsi reali;
 	int def_file_list_size;
 	char **def_file_list = getAllFullPath(file_list, nfiles, dir_content, dir_content_size, &def_file_list_size);
 	freeStringArray(file_list, nfiles);	//libero file_list
 	freeStringArray(dir_content, dir_content_size);		//libero dir_content
-	printf("Definitive file list:\n");	
+	printf("Definitive file list:\n");
 	printStringArray(def_file_list, def_file_list_size);
-	
+
 	//cambia i file da string a idfile e li mette in un array
 	int file_size = def_file_list_size;
 	struct idfile **files = polishFileList(def_file_list, def_file_list_size);
 	printIdfileArray(files, file_size);
-	freeStringArray(def_file_list, def_file_list_size); 		//libero def_file_list
-	
+
+
 	//genero n processi P
-		
+
+	//assegno i file agli n processi p
+	//in ogni riga i di fileMatrix ci sono i file relativi al processo i
+	char ***fileMatrix = fileDivisor(n,def_file_list,def_file_list_size);
+	printStringMatrix(fileMatrix,n, def_file_list_size);
+
 	//genero m processi Q
 
 	//Libero memoria allocata dinamicamente
 	freeIdfileArray(files, file_size);
+	//libero def_file_list
+	freeStringArray(def_file_list, def_file_list_size);
 	return ret;
 
 }
