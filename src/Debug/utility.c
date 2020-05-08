@@ -33,3 +33,18 @@ void printStringMatrix(char ***matrix,int row, int total){
 		}
 	}
 }
+
+void printArgumentMatrix(char ***matrix, int n){
+	int i = 0;
+	while(i < n){
+		int j = 0;
+		printf("P %d: ", i);
+		fflush(stdout);
+		while(matrix[i][j] != NULL){
+			printf("%s\t", matrix[i][j]);
+			j++;
+		}
+		printf("\n\n");
+		i++;
+	}
+}

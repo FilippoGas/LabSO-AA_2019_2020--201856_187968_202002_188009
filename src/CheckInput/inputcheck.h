@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <limits.h>
 
 #define SETN 0		//Code of command to set n
