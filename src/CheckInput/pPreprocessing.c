@@ -48,34 +48,23 @@ char ***createArgsForP(int n, int m, char **files, int nFiles, int pipeRead, int
 	while(i < nFiles){
 		res[i % n][j] = (char *)malloc((strlen(files[i]) + 1) * sizeof(char));
 		sprintf(res[i % n][j], "%s", files[i]);
-		if(i != 0 && ((i + 1) % n) == 0)
-			j++;
 		i++;
+		if((i + 1) % n == 0)
+			j++;
 	}
-	printf("FINITA LA TABELLA\n");
 	return res;
 }
 
-
-//char*** fileDivisor(int n, char** files, int nFiles){
-  /*char*** res = (char ***)malloc(n*sizeof(char**));
-  int i=0;
-  while(i<n){
-    int dimRiga=nFiles-i*n;
-    if(dimRiga>n)
-      dimRiga=n;
-    res[i] = (char **)malloc(dimRiga*sizeof(char*));
-    int j=i*n;
-    while(j<(i+1)*n && j<nFiles){
-      //printf("dimensione file %d \n",(int)strlen(files[j])+1);
-      res[i][j-i*n]= (char *)malloc((strlen(files[j])+1)*sizeof(char));
-      printf("%s \n",files[j]);
-      sprintf(res[i][j-i*n],"%s",files[j]);
-      j++;
-    }
-    printf("\n");
-    i++;
-
-  }
-  return res;*/
-//}
+void freeArgsForP(char *** matrix, int row){
+	row--;
+	while(row >= 0){
+		int j = 0;
+		while(matrix[row][j] != NULL){
+			free(matrix[row][j]);
+			j++;
+		}
+		free(matrix[row]);
+		row--;
+	}
+	free(matrix);
+}

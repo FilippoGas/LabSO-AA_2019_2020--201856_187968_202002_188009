@@ -63,7 +63,8 @@ int main(int argc, char *argv[]){
 	
 	int pipe_for_P[2];
 	pipe2(pipe_for_P, __O_DIRECT);
-	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P[0], pipe_for_P[1]); //DA DEALLOCARE
+	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P[0], pipe_for_P[1]);
+	printf("QUESTA E` LA TABELLA DEGLI ARGOMENTI DI P:\n");
 	printArgumentMatrix(p_argv_matrix, n);
 	
 	printf("\n\n\n\n\n\nORA GENERO I PROCESSI P e ASPETTO CHE MI INVIINO OGNUNO M MESSAGGI\n\n\n");
@@ -93,6 +94,8 @@ int main(int argc, char *argv[]){
 	freeIdfileArray(files, file_size);
 	//libero def_file_list
 	freeStringArray(def_file_list, def_file_list_size);
+	//Libero p_argv_matrix
+	freeArgsForP(p_argv_matrix, n);
 	return ret;
 
 }

@@ -17,12 +17,17 @@
 #define DIRECTORY 1	//Code for a found directory in input
 #define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files
 
+/* Struttura che contiene percorso e nome del file (DEPRECATA), forse da spostare in report?
+ */
 struct idfile{
 
 	char* name;
 	char* path;
 
 };
+
+/* struct per la scansione della cartella
+ */
 struct dirent {
     ino_t          d_ino;       /* inode number */
     off_t          d_off;       /* offset to the next dirent */
@@ -124,6 +129,8 @@ char **initStringArray(int dimArray, int dimString);
  */
 int countElementInDir(char *dir);
 
+/* Dalla lista dei file ritorna una nuova lista con i file con i percorsi completi
+ */
 char **getAllFullPath(char **file_list, int nfiles, char **dir_content, int dir_content_size, int *res_dim);
 
 /* Takes the list of file definitive and form them in an array of idfile
