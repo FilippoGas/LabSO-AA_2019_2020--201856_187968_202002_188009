@@ -1,15 +1,16 @@
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "processPfunc.h"
+#include "../Debug/utility.h"
 
 int main(int argc, char *argv[]){
-	int m = atoi(argv[1]);
-	int pipe_read = atoi(argv[2]);
-	int pipe_write = atoi(argv[3]);
-	//printf("\e[1;34mSONO IL FIGLIO CON ARGC %d\n\e[0m", argc);	
+	int m, pipe_read, pipe_write;
+	char **files;
+	int nfiles = readInput(argc, argv, &m, &pipe_read, &pipe_write, &files);
+	char ***q_matrix = createQmatrix(m, pipe_write, files, nfiles);
+	printf("\e[1;34m");
+	printArgumentMatrix(q_matrix, m);
+	printf("\e[0m");
 	close(pipe_read);
+	
 
 	int i = 0;
 	while(i < m){
@@ -23,6 +24,8 @@ int main(int argc, char *argv[]){
 		write(pipe_write, messaggio, strlen(messaggio) + 1);
 		i++;
 	}
-
+	
+	freeStringArray(files, nfiles);
+	freeArgsForQ(q_matrix, m);
 	return 0;
 }
