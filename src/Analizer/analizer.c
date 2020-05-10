@@ -1,6 +1,7 @@
 #include "../CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
 #include "../CheckInput/pPreprocessing.h"
+#include "ReadMessage/messageHandler.h"
 #include <fcntl.h>
 #include <sys/wait.h>
 void printIdfileArray(struct idfile **in, int size){
@@ -80,12 +81,16 @@ int main(int argc, char *argv[]){
 	
 	nP = 0;
 	close(pipe_for_P[1]);
-	while(nP < (n * m)){			//Prestare attenzione al caso in cui un P termini senza aver inviato tutto
-		char message[10000];
-		read(pipe_for_P[0], message, 10000);	
+	int **data = initResMatrix(def_file_list_size);
+	while(nP < n){			//Prestare attenzione al caso in cui un P termini senza aver inviato tutto
+		char message[PIPE_BUF];
+		read(pipe_for_P[0], message, PIPE_BUF);	
 		printf("Sono il padre e ho ricevuto il messaggio: %s\n", message);
-		//GESTIONE DEL MESSAGGIO
-		nP++;
+		
+		if(isTermination(message))
+			nP++;
+		else
+			readMessage(message, data, p_pid_array, n, p_argv_matrix, def_file_list, def_file_list_size);
 	}
 	close(pipe_for_P[0]);
 	wait(NULL); 	//? NON SO SE SERVA
