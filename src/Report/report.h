@@ -42,16 +42,10 @@ void printFileSelection();
 void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselection);
 
 /*
- *Print the numeric report of the files specified by selection (index of files to report), if selection il NULL, print all reports 
- * 
+ *Print the report of the files specified by selection (index of files to report), if selection il NULL, print all reports, percentage = 1 to print percentage
+ *instead of absolute values
 */
-void printNumericReports(int **reports, char **filenames, int nfiles, int *selection, int nselection);
-
-/*
- *Print the percent report of the files specified by selection (index of files to report), if selection il NULL, print all reports 
- * 
-*/
-void printPercentReports(int **reports, char **filenames, int nfiles, int *selection, int nselection);
+void printReports(int **reports, char **filenames, int nfiles, int *selection, int nselection, int percentage);
 
 /*
  *Return the total number of characters of a given report 
@@ -62,3 +56,13 @@ int getTotalChar(int *report);
  * Calculate percentage of x and y
 */
 float getPerc(int x, int y);
+
+/*
+ *Remove unselected reports from the reports list 
+*/
+void removeUnselectedReports(int ***reports, int *selection, int nselection);
+
+/*
+ *Remove unselected file names from the filenames list 
+*/
+void removeUnselectedNames(char ***fileNames, int *selection, int nselection);
