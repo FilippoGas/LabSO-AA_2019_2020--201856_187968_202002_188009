@@ -2,17 +2,19 @@
 
 //Per ora legge tutto il file
 //Effettua il conteggio dei caratteri del file e ritorna la stringa formato
-char **computeCountingOnFile(int fileDescriptor, int idFile, int offset){
-  char *ASCII = (char *)calloc(256,sizeof(char));
+char **computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end){
+  int *ASCII = (int *)calloc(256,sizeof(int));
   char *carattere = (char*)malloc(sizeof(char));
   char **datiParziali = (char **)malloc(258*sizeof(char*));
 
   lseek(fileDescriptor,offset,SEEK_SET);
-  while(read(fileDescriptor,carattere,1)){
+  int counterChar = 0;
+  while(read(fileDescriptor,carattere,1) && counterChar<(end-offset)){
     int ascii = (int)(carattere[0]);
     ASCII[ascii]++;
+    counterChar++;
   }
-
+  free(carattere);
   datiParziali[0]=(char *)malloc(10*sizeof(char));
   sprintf(datiParziali[0],"%d ",idFile);
   int i=1;
@@ -23,6 +25,7 @@ char **computeCountingOnFile(int fileDescriptor, int idFile, int offset){
   }
   datiParziali[257]=(char *)malloc(10*sizeof(char));
   sprintf(datiParziali[257],"\n");
+  free(ASCII);
 
   return datiParziali;
 }
@@ -44,4 +47,26 @@ void printFormatString(char **format){
     printf("%s",format[i]);
     i++;
   }
+}
+
+//Calcola l'offset
+int computeOffset(int parte, int denominatore, int size){
+  int offset = ((double)(parte-1)/((double)denominatore)*size);
+  return offset;
+}
+
+//Calcola la posizione dell'ultimo carattere che Q non deve leggere
+int computeEnd(int parte, int denominatore, int size){
+  int termine;
+  if(parte<denominatore){
+    termine = ((double)(parte)/((double)denominatore)*size);
+  }else{
+    termine = size;
+  }
+  return termine;
+}
+
+//Calcola la dimensione del file
+int computeSize(int fileDescriptor){
+  return lseek(fileDescriptor,0,SEEK_END);
 }
