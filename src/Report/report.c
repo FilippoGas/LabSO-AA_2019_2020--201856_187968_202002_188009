@@ -276,10 +276,10 @@ int openReportFile(){
 
 }
 
-void printTime(int rawtime){
+void printTime(const long int rawtime){
 
     struct tm  ts;
-    char       buf[80];
+    char buf[80];
 
     // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
     ts = *localtime(&rawtime);
@@ -301,7 +301,7 @@ void fillReports(int *report,char *buff){
 
 void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate){
 
-    char *buff[4096];
+    char buff[4096];
     int empty = 0;
 
     while(read(fd,buff,22) > 0){
@@ -310,7 +310,7 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
 
         char *timestamp = strtok(buff," ");
         (*lastUpdate) = atoi(timestamp);
-        printTime(lastUpdate);
+        printTime(*lastUpdate);
 
         (*nfiles) = atoi(strtok(buff,"\n"));
 
@@ -321,10 +321,10 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
         for ( i ; i < (*nfiles); i++)
         {
             (*reports)[i] = malloc(256 * sizeof(int));
-            (*fileNames)[i] = malloc( 4096 * sizeof(char);
+            (*fileNames)[i] = malloc( 4096 * sizeof(char));
             read(fd,(*fileNames)[i],4096);
             read(fd,buff,4096);
-            fillReport((*reports)[i],buff);
+            fillReports((*reports)[i],buff);
         }
 
     }
@@ -333,7 +333,7 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
     if(empty){
 
         fd = openReportFile();
-        readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
+        readPipe(fd,reports,fileNames,nfiles,lastUpdate);
 
     }
 

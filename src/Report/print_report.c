@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
     //generateRandomReports(&reports,nfiles);
     
 
-    int fd = openPipe();
+    int fd = openFIFO();
 
     readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
 
