@@ -5,8 +5,11 @@
 #include <stdlib.h>
 
 #define INTMAXCHAR 13
-#define QNAME "/LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Q/Q.out"
-
+#define QNAME "/LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Qprocess/Q.out"
+#define READ 0
+#define WRITE 1
+#define MAXMESS 10000
+#define ENDM "\\end"
 
 /* Legge l'input per un processo P, non metto il controllo in quanto in teoria viene solo eseguito da A
  * se non si puo` fare in modo che l'utente lo esegua andranno creati per far piacere a Naimoli
@@ -20,7 +23,7 @@ char **arrayStringSubset(int dim, int start, char **in);
 /* Creo la matrice per i processi Q, devono essere fatti con: QNAME pipe di scrittura,
  * m, porzione di file da leggere, file da leggere e NULL
  */
-char ***createQmatrix(int m, int pipe_write, char **files, int nfiles);
+char ***createQmatrix(int m, int pipe[2], char **files, int nfiles);
 
 /* Libera un array di stringhe allocato dinamicamente
  */
@@ -29,3 +32,10 @@ void freeStringArray(char **in, int dim);
 /* Libera la matrice dei processi Q allocata dinamicamente
  */
 void freeArgsForQ(char *** matrix, int row);
+
+
+char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles);
+
+int exitMessage(char *);
+
+int notNULL(char *);
