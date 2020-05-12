@@ -120,18 +120,18 @@ void sommatoria(int ***mat1, int **mat2, int n){
 
 
 //Vado a leggere il primo numero della stringa in entrata,
-int lettura_numero(char *str_in){
-	char *temp = strchr(str_in,' ');
+int lettura_numero(char **str_in){
+	char *temp = strchr(*str_in,' ');
 
 	if(( (long) temp ) == 0){
-		return atoi(str_in);
+		return atoi(*str_in);
 	}
 
-	int ntemp = (int)(temp - str_in);
+	int ntemp = (int)(temp - *str_in);
 	char numero[ntemp];
 
 	strncat(numero, str_in, ntemp);
-	str_in=temp+1;
+	*str_in=temp+1;
 	return atoi(numero);
 }
 
