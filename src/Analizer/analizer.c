@@ -1,6 +1,7 @@
 #include "../CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
 #include "../CheckInput/pPreprocessing.h"
+#include "WriteToReport/messageToReport.h"
 #include "ReadMessage/messageHandler.h"
 #include <fcntl.h>
 #include <sys/wait.h>
@@ -89,11 +90,24 @@ int main(int argc, char *argv[]){
 		
 		if(isTermination(message))
 			nP++;
-		else
+		else{
 			readMessage(message, data, p_pid_array, n, p_argv_matrix, def_file_list, def_file_list_size);
+			int dfifo = openFIFO();	
+			if(dfifo != -1){
+				writeToReport(data, def_file_list, def_file_list_size, dfifo);
+				close(dfifo);
+			}
+		}
+	
 	}
-	close(pipe_for_P[0]);
 	wait(NULL); 	//? NON SO SE SERVA
+	unlink(FIFO_NAME);
+	close(pipe_for_P[0]);
+	int fd = open(REPORT_FILE, O_WRONLY);	
+	writeToReport(data, def_file_list, def_file_list_size, fd);
+	close(fd);
+
+
 
 	//Libero memoria allocata dinamicamente
 	freeIdfileArray(files, file_size);
