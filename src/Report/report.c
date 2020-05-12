@@ -131,72 +131,93 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
 
 }
 
-void printNumericReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection){
+void removeUnselectedReports(int ***reports, int *selection, int nselection){
+
+    int **temp = malloc(nselection * sizeof(int*));
+
+    int i = 0;
+    for ( i = 0; i < nselection; i++)
+    {
+        temp[i] = malloc(256 * sizeof(int));
+        //memcpy(temp[i],reports[selection[i]],sizeof(reports[selection[i]]));
+        int j = 0;
+        for ( j = 0; j < 256; j++)
+        {
+            temp[i][j] = (*reports)[selection[i]][j];
+        }
+            
+    }
+
+    (*reports) = temp;    
+
+}
+
+void removeUnselectedNames(char ***fileNames, int *selection, int nselection){
+
+    char **temp = malloc(nselection * sizeof(char*));
+
+    int i = 0;
+    for ( i = 0; i < nselection; i++)
+    {
+        temp[i] = malloc(sizeof(fileNames[selection[i]]));
+        sprintf(temp[i],"%s",(*fileNames)[i]);
+    }
+    
+    (*fileNames) = temp;
+
+}
+
+
+
+void printReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection, int percentage){
 
     if(selection){
 
-        
-        int i = 0;
-        for (i ; i < nselection ; i++){
-
-            printf("\n\n ****************************************************************");
-            printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[selection[i]]);
-            printf(" ****************************************************************\n\n");
-
-            int j = ASCII_START; //i primi 31 caratteri ASCII non sono stampabili, difficile riuscire a scriverli...
-            for ( j ; j < 256 ; j++){
-
-                if(j == 127){
-                    printf("| %4c : %4d  ",32,(reports[selection[i]][j]));
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }else{
-
-                    printf("| %4c : %4d  ",j,(reports[selection[i]][j]));
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }
-            }
-
-            printf("\n\n");
-
-        }
-
-    }else{
-
-        int i = 0;
-        for (i ; i < nfiles ; i++){
-
-            printf("\n\n ****************************************************************");
-            printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[i]);
-            printf(" ****************************************************************\n\n");
-
-            int j = ASCII_START; //i primi 31 caratteri ASCII non sono stampabili, difficile riuscire a scriverli...
-            for ( j ; j < 256 ; j++){
-
-                if(j == 127){
-                    printf("| %4c : %4d  ",32,(reports[i][j]));
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }else{
-
-                    printf("| %4c : %4d  ",j,(reports[i][j]));
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }
-            }
-
-            printf("\n\n");
-
-        }
-        
+        //tolgo da reports e da nileNames i file non desiderati
+        nfiles = nselection;
+        removeUnselectedReports(&reports,selection,nselection);
+        removeUnselectedNames(&fileNames,selection,nselection);
 
     }
 
+    int i = 0;
+    for (i ; i < nfiles ; i++){
+
+        printf("\n\n ****************************************************************");
+        printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[i]);
+        printf(" ****************************************************************\n\n");
+
+        int j = ASCII_START; 
+        for ( j ; j < 256 ; j++){
+
+            if(j == 127){
+
+                if(percentage){
+                    printf("| %4c : %.2f%c   ",32,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+                }else{
+                    printf("| %4c : %4d  ",32,(reports[i][j]));
+                }
+
+                if(((j-ASCII_START+1)%COLS)==0 && j!=0){
+                    printf("|\n\n");
+                }
+
+            }else{
+                if(percentage){
+                    printf("| %4c : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+                }else{
+                    printf("| %4c : %4d  ",j,(reports[i][j]));
+                }
+                if(((j-ASCII_START+1)%COLS)==0 && j!=0){
+                    printf("|\n\n");
+                }
+            }
+        }
+
+        printf("\n\n");
+
+    }
+        
 }
 
 int getTotalChar(int *report){
@@ -216,70 +237,4 @@ float getPerc(int x, int y){
 
         return (float)(100.0*x)/(float)y;
         
-}
-
-void printPercentReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection){
-
-    if(selection){
-
-        
-        int i = 0;
-        for (i ; i < nselection ; i++){
-
-            printf("\n\n ****************************************************************");
-            printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[selection[i]]);
-            printf(" ****************************************************************\n\n");
-
-            int j = ASCII_START; //i primi 31 caratteri ASCII non sono stampabili, difficile riuscire a scriverli...
-            for ( j ; j < 256 ; j++){
-
-                if(j == 127){
-                    printf("| %4c : %.2f%c   ",32,getPerc(reports[i][j],getTotalChar(reports[selection[i]])),'%');
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }else{
-
-                    printf("| %4c : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[selection[i]])),'%');
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }
-            }
-
-            printf("\n\n");
-
-        }
-
-    }else{
-
-        int i = 0;
-        for (i ; i < nfiles ; i++){
-
-            printf("\n\n ****************************************************************");
-            printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[i]);
-            printf(" ****************************************************************\n\n");
-
-            int j = ASCII_START; //i primi 31 caratteri ASCII non sono stampabili, difficile riuscire a scriverli...
-            for ( j ; j < 256 ; j++){
-
-                if(j == 127){
-                    printf("| %4c : %.2f%c   ",32,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }else{
-
-                    printf("| %4c : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
-                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
-                        printf("|\n\n");
-                    }
-                }
-            }
-
-            printf("\n\n");
-
-        }
-    }
-
 }

@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
                 if(control){
                     getFileSelection(fileNames,nfiles,&selection, &nselection);
                 }
-                printNumericReports(reports,fileNames,nfiles,selection,nselection);
+                printReports(reports,fileNames,nfiles,selection,nselection,0);
                 
             break;
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
                 if(control){
                     getFileSelection(fileNames,nfiles,&selection, &nselection);
                 }
-                printPercentReports(reports,fileNames,nfiles,selection,nselection);
+                printReports(reports,fileNames,nfiles,selection,nselection,1);
             break;
 
             case 3:
