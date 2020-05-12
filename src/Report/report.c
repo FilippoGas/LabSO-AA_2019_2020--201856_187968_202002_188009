@@ -10,6 +10,7 @@ void printMenu(){
     printf("    2) Print percentage stats\n");
     printf("    3) print absolute stats to file\n");
     printf("    4) Print percentage stats to file\n");
+    printf("    5) Update reports\n");
     printf("    0) Exit\n");
     printf("\n");
     printf("> ");
@@ -237,4 +238,104 @@ float getPerc(int x, int y){
 
         return (float)(100.0*x)/(float)y;
         
+}
+
+int openFIFO(){
+
+	if(mkfifo(FIFO_NAME, 0777) == -1){		//DA CAMBIARE
+		if(errno != EEXIST){
+			perror("Fatal error: ");
+			exit(-1);
+		}
+	}
+ 	
+	int fd;
+
+	if((fd = open(FIFO_NAME, O_RDONLY | O_NONBLOCK)) == -1){
+		if(errno != ENXIO){
+			perror("Fatal error: ");
+			exit(-1);
+		}
+	
+	}
+	return fd;
+}
+
+int openReportFile(){
+    int fd;
+
+    if((fd = open(FILE_NAME, O_RDONLY | O_NONBLOCK)) == -1){
+		if(errno != ENXIO){
+			perror("Fatal error: ");
+			exit(-1);
+		}
+	
+	}
+
+    return fd;
+
+}
+
+void printTime(int rawtime){
+
+    struct tm  ts;
+    char       buf[80];
+
+    // Format time, "ddd yyyy-mm-dd hh:mm:ss zzz"
+    ts = *localtime(&rawtime);
+    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
+    printf("\nUltimo aggiornamento: %s\n", buf);
+
+}
+
+void fillReports(int *report,char *buff){
+
+    int j = 0;
+    for ( j = 0; j < 256; j++)
+    {
+        report[j] = atoi(strtok(buff," "));
+    }
+     
+
+}
+
+void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate){
+
+    char *buff[4096];
+    int empty = 0;
+
+    while(read(fd,buff,22) > 0){
+
+        empty = 1;
+
+        char *timestamp = strtok(buff," ");
+        (*lastUpdate) = atoi(timestamp);
+        printTime(lastUpdate);
+
+        (*nfiles) = atoi(strtok(buff,"\n"));
+
+        (*reports) = malloc((*nfiles)* sizeof(int*));
+        (*fileNames) = malloc((*nfiles)* sizeof(char*));
+
+        int i = 0;
+        for ( i ; i < (*nfiles); i++)
+        {
+            (*reports)[i] = malloc(256 * sizeof(int));
+            (*fileNames)[i] = malloc( 4096 * sizeof(char);
+            read(fd,(*fileNames)[i],4096);
+            read(fd,buff,4096);
+            fillReport((*reports)[i],buff);
+        }
+
+    }
+
+    //Se la FIFO è vuota richiamo ricorsivamente readPipe con fd riferito al file invece che alla FIFO
+    if(empty){
+
+        fd = openReportFile();
+        readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
+
+    }
+
+
 }

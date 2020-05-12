@@ -2,10 +2,22 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+
 
 #define ASCII_SIZE 256
 #define ASCII_START 32
 #define COLS 10
+
+
+
+#define FIFO_NAME "LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Fifo/AtoR"
+#define FILE_NAME "LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Report/data.txt"
 
 /*
  *Print the report menu for user interaction 
@@ -66,3 +78,18 @@ void removeUnselectedReports(int ***reports, int *selection, int nselection);
  *Remove unselected file names from the filenames list 
 */
 void removeUnselectedNames(char ***fileNames, int *selection, int nselection);
+
+/*
+ *Open the FIFO related to the path and return the fd, creates it if not existing
+*/
+int openFIFO();
+
+/*
+ *Read the pipe and fills reports and filenames 
+*/
+void readPipe(int fd, int ***reports, char ***fileNames, int *nfiels, int *lastUpdate);
+
+/*
+ *Fill a report row from received message 
+*/
+void fillReports(int *report,char *buff);

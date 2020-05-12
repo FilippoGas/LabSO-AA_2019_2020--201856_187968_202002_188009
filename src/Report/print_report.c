@@ -9,16 +9,21 @@ int main(int argc, char *argv[]){
 
     int ret = 0, reporting = 1, control;
     char *option, **fileNames;
-    int **reports, nfiles = argc - 1;
+    int **reports, nfiles/* = argc - 1*/, lastUpdate;
 
-    getFileNames(&fileNames,nfiles,argv);
-    generateRandomReports(&reports,nfiles);
+    //getFileNames(&fileNames,nfiles,argv);
+    //generateRandomReports(&reports,nfiles);
     
+
+    int fd = openPipe();
+
+    readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
+
     while(reporting){
 
         printMenu();
 
-        control = getUserOption(0,4);
+        control = getUserOption(0,5);
 
         int *selection = NULL;
         int nselection = 0;
@@ -53,6 +58,10 @@ int main(int argc, char *argv[]){
                 control = getUserOption(0,1);  
             break;
 
+            case 5:
+                readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
+            break;
+
             case 0:
                 printf("Exiting...\n");
                 reporting = 0;
@@ -61,6 +70,9 @@ int main(int argc, char *argv[]){
         }
 
     }
+
+    close(fd);
+    unlink(FIFO_NAME);
 
     printf("Quitting report\n\n");
     return ret;
