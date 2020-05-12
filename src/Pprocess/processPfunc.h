@@ -5,11 +5,12 @@
 #include <stdlib.h>
 
 #define INTMAXCHAR 13
-#define QNAME "/LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Qprocess/Q.out"
+#define QNAME "/home/ettore/LabSO-AA_2019_2020--201856_187968_202002_188009/src/Qprocess/processQ"
+
 #define READ 0
 #define WRITE 1
 #define MAXMESS 10000
-#define ENDM "\\end"
+#define ENDQ "\\end"
 
 /* Legge l'input per un processo P, non metto il controllo in quanto in teoria viene solo eseguito da A
  * se non si puo` fare in modo che l'utente lo esegua andranno creati per far piacere a Naimoli
@@ -39,3 +40,12 @@ char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles);
 int exitMessage(char *);
 
 int notNULL(char *);
+
+int createChildren(char **argvQ);
+
+int lettura_numero(char **str_in);
+
+char *writeA(char *mess);
+
+int cifre_int(int n);
+
