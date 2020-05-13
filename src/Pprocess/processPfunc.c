@@ -16,8 +16,8 @@ int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, c
 	(*m) = atoi(argv[1]);
 	(*pipe_read) = atoi(argv[2]);
 	(*pipe_write) = atoi(argv[3]);
-	(*files) = arrayStringSubset(argc, 4, argv);
-	return argc - 4;
+	(*files) = arrayStringSubset(argc, ARGS_P_START_FILE_OFFSET, argv);
+	return argc - ARGS_P_START_FILE_OFFSET;
 }
 
 int createChildren(char **argvQ){
@@ -50,7 +50,7 @@ long lungnum(int m){
 
 char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles){
         char **ret;
-	ret=calloc(nfiles+6,sizeof(char *));
+	ret=calloc(nfiles + ARGS_Q_START_FILE_OFFSET + 1,sizeof(char *));
 	ret[0]=(char *)malloc(strlen(QNAME)+1);
         sprintf(ret[0], "%s", QNAME);
 
@@ -66,11 +66,11 @@ char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles){
         sprintf(ret[4], "%d", pipe[WRITE]);
         int i=0;
         while(i<nfiles){
-                ret[i+5]=(char *)malloc(strlen(files[i])+1);
+                ret[i+ ARGS_Q_START_FILE_OFFSET]=(char *)malloc(strlen(files[i])+1);
                 sprintf(ret[i+5], "%s ", files[i]);
        i++;
        }
-       ret[i+5]=NULL;
+       ret[i+ARGS_Q_START_FILE_OFFSET]=NULL;
 	 return ret;
 }
 
@@ -102,7 +102,7 @@ void freeArgsForQ(char *** matrix, int row){
 }
 
 int exitMessage(char *mess){
-	return !strcmp(mess,ENDQ);
+	return !strcmp(mess,END);
 }
 
 
@@ -119,9 +119,8 @@ int cifre_int(int n){
 
 //Scrivo il messaggio che va mandato ad Anal.
 char *writeA(char *mess){
-        int num=lettura_numero(&mess)-2;
-        char *ret=(char *)malloc(strlen(mess)+cifre_int(num)+1);
-        sprintf(ret, "%d %s",num,mess);
+   	char* ret = malloc(PIPE_BUF * sizeof(char));
+        sprintf(ret, "%d %s", getpid(), mess);
         return ret;
 }
 

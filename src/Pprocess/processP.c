@@ -1,7 +1,6 @@
 #include "processPfunc.h"
 #include "../Debug/utility.h"
 
-
 int main(int argc, char *argv[]){
 	int m, pipe_read, pipe_write;
 	char **files;
@@ -11,7 +10,7 @@ int main(int argc, char *argv[]){
 
 
 	int pQ[2];
-	pipe(pQ);
+	pipe2(pQ, __O_DIRECT);
 	//./Q nQ m pipe_read pipe_write files
 	char **argvQ = create_ArgvQ(m, pQ, files, nfiles);
 	int i = 0;
@@ -24,23 +23,26 @@ int main(int argc, char *argv[]){
 	}
 
 
-	freeStringArray(argvQ, nfiles+6);
+	freeStringArray(argvQ, nfiles+ ARGS_Q_START_FILE_OFFSET + 1);
 
 	i=0;
 	while(i<m){
-		fflush(stdout);
-		char message[MAXMESS];
-		read(pQ[READ],message,MAXMESS);
+		char message[PIPE_BUF];
+		read(pQ[READ],message,PIPE_BUF);
 		if(exitMessage(message)){
 			i++;
 		}
 		else{
 			char *msgtoA=writeA(message);
-			write(pipe_write,msgtoA,MAXMESS);
+			write(pipe_write,msgtoA,PIPE_BUF);
 			free(msgtoA);
+			
 		}
-	}
-	write(pipe_write,ENDQ,strlen(ENDQ)+1);
 
+	}
+	char endm[PIPE_BUF];
+	sprintf(endm, "%s", END);
+	write(pipe_write, endm, PIPE_BUF);
+	wait(NULL);
 	return 0;
 }

@@ -1,10 +1,8 @@
 #include "../CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
-#include "../CheckInput/pPreprocessing.h"
+#include "./CheckInput/pPreprocessing.h"
 #include "WriteToReport/messageToReport.h"
 #include "ReadMessage/messageHandler.h"
-#include <fcntl.h>
-#include <sys/wait.h>
 void printIdfileArray(struct idfile **in, int size){
 	int i = 0;
 	while(i < size){
@@ -65,7 +63,7 @@ int main(int argc, char *argv[]){
 	
 	int pipe_for_P[2];
 	pipe2(pipe_for_P, __O_DIRECT);
-	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P[0], pipe_for_P[1]);
+	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P[READ], pipe_for_P[WRITE]);
 	printf("QUESTA E` LA TABELLA DEGLI ARGOMENTI DI P:\n");
 	printArgumentMatrix(p_argv_matrix, n);
 	
@@ -79,17 +77,16 @@ int main(int argc, char *argv[]){
 			execvp(p_argv_matrix[nP][0], p_argv_matrix[nP]);
 		nP++;
 	}
-	
+	printf("Generati i processi\n");
 	nP = 0;
-	close(pipe_for_P[1]);
+	close(pipe_for_P[WRITE]);
 	int **data = initResMatrix(def_file_list_size);
 	while(nP < n){			//Prestare attenzione al caso in cui un P termini senza aver inviato tutto
 		char message[PIPE_BUF];
-		read(pipe_for_P[0], message, PIPE_BUF);	
-		printf("Sono il padre e ho ricevuto il messaggio: %s\n", message);
-		
-		if(isTermination(message))
+		read(pipe_for_P[READ], message, PIPE_BUF);	
+		if(isTermination(message)){
 			nP++;
+		}
 		else{
 			readMessage(message, data, p_pid_array, n, p_argv_matrix, def_file_list, def_file_list_size);
 			int dfifo = openFIFO();	
@@ -102,11 +99,10 @@ int main(int argc, char *argv[]){
 	}
 	wait(NULL); 	//? NON SO SE SERVA
 	unlink(FIFO_NAME);
-	close(pipe_for_P[0]);
+	close(pipe_for_P[READ]);
 	int fd = open(REPORT_FILE, O_WRONLY);	
 	writeToReport(data, def_file_list, def_file_list_size, fd);
 	close(fd);
-
 
 
 	//Libero memoria allocata dinamicamente
@@ -115,6 +111,7 @@ int main(int argc, char *argv[]){
 	freeStringArray(def_file_list, def_file_list_size);
 	//Libero p_argv_matrix
 	freeArgsForP(p_argv_matrix, n);
+	printf("A ha terminato\n");
 	return ret;
 
 }

@@ -1,24 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-
-
-#define ASCII_SIZE 256
-#define ASCII_START 32
-#define COLS 10
-
-
-
-#define FIFO_NAME "LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Fifo/AtoR"
-#define FILE_NAME "LabSO-AA_2019_2020--201856_187968_202002_188009/TestExe/Report/data.txt"
-
+#include "../macro_libglob.h"
 /*
  *Print the report menu for user interaction 
 */

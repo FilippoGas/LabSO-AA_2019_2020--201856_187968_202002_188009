@@ -1,8 +1,6 @@
 //raggruppare per lettere, numeri, maiuscole,minuscole....
 
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "report.h"
 
 int main(int argc, char *argv[]){

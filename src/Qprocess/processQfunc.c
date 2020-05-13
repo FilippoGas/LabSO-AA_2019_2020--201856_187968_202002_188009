@@ -1,11 +1,10 @@
 #include "processQfunc.h"
-
 //Per ora legge tutto il file
 //Effettua il conteggio dei caratteri del file e ritorna la stringa formato
-char **computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end){
-  int *ASCII = (int *)calloc(256,sizeof(int));
-  char *carattere = (char*)malloc(sizeof(char));
-  char **datiParziali = (char **)malloc(258*sizeof(char*));
+char *computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end){
+  int *ASCII = (int *)calloc(ALPHABET_SIZE, sizeof(int));
+  char carattere[1];
+  char *datiParziali = (char *)malloc(PIPE_BUF + 1 * sizeof(char*));
 
   lseek(fileDescriptor,offset,SEEK_SET);
   int counterChar = 0;
@@ -14,19 +13,14 @@ char **computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end
     ASCII[ascii]++;
     counterChar++;
   }
-  free(carattere);
-  datiParziali[0]=(char *)malloc(10*sizeof(char));
-  sprintf(datiParziali[0],"%d ",idFile);
-  int i=1;
-  while(i<257){
-    datiParziali[i]=(char *)malloc(10*sizeof(char));
-    sprintf(datiParziali[i],"%d ",ASCII[i-1]);
+  sprintf(datiParziali,"%d ",idFile);
+  int i=0;
+  while(i< ALPHABET_SIZE){
+    sprintf(datiParziali,"%s %d ", datiParziali, ASCII[i]);
     i++;
   }
-  datiParziali[257]=(char *)malloc(10*sizeof(char));
-  sprintf(datiParziali[257],"\n");
+  sprintf(datiParziali, "%s\n", datiParziali);
   free(ASCII);
-
   return datiParziali;
 }
 
@@ -51,7 +45,7 @@ void printFormatString(char **format){
 
 //Calcola l'offset
 int computeOffset(int parte, int denominatore, int size){
-  int offset = ((double)(parte-1)/((double)denominatore)*size);
+	int offset = ((double)(parte)/((double)denominatore)*size);
   return offset;
 }
 
@@ -59,7 +53,7 @@ int computeOffset(int parte, int denominatore, int size){
 int computeEnd(int parte, int denominatore, int size){
   int termine;
   if(parte<denominatore){
-    termine = ((double)(parte)/((double)denominatore)*size);
+    termine = ((double)(parte + 1)/((double)denominatore)*size); //MODIFICATO
   }else{
     termine = size;
   }
@@ -68,5 +62,5 @@ int computeEnd(int parte, int denominatore, int size){
 
 //Calcola la dimensione del file
 int computeSize(int fileDescriptor){
-  return lseek(fileDescriptor,0,SEEK_END);
+	 return lseek(fileDescriptor,0,SEEK_END);
 }

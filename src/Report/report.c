@@ -264,7 +264,7 @@ int openFIFO(){
 int openReportFile(){
     int fd;
 
-    if((fd = open(FILE_NAME, O_RDONLY | O_NONBLOCK)) == -1){
+    if((fd = open(REPORT_FILE, O_RDONLY | O_NONBLOCK)) == -1){
 		if(errno != ENXIO){
 			perror("Fatal error: ");
 			exit(-1);
@@ -303,17 +303,15 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
 
     char buff[4096];
     int empty = 0;
-
+	if(fd == -1)
+		fd = openReportFile();
     while(read(fd,buff,22) > 0){
-
         empty = 1;
-
         char *timestamp = strtok(buff," ");
         (*lastUpdate) = atoi(timestamp);
         printTime(*lastUpdate);
 
-        (*nfiles) = atoi(strtok(buff,"\n"));
-
+        (*nfiles) = atoi(strtok(NULL," "));
         (*reports) = malloc((*nfiles)* sizeof(int*));
         (*fileNames) = malloc((*nfiles)* sizeof(char*));
 
@@ -326,14 +324,14 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
             read(fd,buff,4096);
             fillReports((*reports)[i],buff);
         }
+	printf("FINITO WHILE\n");
 
     }
 
     //Se la FIFO è vuota richiamo ricorsivamente readPipe con fd riferito al file invece che alla FIFO
-    if(empty){
-
-        fd = openReportFile();
-        readPipe(fd,reports,fileNames,nfiles,lastUpdate);
+    if(!empty){		//In teoria se empty = 0 cosi` entra
+	printf("SONO NEL CICLO INFINITO?\n");
+        readPipe(-1,reports,fileNames,nfiles,lastUpdate);
 
     }
 

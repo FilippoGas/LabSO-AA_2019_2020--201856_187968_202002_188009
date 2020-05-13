@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-
-#define INTMAXCHAR 13
-#define QNAME "/home/ettore/LabSO-AA_2019_2020--201856_187968_202002_188009/src/Qprocess/processQ"
-
-#define READ 0
-#define WRITE 1
-#define MAXMESS 10000
-#define ENDQ "\\end"
+#include "../macro_libglob.h"
 
 /* Legge l'input per un processo P, non metto il controllo in quanto in teoria viene solo eseguito da A
  * se non si puo` fare in modo che l'utente lo esegua andranno creati per far piacere a Naimoli

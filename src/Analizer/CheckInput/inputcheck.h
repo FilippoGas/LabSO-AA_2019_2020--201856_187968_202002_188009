@@ -1,22 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <limits.h>
-
-#define SETN 0		//Code of command to set n
-#define SETM 1		//Code of command to set m
-#define HELP 2		//Code of command for help
-#define SETREC 3	//Code for setting recursive search in directories
-#define COMMAND 0	//Code of argument as command
-#define NOTCOMMAND 1
-#define FILES 0      	//Code for a found file in input
-#define DIRECTORY 1	//Code for a found directory in input
-#define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files
-
+#include "../../macro_libglob.h"
 /* Struttura che contiene percorso e nome del file (DEPRECATA), forse da spostare in report?
  */
 struct idfile{
@@ -124,10 +106,6 @@ int isNotParOrSameDir(char *in);
  * with string long dimString
  */
 char **initStringArray(int dimArray, int dimString);
-
-/* Returns number of elements in directory dir
- */
-int countElementInDir(char *dir);
 
 /* Dalla lista dei file ritorna una nuova lista con i file con i percorsi completi
  */

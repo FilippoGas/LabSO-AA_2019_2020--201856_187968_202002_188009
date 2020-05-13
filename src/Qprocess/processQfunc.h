@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include "../macro_libglob.h"
 
-#define MAX_LENGTH_FORMAT 2590
 
-char **computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end);
+char *computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end);
 
 int fileSize(int fileDescriptor);
 

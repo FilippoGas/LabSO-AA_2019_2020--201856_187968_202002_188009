@@ -201,18 +201,7 @@ char **concatStringArray(char **first, char **second, int nfirst, int nsecond, i
 	} 
 	return res;
 }
-/*
-int countElementInDir(char *dir){
-	DIR *streamdir = opendir(dir);
-	struct dirent *next;
-	int count = 0;
-	while((next = readdir(streamdir)) != NULL){
-		count++;
-	}
-	closedir(streamdir);
-	return count; //Tolgo link a . e a .. ?????
-}
-*/
+
 char **initStringArray(int dimArray, int dimString){
 	char **res = malloc(dimArray * sizeof(char *));
 	int i = 0;
@@ -237,7 +226,7 @@ int file_select(struct dirent   *entry) {
 
 char **lsDir(char *dir, int rec, int *n){
 	struct dirent **test;
-	int sizedir = scandir(dir, &test, file_select, 0);	//////////////////////////////////////////////////////////////////	
+	int sizedir = scandir(dir, &test, file_select, 0);		
 	(*n) = sizedir;
 	char **res = initStringArray((*n), PATH_MAX + 1);
 
