@@ -13,17 +13,17 @@ int main(int argc, char *argv[]){
 	char test[PATH_MAX + 1];
 	strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
 	fileDescriptors[i] = open(test,O_RDONLY);
-    sizes[i] = computeSize(fileDescriptors[i]);
+ 	sizes[i] = computeSize(fileDescriptors[i]);
     i++;
   }
   //Per ogni file vado a calcolarmi l'offset, l'end e la stringa formato che andrò a scrivere nella pipe
   i = 0;
+    close(pipeRead);
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
     int offset = computeOffset(parte,denominatore,sizes[i]);
     int end = computeEnd(parte,denominatore,sizes[i]);
     char *format = computeCountingOnFile(fileDescriptors[i],i + ARGS_P_START_FILE_OFFSET,offset,end);	//mi serve indice
     //Scrivo nella pipe la stringa formato
-    close(pipeRead);
     write(pipeWrite,format, PIPE_BUF);
     //Stampo a video la stringa formato
     //printFormatString(format);

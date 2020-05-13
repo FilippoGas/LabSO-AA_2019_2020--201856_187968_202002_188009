@@ -19,7 +19,7 @@ void addNewLine(char *in){
 int openFIFO(){
 	if(mkfifo(FIFO_NAME, 0777) == -1){		//DA CAMBIARE
 		if(errno != EEXIST){
-			perror("Fatal error esiste gia: ");
+			perror("Fatal error on fifo: ");
 			exit(-1);
 		}
 	}

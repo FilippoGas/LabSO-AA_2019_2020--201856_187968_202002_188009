@@ -29,7 +29,7 @@
 #define COMMAND 0	//Code of argument as command
 
 #define NOTCOMMAND 1
-
+	
 #define FILES 0      	//Code for a found file in input
 
 #define DIRECTORY 1	//Code for a found directory in input
@@ -48,13 +48,14 @@
 
 #define END "\\end"					//Last message before closing pipe
 
-#define ASCII_SIZE 256
+#define ASCII_SIZE 256					//DEPRECATA
 
 #define ASCII_START 32
 
-#define COLS 10						//FILIPPO DEFINISCI QUESTO
+#define COLS 10						//COLONNE STAMPATE NELLA TABELLA DEI CARATTERI
 
 #define ARGS_P_START_FILE_OFFSET 4			//INDICE DI INIZIO FILE IN P
 
 #define ARGS_Q_START_FILE_OFFSET 5			//INDICE DI INIZIO FILE IN Q
 
+int errorSysCall(int res);

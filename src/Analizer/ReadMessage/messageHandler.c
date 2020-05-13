@@ -7,14 +7,13 @@ int isTermination(char *in){
 char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_for_p){
 	/* Leggo childId e FileNumberInChildId in modo da ottenere il nome del file
 	 */
-	int row;
+	int row = -1;
 	int column;
-	int i = 0, z = 0;
 	char *temp;
 	temp = strtok(message, " ");
 	int value = atoi(temp);
 	int t = 0;
-	while(t < n){
+	while(t < n && row == -1){
 		if(childId[t] == value)
 			row = t;
 		t++;
@@ -30,8 +29,8 @@ char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_fo
 
 
 int getPosInFileList(char *filename, char **file_list, int nFiles){
-	int i = 0, res = 0;
-	while(i < nFiles){
+	int i = 0, res = -1;
+	while(i < nFiles && res == -1){
 		if(!strcmp(filename, file_list[i]))
 			res = i;
 		i++;
@@ -55,9 +54,9 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 	/*FORMATO MESSAGGIO: 
 	 * childId FileNumberInChildID value1 value2 . . . value 256\n
 	 */
-	int i = 0;
 	char *filename = getFileNameFromMessage(message, childId, n, args_for_p);
 	int value_row = getPosInFileList(filename, file_list, nFiles);
+	free(filename);
 	int z = 0;
 	while(z < ALPHABET_SIZE){
 		char *temp = strtok(NULL, " ");
