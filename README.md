@@ -3,7 +3,7 @@ Progetto del corso di Sistemi Operativi presso Università degli Studi di Trento
 
 ## Da controllare
 * Prestare attenzione a tutte le allocazioni dinamiche, non vorrei essermi dimenticato qualcosa --giacomo
-## BUGS:
 
+## BUGS:
+* Report bloccato sulla lettura del report da a, non scorre a sufficienza la stringa e va in seg fault
 ## Possibili migliorie:
-* Controllare inputcheck, migliorabile in molte parti, specialmente allocazioni dinamiche e magari distribuire meglio le funzioni
