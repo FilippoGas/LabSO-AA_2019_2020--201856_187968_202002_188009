@@ -102,8 +102,8 @@ int main(int argc, char *argv[]){
 	wait(NULL); 	//? NON SO SE SERVA
 	unlink(FIFO_NAME);
 	close(pipe_for_P[READ]);
-	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT);	
-	perror("\nError: ");
+	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
+	printf("fd = %d", fd);
 	writeToReport(data, def_file_list, def_file_list_size, fd);
 	close(fd);
 

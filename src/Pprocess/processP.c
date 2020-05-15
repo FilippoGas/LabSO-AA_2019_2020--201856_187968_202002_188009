@@ -4,14 +4,10 @@
 int main(int argc, char *argv[]){
 	int m, pipe_read, pipe_write;
 	char **files;
-<<<<<<< HEAD
 	//./p m pipe_read pipe_write files
 
-	printf("\nP iniziato\n");
 
-=======
 	//Leggo l'input
->>>>>>> b490478c4a883249335bd6526ac7e5dc09fcb118
 	int nfiles = readInput(argc, argv, &m, &pipe_read, &pipe_write, &files);
 	close(pipe_read);
 
@@ -55,7 +51,6 @@ int main(int argc, char *argv[]){
 	//Chiudo P
 	char endm[PIPE_BUF];
 	sprintf(endm, "%s", END);
-	printf("\nendm: %s\n",endm);
 	write(pipe_write, endm, PIPE_BUF);
 	//IDEA: uso una KILL??
 	wait(NULL);

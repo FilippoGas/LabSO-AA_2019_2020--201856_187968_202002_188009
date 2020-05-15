@@ -37,14 +37,15 @@ int openFIFO(){
 }
 
 char *contentToString(int *data){
-	char *res = malloc((PIPE_BUF + 1) * sizeof(char));
+	char *res = calloc((PIPE_BUF + 1), sizeof(char));
 	int i = 0;
 	while(i < ALPHABET_SIZE){
 		sprintf(res, "%s %d", res, data[i]);
 		i++;
 	}
-	sprintf(res, "%s\n", res);
-	addPadding(res, PIPE_BUF);
+	sprintf(res, "%s", res);
+	addPadding(res, PIPE_BUF - 1);
+	addNewLine(res);
 	return res;
 }
 
@@ -59,7 +60,8 @@ void writeToReport(int **data, char **file_list, int file_list_size,  int fd){
 	while(i < file_list_size){
 		char nomeFile[PIPE_BUF + 1];
 		sprintf(nomeFile, "%s", file_list[i]);
-		addPadding(nomeFile, PIPE_BUF);
+		addPadding(nomeFile, PIPE_BUF - 1);
+		addNewLine(nomeFile);
 		write(fd, nomeFile, PIPE_BUF);	
 		char *content = contentToString(data[i]);
 		write(fd, content, PIPE_BUF);
