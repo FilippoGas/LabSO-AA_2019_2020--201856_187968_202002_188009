@@ -18,9 +18,6 @@ char ***createQmatrix(int m, int pipe[2], char **files, int nfiles);
  */
 void freeStringArray(char **in, int dim);
 
-/* Libera la matrice dei processi Q allocata dinamicamente
- */
-void freeArgsForQ(char *** matrix, int row);
 
 
 char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles);
@@ -31,9 +28,5 @@ int notNULL(char *);
 
 int createChildren(char **argvQ);
 
-int lettura_numero(char **str_in);
-
 char *writeA(char *mess);
-
-int cifre_int(int n);
 

@@ -1,5 +1,8 @@
 #include "processPfunc.h"
 
+
+/*Crea una stringa dove andranno salvati i nomi dei file.
+ */
 char **arrayStringSubset(int dim, int start, char **in){
 	char **res = (char **)malloc((dim - start) * sizeof(char *));
 	int i = start;
@@ -12,6 +15,10 @@ char **arrayStringSubset(int dim, int start, char **in){
 }
 
 
+/* Leggo l'input che mi viene da Anal.
+ * FORMATO MESSAGGIO DA ANAL
+ * ./p m pipe_read pipe_write file0 file1 . . . filek
+ */
 int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, char ***files){
 	(*m) = atoi(argv[1]);
 	(*pipe_read) = atoi(argv[2]);
@@ -20,34 +27,42 @@ int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, c
 	return argc - ARGS_P_START_FILE_OFFSET;
 }
 
+
+/*Creo Q.
+ */
 int createChildren(char **argvQ){
-        //Creo Q
         int f=fork();
         while(f<0){
                 f=fork();
         }
         if(f==0){
-        	//execv order 66
 		int try=execv(argvQ[0],argvQ);
     		if(try<0){
-			printf("MIINCHIA NON FUNZIONA!!!\n");
-			exit(1);
+			//SYSTEMCALL!!!
+			perror("Errore di chiamata Q :");
+			exit(-1);
 		}
 	    }
 	return f;
 }
 
 
-long lungnum(int m){
+/*Calcola le cifre dell'intero n.
+ */
+long lungnum(int n){
         int i=1;
-        while(m/10!=0){
-        m=m/10;
+        while(n/10!=0){
+        n=n/10;
         i++;
         }
         return i;
 }
 
 
+/* Crea la chiamata di Q.
+ * FORMATO CHIAMATA Q:
+ * ./Q nQ m pipe_read pipe_write file0 file1 . . . filek NULL
+ */
 char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles){
         char **ret;
 	ret=calloc(nfiles + ARGS_Q_START_FILE_OFFSET + 1,sizeof(char *));
@@ -65,19 +80,18 @@ char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles){
         ret[4]=(char *)malloc(lungnum(pipe[WRITE])+1);
         sprintf(ret[4], "%d", pipe[WRITE]);
         int i=0;
-        while(i<nfiles){
+	while(i<nfiles){
                 ret[i+ ARGS_Q_START_FILE_OFFSET]=(char *)malloc(strlen(files[i])+1);
                 sprintf(ret[i+5], "%s ", files[i]);
-       i++;
-       }
-       ret[i+ARGS_Q_START_FILE_OFFSET]=NULL;
-	 return ret;
+		i++;
+	}
+	ret[i+ARGS_Q_START_FILE_OFFSET]=NULL;
+	return ret;
 }
 
 
-
-
-
+/*Dealloca un arrey di stringhe.
+ */
 void freeStringArray(char **in, int dim){
 	int i = 0;
 	while(i < dim){
@@ -87,37 +101,11 @@ void freeStringArray(char **in, int dim){
 	free(in);
 }
 
-void freeArgsForQ(char *** matrix, int row){
-	row--;
-	while(row >= 0){
-		int j = 0;
-		while(matrix[row][j] != NULL){
-			free(matrix[row][j]);
-			j++;
-		}
-		free(matrix[row]);
-		row--;
-	}
-	free(matrix);
-}
 
-int exitMessage(char *mess){
-	return !strcmp(mess,END);
-}
-
-
-//conto le cifre di un numero intero
-int cifre_int(int n){
-        int i=0;
-        if(i!=0){
-                while(n/10!=0)
-                i++;
-                return i;
-                }
-        else return 1;
-}
-
-//Scrivo il messaggio che va mandato ad Anal.
+/* Scrivo il messaggio che va mandato ad Anal.
+ * FORMATO DEL MESSAGGIO:
+ * PID nfile carattere0 carattere1 . . . carattere255 \n
+ */
 char *writeA(char *mess){
    	char* ret = malloc(PIPE_BUF * sizeof(char));
         sprintf(ret, "%d %s", getpid(), mess);
@@ -125,31 +113,8 @@ char *writeA(char *mess){
 }
 
 
-//
-int lettura_numero(char **str_in){
-        char *temp = strchr(*str_in,' ');
-
-        if(( (long) temp ) == 0){
-                return atoi(*str_in);
-        }
-
-        int ntemp = (int)(temp - *str_in);
-        char numero[ntemp+1];
-
-        strncpy(numero, *str_in, ntemp);
-        *str_in=temp+1;
-        numero[ntemp]='\0';
-        return atoi(numero);
+/*Riconosce se la stringa in lettura è un messaggio di END.
+ */
+int exitMessage(char *mess){
+	return !strcmp(mess,END);
 }
-
-
-
-
-
-
-
-
-
-
-
-
