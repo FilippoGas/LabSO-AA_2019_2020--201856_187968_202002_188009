@@ -4,19 +4,24 @@
 int main(int argc, char *argv[]){
 	int m, pipe_read, pipe_write;
 	char **files;
+<<<<<<< HEAD
 	//./p m pipe_read pipe_write files
 
 	printf("\nP iniziato\n");
 
+=======
+	//Leggo l'input
+>>>>>>> b490478c4a883249335bd6526ac7e5dc09fcb118
 	int nfiles = readInput(argc, argv, &m, &pipe_read, &pipe_write, &files);
 	close(pipe_read);
 
 
 	int pQ[2];
 	pipe2(pQ, __O_DIRECT);
-	//./Q nQ m pipe_read pipe_write files
+	//Creo la chiamata per le Q
 	char **argvQ = create_ArgvQ(m, pQ, files, nfiles);
 	int i = 0;
+	//Creo le Q
 	while(i < m){
 		sprintf(argvQ[1],"%d",i);
 		int f=createChildren(argvQ);
@@ -25,28 +30,34 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-
-	freeStringArray(argvQ, nfiles+ ARGS_Q_START_FILE_OFFSET + 1);
+	freeStringArray(argvQ, nfiles + ARGS_Q_START_FILE_OFFSET + 1);
 
 	i=0;
 	while(i<m){
 		char message[PIPE_BUF];
 		read(pQ[READ],message,PIPE_BUF);
+
 		if(exitMessage(message)){
 			i++;
 		}
 		else{
+			//Rimando ad A
 			char *msgtoA=writeA(message);
-			write(pipe_write,msgtoA,PIPE_BUF);
+			int try=write(pipe_write,msgtoA,PIPE_BUF);
+			if(try<0){
+				//SYSTEMCALL!!!
+				perror("Errore di scrittura ad A:");
+			}
 			free(msgtoA);
-			
 		}
 
 	}
+	//Chiudo P
 	char endm[PIPE_BUF];
 	sprintf(endm, "%s", END);
 	printf("\nendm: %s\n",endm);
 	write(pipe_write, endm, PIPE_BUF);
+	//IDEA: uso una KILL??
 	wait(NULL);
 	return 0;
 }
