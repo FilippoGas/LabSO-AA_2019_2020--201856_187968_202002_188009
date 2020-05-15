@@ -6,9 +6,9 @@ char *computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end)
   char carattere[1];
   char *datiParziali = (char *)malloc(PIPE_BUF + 1 * sizeof(char*));
 
-  lseek(fileDescriptor,offset,SEEK_SET);
+  errorSysCall(lseek(fileDescriptor,offset,SEEK_SET));
   int counterChar = 0;
-  while(read(fileDescriptor,carattere,1) && counterChar<(end-offset)){
+  while(errorSysCall(read(fileDescriptor,carattere,1)) && counterChar<(end-offset)){
     int ascii = (int)(carattere[0]);
     ASCII[ascii]++;
     counterChar++;
@@ -62,5 +62,5 @@ int computeEnd(int parte, int denominatore, int size){
 
 //Calcola la dimensione del file
 int computeSize(int fileDescriptor){
-	 return lseek(fileDescriptor,0,SEEK_END);
+	 return errorSysCall(lseek(fileDescriptor,0,SEEK_END));
 }
