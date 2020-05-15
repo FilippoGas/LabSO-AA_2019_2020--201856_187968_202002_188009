@@ -67,9 +67,14 @@ int openFIFO();
 /*
  *Read the pipe and fills reports and filenames 
 */
-void readPipe(int fd, int ***reports, char ***fileNames, int *nfiels, int *lastUpdate);
+void readPipe(int fd, int ***reports, char ***fileNames, int *nfiels, int *lastUpdate, int stopRecursion);
 
 /*
  *Fill a report row from received message 
 */
 void fillReports(int *report,char *buff);
+
+/**
+ * Generate a report file, fac-simile to the one produced by analizer, for debugging purpose only
+*/
+void generateRandomReportFile(int **reports, char **fileNames, int nfiles);
