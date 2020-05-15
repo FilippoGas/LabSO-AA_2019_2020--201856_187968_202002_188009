@@ -5,6 +5,9 @@ int main(int argc, char *argv[]){
 	int m, pipe_read, pipe_write;
 	char **files;
 	//./p m pipe_read pipe_write files
+
+	printf("\nP iniziato\n");
+
 	int nfiles = readInput(argc, argv, &m, &pipe_read, &pipe_write, &files);
 	close(pipe_read);
 
@@ -42,6 +45,7 @@ int main(int argc, char *argv[]){
 	}
 	char endm[PIPE_BUF];
 	sprintf(endm, "%s", END);
+	printf("\nendm: %s\n",endm);
 	write(pipe_write, endm, PIPE_BUF);
 	wait(NULL);
 	return 0;

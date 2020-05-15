@@ -7,16 +7,19 @@ int main(int argc, char *argv[]){
 
     int ret = 0, reporting = 1, control;
     char *option, **fileNames;
-    int **reports, nfiles/* = argc - 1*/, lastUpdate;
+    int **reports, nfiles = argc - 1, lastUpdate;
 
-    //getFileNames(&fileNames,nfiles,argv);
-    //generateRandomReports(&reports,nfiles);
+    getFileNames(&fileNames,nfiles,argv);
+    generateRandomReports(&reports,nfiles);
     
+    
+    generateRandomReportFile(reports,fileNames,nfiles);
 
+/*
     int fd = openFIFO();
 
-    readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
-
+    readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate,0);
+*/
     while(reporting){
 
         printMenu();
@@ -57,7 +60,7 @@ int main(int argc, char *argv[]){
             break;
 
             case 5:
-                readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate);
+               // readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate,0);
             break;
 
             case 0:
@@ -69,9 +72,9 @@ int main(int argc, char *argv[]){
 
     }
 
-    close(fd);
+    /*close(fd);
     unlink(FIFO_NAME);
-
+*/  
     printf("Quitting report\n\n");
     return ret;
 

@@ -139,10 +139,10 @@ void removeUnselectedReports(int ***reports, int *selection, int nselection){
     int i = 0;
     for ( i = 0; i < nselection; i++)
     {
-        temp[i] = malloc(256 * sizeof(int));
+        temp[i] = malloc(ALPHABET_SIZE * sizeof(int));
         //memcpy(temp[i],reports[selection[i]],sizeof(reports[selection[i]]));
         int j = 0;
-        for ( j = 0; j < 256; j++)
+        for ( j = 0; j < ALPHABET_SIZE; j++)
         {
             temp[i][j] = (*reports)[selection[i]][j];
         }
@@ -189,7 +189,7 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
         printf(" ****************************************************************\n\n");
 
         int j = ASCII_START; 
-        for ( j ; j < 256 ; j++){
+        for ( j ; j < ALPHABET_SIZE ; j++){
 
             if(j == 127){
 
@@ -226,7 +226,7 @@ int getTotalChar(int *report){
     int totalChar= 0;
 
     int i = 0;
-    for( i ; i < 256 ; i++){
+    for( i ; i < ALPHABET_SIZE ; i++){
         totalChar+=report[i];
     }
 
@@ -244,7 +244,7 @@ int openFIFO(){
 
 	if(mkfifo(FIFO_NAME, 0777) == -1){		//DA CAMBIARE
 		if(errno != EEXIST){
-			perror("Fatal error: ");
+			perror("Fatal error on fifo creation: ");
 			exit(-1);
 		}
 	}
@@ -253,7 +253,7 @@ int openFIFO(){
 
 	if((fd = open(FIFO_NAME, O_RDONLY | O_NONBLOCK)) == -1){
 		if(errno != ENXIO){
-			perror("Fatal error: ");
+			perror("Fatal error on FIFO opening: ");
 			exit(-1);
 		}
 	
@@ -266,8 +266,8 @@ int openReportFile(){
 
     if((fd = open(REPORT_FILE, O_RDONLY | O_NONBLOCK)) == -1){
 		if(errno != ENXIO){
-			perror("Fatal error: ");
-			exit(-1);
+			perror("Fatal error on file: ");
+			//exit(-1);
 		}
 	
 	}
@@ -291,22 +291,21 @@ void printTime(const long int rawtime){
 void fillReports(int *report,char *buff){
 
     int j = 0;
-    for ( j = 0; j < 256; j++)
+    report[j] = atoi(strtok(buff," "));
+    for ( j = 1; j < ALPHABET_SIZE; j++)
     {
-        report[j] = atoi(strtok(buff," "));
+        report[j] = atoi(strtok(NULL," "));
     }
      
 
 }
 
-void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate){
+void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate, int stopRecursion){
 
     char buff[4096];
-    int empty = 0;
-	if(fd == -1)
-		fd = openReportFile();
+    int empty = 1;
     while(read(fd,buff,22) > 0){
-        empty = 1;
+        empty = 0;
         char *timestamp = strtok(buff," ");
         (*lastUpdate) = atoi(timestamp);
         printTime(*lastUpdate);
@@ -318,7 +317,7 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
         int i = 0;
         for ( i ; i < (*nfiles); i++)
         {
-            (*reports)[i] = malloc(256 * sizeof(int));
+            (*reports)[i] = malloc(ALPHABET_SIZE * sizeof(int));
             (*fileNames)[i] = malloc( 4096 * sizeof(char));
             read(fd,(*fileNames)[i],4096);
             read(fd,buff,4096);
@@ -329,11 +328,92 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
     }
 
     //Se la FIFO è vuota richiamo ricorsivamente readPipe con fd riferito al file invece che alla FIFO
-    if(!empty){		//In teoria se empty = 0 cosi` entra
-	printf("SONO NEL CICLO INFINITO?\n");
-        readPipe(-1,reports,fileNames,nfiles,lastUpdate);
+    if(empty && !stopRecursion){		
+        
+        fd = openReportFile();
+        if(fd != -1){
+
+            readPipe(fd,reports,fileNames,nfiles,lastUpdate,1);
+
+        }else{
+
+            printf("\nFIFO empty\nFILE not found\n\n");
+            exit(-1);
+
+        }
 
     }
 
+}
+
+void addNewLine(char *in){
+	int j = strlen(in);
+	in[j] = '\n';
+	in[j + 1] = '\0';
+}
+
+void addPadding(char *in, int dim_to_have){
+	while(strlen(in) < dim_to_have){
+		int j = strlen(in);
+		in[j] = ' ';
+		in[j + 1] = '\0';
+	}
+}   
+
+char *contentToString(int *data){
+	char *res = calloc(1,(PIPE_BUF + 1) * sizeof(char));
+	int i = 0;
+	while(i < ALPHABET_SIZE){
+		sprintf(res, "%s %d", res, data[i]);
+		i++;
+	}
+	sprintf(res, "%s\n", res);
+	addPadding(res, PIPE_BUF);
+	return res;
+}
+
+void generateRandomReportFile(int **reports, char **fileNames, int nfiles){
+
+    int fd;
+
+    if((fd = open(REPORT_FILE, O_WRONLY | O_NONBLOCK | O_CREAT)) == -1){
+		if(errno != ENXIO){
+			perror("Fatal error on file(generateRandomReportFile): ");
+			//exit(-1);
+		}
+	
+	}
+
+    time_t current = time(NULL);
+	char  timetemp[(2 * INTMAXCHAR) + 1];
+	sprintf(timetemp, "%ld %d", current, nfiles);
+	addPadding(timetemp, (2 * INTMAXCHAR) - 1);
+	addNewLine(timetemp);
+	write(fd, timetemp, (2 * INTMAXCHAR));
+	int i = 0;
+	while(i < nfiles){
+
+		char nomeFile[PIPE_BUF + 1];
+		sprintf(nomeFile, "%s", fileNames[i]);
+		addPadding(nomeFile, PIPE_BUF);
+
+        printf("\n\nnome file: %s\n",nomeFile);
+
+		write(fd, nomeFile, PIPE_BUF);	
+        char *content = contentToString(reports[i]);
+
+        printf("\ncontent: %s\n",content);
+
+		int writtenBytes = write(fd, content, PIPE_BUF);
+
+        printf("\n\nWritten bytes: %d\n\n",writtenBytes);
+        perror("Error writing content");
+
+		free(content);
+		i++;
+
+	}
+
+    close(fd);
 
 }

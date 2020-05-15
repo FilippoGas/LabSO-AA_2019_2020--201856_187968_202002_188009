@@ -1,4 +1,4 @@
-#include "../CheckInput/inputcheck.h"
+#include "./CheckInput/inputcheck.h"
 #include "../Debug/utility.h"
 #include "./CheckInput/pPreprocessing.h"
 #include "WriteToReport/messageToReport.h"
@@ -73,8 +73,10 @@ int main(int argc, char *argv[]){
 	int p_pid_array[n];
 	while(nP < n){
 		p_pid_array[nP] = fork();
-		if(p_pid_array[nP] == 0)
+		if(p_pid_array[nP] == 0){
 			execvp(p_argv_matrix[nP][0], p_argv_matrix[nP]);
+			perror("\nErro exec: ");
+		}
 		nP++;
 	}
 	printf("Generati i processi\n");
@@ -100,7 +102,8 @@ int main(int argc, char *argv[]){
 	wait(NULL); 	//? NON SO SE SERVA
 	unlink(FIFO_NAME);
 	close(pipe_for_P[READ]);
-	int fd = open(REPORT_FILE, O_WRONLY);	
+	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT);	
+	perror("\nError: ");
 	writeToReport(data, def_file_list, def_file_list_size, fd);
 	close(fd);
 

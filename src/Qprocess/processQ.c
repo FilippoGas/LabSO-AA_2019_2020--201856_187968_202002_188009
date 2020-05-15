@@ -10,10 +10,11 @@ int main(int argc, char *argv[]){
   //Salva i file descriptor in un array
   int i=0;
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
-	char test[PATH_MAX + 1];
-	strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
-	fileDescriptors[i] = open(test,O_RDONLY);
- 	sizes[i] = computeSize(fileDescriptors[i]);
+    char test[PATH_MAX + 1];
+    strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
+    printf("\ntest: %sx\n",test);
+    fileDescriptors[i] = open(test,O_RDONLY);
+    sizes[i] = computeSize(fileDescriptors[i]);
     i++;
   }
   //Per ogni file vado a calcolarmi l'offset, l'end e la stringa formato che andrò a scrivere nella pipe
