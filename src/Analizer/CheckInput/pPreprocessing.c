@@ -27,7 +27,7 @@ char ***createArgsForP(int n, int m, char **files, int nFiles, int pipeRead, int
 		res[i % n][j] = (char *)malloc((strlen(files[i]) + 1) * sizeof(char));
 		sprintf(res[i % n][j], "%s", files[i]);
 		i++;
-		if((i + 1) % n == 0)
+		if(i % n == 0)
 			j++;
 	}
 	return res;
