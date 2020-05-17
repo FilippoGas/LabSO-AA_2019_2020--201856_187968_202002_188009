@@ -146,7 +146,7 @@ void freeIntMatrix(int **in, int n){
 
 void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A){
 	int byteRead = -1;
-	while(byteRead != -1){
+	while(byteRead != 0){
 		int i = 0;
 		byteRead = 0;
 		while(i < m){
