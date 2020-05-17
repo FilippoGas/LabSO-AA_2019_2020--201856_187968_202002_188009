@@ -12,3 +12,7 @@ int computeOffset(int parte, int denominatore, int size);
 int computeEnd(int parte, int denominatore, int size);
 
 int computeSize(int fileDescriptor);
+
+int openFile(char *name);
+
+void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeRead, int *pipeWrite);

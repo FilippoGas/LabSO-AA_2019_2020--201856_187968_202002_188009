@@ -4,7 +4,7 @@
 char *computeCountingOnFile(int fileDescriptor, int idFile, int offset, int end){
   int *ASCII = (int *)calloc(ALPHABET_SIZE, sizeof(int));
   char carattere[1];
-  char *datiParziali = (char *)malloc(PIPE_BUF + 1 * sizeof(char*));
+  char *datiParziali = (char *)calloc(PIPE_BUF + 1,  sizeof(char*));
 
   errorSysCall(lseek(fileDescriptor,offset,SEEK_SET));
   int counterChar = 0;
@@ -63,4 +63,18 @@ int computeEnd(int parte, int denominatore, int size){
 //Calcola la dimensione del file
 int computeSize(int fileDescriptor){
 	 return errorSysCall(lseek(fileDescriptor,0,SEEK_END));
+}
+
+void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeRead, int *pipeWrite){
+	(*parte) = atoi(argv[1]);
+  (*denominatore) = atoi(argv[2]);
+  (*pipeRead) = atoi(argv[3]);
+  (*pipeWrite) = atoi(argv[4]);
+}
+
+int openFile(char *name){
+	int last = strlen(name) - 1;
+	char temp[PATH_MAX + 1] = "";
+	strncpy(temp, name, last);
+	return errorOpenInQ(open(temp, O_RDONLY), temp);
 }

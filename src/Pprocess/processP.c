@@ -15,8 +15,8 @@ int main(int argc, char *argv[]){
 	
 	//Creo le chiamate per le Q
 	char ***argvQ = create_ArgvQ(m, pipe_for_Q, files, nfiles);
-	
-	printArgumentMatrix(argvQ, m);
+		
+	printArgumentMatrix(argvQ, m);	
 	//Creo le Q
 	int *pids_Q = startAllQ(pipe_for_Q, argvQ, m);
 

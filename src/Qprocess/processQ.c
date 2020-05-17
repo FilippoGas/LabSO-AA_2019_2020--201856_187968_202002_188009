@@ -1,36 +1,28 @@
 #include "processQfunc.h"
 int main(int argc, char *argv[]){
-  int parte = atoi(argv[1]);
-  int denominatore = atoi(argv[2]);
-  int pipeRead = atoi(argv[3]);
-  int pipeWrite = atoi(argv[4]);
-  int fileDescriptors[argc - ARGS_Q_START_FILE_OFFSET];
-  int sizes[argc - ARGS_Q_START_FILE_OFFSET];
+  int parte, denominatore, pipeRead, pipeWrite;
+  readInput(argc, argv, &parte, &denominatore, &pipeRead, &pipeWrite);
+  close(pipeRead);
+
   //Salva i file descriptor in un array
   int i=0;
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
-    char test[PATH_MAX + 1];
-    strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
-    //fileDescriptors[i] = open(test,O_RDONLY);
-    fileDescriptors[i] = errorOpenInQ(open(test,O_RDONLY),test);
-    sizes[i] = computeSize(fileDescriptors[i]);
-    i++;
-  }
+    int fd  = openFile(argv[i + ARGS_Q_START_FILE_OFFSET]);
+    int size = computeSize(fd);
   //Per ogni file vado a calcolarmi l'offset, l'end e la stringa formato che andrò a scrivere nella pipe
-  i = 0;
-  errorSysCall(close(pipeRead));
-  while(i<argc - ARGS_Q_START_FILE_OFFSET){
-    int offset = computeOffset(parte,denominatore,sizes[i]);
-    int end = computeEnd(parte,denominatore,sizes[i]);
-    char *format = computeCountingOnFile(fileDescriptors[i],i + ARGS_P_START_FILE_OFFSET,offset,end);	//mi serve indice
+    int offset = computeOffset(parte,denominatore,size);
+    int end = computeEnd(parte,denominatore,size);
+    char *format = computeCountingOnFile(fd,i + ARGS_P_START_FILE_OFFSET,offset,end);	//mi serve indice
+    //printf("Scrivo nella pipe: %s\n", format);
     //Scrivo nella pipe la stringa formato
     errorSysCall(write(pipeWrite,format, PIPE_BUF));
     //Stampo a video la stringa formato
     //printFormatString(format);
-    errorSysCall(close(fileDescriptors[i]));
+   errorSysCall(close(fd));
+    free(format);
     i++;
   }
   errorSysCall(close(pipeWrite));
-
+	//FREE INPUT DATA
   return 0;
 }
