@@ -11,42 +11,25 @@ int main(int argc, char *argv[]){
 	close(pipe_read);
 	
 
-	int pQ[2];
-	pipe2(pQ, __O_DIRECT);
-	//Creo la chiamata per le Q
-	char **argvQ = create_ArgvQ(m, pQ, files, nfiles);
-	int i = 0;
+	int **pipe_for_Q = initPipes(m);
+	
+	//Creo le chiamate per le Q
+	char ***argvQ = create_ArgvQ(m, pipe_for_Q, files, nfiles);
+	
+	printArgumentMatrix(argvQ, m);
 	//Creo le Q
-	while(i < m){
-		sprintf(argvQ[1],"%d",i);
-		int f=createChildren(argvQ);
-		if(f>0){
-			i++;
-		}
-	}
+	int *pids_Q = startAllQ(pipe_for_Q, argvQ, m);
 
-	freeStringArray(argvQ, nfiles + ARGS_Q_START_FILE_OFFSET + 1);
-
-	i=0;
-	while(i<m){
-		char message[PIPE_BUF];
-		read(pQ[READ],message,PIPE_BUF);
-		if(exitMessage(message)){
-			i++;
-		}
-		else{
-			//Rimando ad A
-			char *msgtoA=writeA(message);
-			int try=write(pipe_write,msgtoA,PIPE_BUF);
-			if(try<0){
-				//SYSTEMCALL!!!
-				perror("Errore di scrittura ad A:");
-			}
-			free(msgtoA);
-		}
-
-	}
+	//freeStringArray(argvQ, nfiles + ARGS_Q_START_FILE_OFFSET + 1);
+	
+	readFromPipes(pipe_for_Q, m, pipe_write);
+	
 	//Chiudo P
+	int i = 0;
+	while(i < m){
+		close(pipe_for_Q[i][READ]);
+		i++;
+	}
 	close(pipe_write);
 	wait(NULL);
 	return 0;

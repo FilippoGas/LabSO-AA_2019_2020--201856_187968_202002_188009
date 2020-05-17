@@ -6,14 +6,12 @@ int main(int argc, char *argv[]){
   int pipeWrite = atoi(argv[4]);
   int fileDescriptors[argc - ARGS_Q_START_FILE_OFFSET];
   int sizes[argc - ARGS_Q_START_FILE_OFFSET];
-
   //Salva i file descriptor in un array
   int i=0;
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
     char test[PATH_MAX + 1];
     strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
-    fileDescriptors[i] = open(test,O_RDONLY);
-    printf("\ntest: %sx\n",test);
+    //fileDescriptors[i] = open(test,O_RDONLY);
     fileDescriptors[i] = errorOpenInQ(open(test,O_RDONLY),test);
     sizes[i] = computeSize(fileDescriptors[i]);
     i++;
@@ -32,9 +30,6 @@ int main(int argc, char *argv[]){
     errorSysCall(close(fileDescriptors[i]));
     i++;
   }
-  char endm[PIPE_BUF];
-  sprintf(endm, "%s", END);
-  errorSysCall(write(pipeWrite, endm, PIPE_BUF));
   errorSysCall(close(pipeWrite));
 
   return 0;

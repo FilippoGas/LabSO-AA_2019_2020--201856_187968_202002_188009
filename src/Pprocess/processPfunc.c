@@ -30,67 +30,77 @@ int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, c
 
 /*Creo Q.
  */
-int createChildren(char **argvQ){
-        int f=fork();
-        while(f<0){
-                f=fork();
-        }
-        if(f==0){
-		int try=execv(argvQ[0],argvQ);
-    		if(try<0){
-			//SYSTEMCALL!!!
-			perror("Errore di chiamata Q :");
-			exit(-1);
+int createChildren(int *pid, char **argvQ, int **pipe, int m, int i){
+        int res = 0;
+	(*pid) = fork();
+
+        if((*pid) == 0){
+		int j = 0;
+		while(j < m){
+			if(j != i){
+				close(pipe[j][READ]);
+				close(pipe[j][WRITE]);
+			}
+			j++;
 		}
+		res = execvp(argvQ[0], argvQ);
 	    }
-	return f;
+	return res;
 }
 
-
-/*Calcola le cifre dell'intero n.
- */
-long lungnum(int n){
-        int i=1;
-        while(n/10!=0){
-        n=n/10;
-        i++;
-        }
-        return i;
+int *startAllQ(int **pipe, char ***argvQ, int m){
+	int i = 0;
+	int *pids = (int *)malloc(m * sizeof(int));
+	while(i < m){
+		if(createChildren(pids + i, argvQ[i], pipe, m, i)){
+			perror("Error on creation of Q:");
+		}
+		close(pipe[i][WRITE]);
+		i++;
+	}
+	return pids;
 }
+
 
 
 /* Crea la chiamata di Q.
  * FORMATO CHIAMATA Q:
  * ./Q nQ m pipe_read pipe_write file0 file1 . . . filek NULL
  */
-char **create_ArgvQ(int m, int pipe[2], char **files, int nfiles){
-        char **ret;
-	ret=calloc(nfiles + ARGS_Q_START_FILE_OFFSET + 1,sizeof(char *));
-	ret[0]=(char *)malloc(strlen(QNAME)+1);
-        sprintf(ret[0], "%s", QNAME);
+char ***create_ArgvQ(int m, int **pipe, char **files, int nfiles){
+        char ***ret = (char ***)malloc(m * sizeof(char **));
+	int i = 0;
+	while(i < m){
+		ret[i] = calloc(nfiles + ARGS_Q_START_FILE_OFFSET + 1,sizeof(char *));
+		ret[i][0]=(char *)calloc((strlen(QNAME) + 1), sizeof(char));
+        	sprintf(ret[i][0], "%s", QNAME);
+	
+        	ret[i][1]=(char *)calloc((INTMAXCHAR + 1), sizeof(char));
+		sprintf(ret[i][1], "%d", i);
 
-        ret[1]=(char *)malloc((INTMAXCHAR+1) * sizeof(char));
+        	ret[i][2]=(char *)calloc((INTMAXCHAR + 1), sizeof(char));
+        	sprintf(ret[i][2], "%d", m);
+	
+        	ret[i][3]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
+        	sprintf(ret[i][3], "%d", pipe[i][READ]);
+	
+        	ret[i][4]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
+        	sprintf(ret[i][4], "%d", pipe[i][WRITE]);
 
-        ret[2]=(char *)malloc(lungnum(m)+1);
-        sprintf(ret[2], "%d", m);
-
-        ret[3]=(char *)malloc(lungnum(pipe[READ])+1);
-        sprintf(ret[3], "%d", pipe[READ]);
-
-        ret[4]=(char *)malloc(lungnum(pipe[WRITE])+1);
-        sprintf(ret[4], "%d", pipe[WRITE]);
-        int i=0;
-	while(i<nfiles){
-                ret[i+ ARGS_Q_START_FILE_OFFSET]=(char *)malloc(strlen(files[i])+1);
-                sprintf(ret[i+5], "%s ", files[i]);
+        	int j=0;
+		while(j < nfiles){
+        	        ret[i][j + ARGS_Q_START_FILE_OFFSET]=(char *)malloc(strlen(files[j]) + 1);
+        	        sprintf(ret[i][j + 5], "%s ", files[j]);
+			j++;
+		}
+		//ret[j+ARGS_Q_START_FILE_OFFSET]=NULL;
 		i++;
 	}
-	ret[i+ARGS_Q_START_FILE_OFFSET]=NULL;
 	return ret;
 }
 
 
-/*Dealloca un arrey di stringhe.
+/*Dealloca un array di stringhe.
  */
 void freeStringArray(char **in, int dim){
 	int i = 0;
@@ -106,15 +116,48 @@ void freeStringArray(char **in, int dim){
  * FORMATO DEL MESSAGGIO:
  * PID nfile carattere0 carattere1 . . . carattere255 \n
  */
-char *writeA(char *mess){
-   	char* ret = malloc(PIPE_BUF * sizeof(char));
+void writeA(char *mess, int fd){
+   	char* ret = malloc((PIPE_BUF + 1) * sizeof(char));
         sprintf(ret, "%d %s", getpid(), mess);
-        return ret;
+	write(fd, ret, PIPE_BUF);
 }
 
 
-/*Riconosce se la stringa in lettura è un messaggio di END.
- */
-int exitMessage(char *mess){
-	return !strcmp(mess,END);
+
+int **initPipes(int m){
+	int **res = (int **)malloc(m * sizeof(int *));
+	int i = 0;
+	while(i < m){
+		res[i] = (int *)malloc(2 * sizeof(int));
+		pipe2(res[i], __O_DIRECT | O_NONBLOCK);
+		i++;
+	}
+	return res;
 }
+
+void freeIntMatrix(int **in, int n){
+	int i = 0;
+	while(i < n){
+		free(in[i]);
+		i++;
+	}
+	free(in);
+}
+
+void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A){
+	int byteRead = -1;
+	while(byteRead != -1){
+		int i = 0;
+		byteRead = 0;
+		while(i < m){
+			char message[PIPE_BUF];
+			int temp = read(pipe_for_Q[i][READ], message, PIPE_BUF);
+			if(temp > 0){
+				writeA(message, pipe_to_A);
+			}
+			byteRead += temp;
+			i++;
+		}
+	}
+}
+
