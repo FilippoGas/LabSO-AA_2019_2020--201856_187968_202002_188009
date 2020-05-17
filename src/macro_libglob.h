@@ -29,7 +29,7 @@
 #define COMMAND 0	//Code of argument as command
 
 #define NOTCOMMAND 1
-	
+
 #define FILES 0      	//Code for a found file in input
 
 #define DIRECTORY 1	//Code for a found directory in input
@@ -59,3 +59,5 @@
 #define ARGS_Q_START_FILE_OFFSET 5			//INDICE DI INIZIO FILE IN Q
 
 int errorSysCall(int res);
+
+int errorOpenInQ(int res, char path[]);
