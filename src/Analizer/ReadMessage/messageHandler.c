@@ -66,7 +66,29 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 	}
 }
 
-
+int **readFromPipes(int **pipe_for_P, int *p_pid_array, char ***p_argv_matrix, int n, char **files, int nfiles){
+	int **data = initResMatrix(nfiles);
+	int byteRead = -1;
+	while(byteRead != 0){
+		int i = 0;
+		byteRead = 0;
+		while(i < n){
+			char message[PIPE_BUF];
+			int temp = read(pipe_for_P[i][READ], message, PIPE_BUF);
+			if(temp > 0){
+				readMessage(message, data, p_pid_array, n, p_argv_matrix, files, nfiles);
+				int dfifo = openFIFO();
+				if(dfifo != -1){
+					writeToReport(data, files, nfiles, dfifo);
+					close(dfifo);
+				}
+			}
+			byteRead += temp;
+			i++;
+		}	
+	}
+	return data;
+}
 
 
 

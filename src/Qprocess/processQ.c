@@ -12,7 +12,6 @@ int main(int argc, char *argv[]){
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
     char test[PATH_MAX + 1];
     strncpy(test, argv[i + ARGS_Q_START_FILE_OFFSET], strlen(argv[i + ARGS_Q_START_FILE_OFFSET]) - 1); //NON SO COSA METTE ALLA FINE
-    printf("\ntest: %sx\n",test);
     fileDescriptors[i] = open(test,O_RDONLY);
     sizes[i] = computeSize(fileDescriptors[i]);
     i++;

@@ -6,11 +6,10 @@ int main(int argc, char *argv[]){
 	char **files;
 	//./p m pipe_read pipe_write files
 
-
 	//Leggo l'input
 	int nfiles = readInput(argc, argv, &m, &pipe_read, &pipe_write, &files);
 	close(pipe_read);
-
+	
 
 	int pQ[2];
 	pipe2(pQ, __O_DIRECT);
@@ -32,7 +31,6 @@ int main(int argc, char *argv[]){
 	while(i<m){
 		char message[PIPE_BUF];
 		read(pQ[READ],message,PIPE_BUF);
-
 		if(exitMessage(message)){
 			i++;
 		}
@@ -49,10 +47,7 @@ int main(int argc, char *argv[]){
 
 	}
 	//Chiudo P
-	char endm[PIPE_BUF];
-	sprintf(endm, "%s", END);
-	write(pipe_write, endm, PIPE_BUF);
-	//IDEA: uso una KILL??
+	close(pipe_write);
 	wait(NULL);
 	return 0;
 }

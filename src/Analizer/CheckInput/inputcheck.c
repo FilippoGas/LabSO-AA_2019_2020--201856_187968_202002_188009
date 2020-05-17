@@ -362,4 +362,18 @@ void freeIdfileArray(struct idfile **in, int n){
 	}
 	free(in);
 }
+int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive){
+	int nfiles, ndirs, ninput;
+	char **input, **dir_list, **file_list;
+	readInput(argc, argv, &input, &ninput, n, m, recursive);
 
+	validateInput(input, ninput, &file_list, &dir_list, &nfiles, &ndirs);
+	int dir_content_size;
+	char **dir_content = getContentOfDirs(dir_list, ndirs, *recursive, &dir_content_size);
+	freeStringArray(dir_list, ndirs);
+	int res;
+	(*def_file_list) = getAllFullPath(file_list, nfiles, dir_content, dir_content_size, &res);
+	freeStringArray(file_list, nfiles);
+	freeStringArray(dir_content, dir_content_size);
+	return res;
+}

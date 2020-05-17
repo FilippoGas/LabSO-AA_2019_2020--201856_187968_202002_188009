@@ -130,3 +130,5 @@ void freeIdFile(struct idfile *in);
 /* Free a dynamically allocated arrau of struct idfile
  */
 void freeIdfileArray(struct idfile **in, int n);
+
+int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive);
