@@ -58,6 +58,20 @@
 
 #define ARGS_Q_START_FILE_OFFSET 5			//INDICE DI INIZIO FILE IN Q
 
-int errorSysCall(int res);
 
-int errorOpenInQ(int res, char path[]);
+//COMADI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
+
+#define AGGIUNTA "\\add "
+
+#define RIMOZIONE "\\remove "
+
+#define CAMBIAM "\\changem "
+
+#define CAMBIAN "\\changen "
+
+
+
+
+
+
+int errorSysCall(int res);
