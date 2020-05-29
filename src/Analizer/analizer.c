@@ -16,38 +16,45 @@ void printIdfileArray(struct idfile **in, int size){
 
 int main(int argc, char *argv[]){
 
-	int m = 3, n = 4, recursive, ret = 0;
+	int m = 3, n = 4, recursive, ret = 0, pipe_to_main[2];
 	char **def_file_list;
 	//Recupero input
-	int def_file_list_size = manageInput(&def_file_list, argc, argv, &m, &n, &recursive);
+	int def_file_list_size = manageInput(&def_file_list, argc, argv, &m, &n, &recursive, pipe_to_main);
+	if(pipe_to_main[0] != -1)
+		close(pipe_to_main[WRITE]);
 	// apro una pipe per P
 	int **pipe_for_P = initPipeMatrix(n);
+	int **pipe_for_control_P = NULL;
+	if(pipe_to_main[READ] != -1 && pipe_to_main[WRITE] != -1)
+		pipe_for_control_P = initPipeMatrix(n);
+	else{
+		pipe_for_control_P = initEmptyPipeMatrix(n);
+	}	
 	
 	// Creo la matrice con gli argomenti per P
-	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P);
+	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P, pipe_for_control_P);
 	printf("QUESTA E` LA TABELLA DEGLI ARGOMENTI DI P:\n");
 	printArgumentMatrix(p_argv_matrix, n);
 	
-	printf("\n\n\n\n\n\nORA GENERO I PROCESSI P e ASPETTO CHE MI INVIINO OGNUNO M MESSAGGI\n\n\n");
+	//printf("\n\n\n\n\n\nORA GENERO I PROCESSI P e ASPETTO CHE MI INVIINO OGNUNO M MESSAGGI\n\n\n");
 	
 	//genero n processi P, chiudendo per ognuno le pipe che non gli appartengono
-	int *p_pid_array = startAllP(n, pipe_for_P, p_argv_matrix);
+	int *p_pid_array = startAllP(n, pipe_for_P, pipe_for_control_P, p_argv_matrix);
 	
 
 	int nP = 0;
-	printf("A INIZIA A LEGGERE\n");
-	
-	int **data = readFromPipes(pipe_for_P, p_pid_array, p_argv_matrix, n, def_file_list, def_file_list_size);
-
+	printf("A INIZIA A LEGGERE\n");	
+	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, def_file_list, def_file_list_size, pipe_to_main[READ]);
+	printf("A ha finito di leggere\n");
 	free(p_pid_array);
+	closePipeMatrix(pipe_for_P, n, READ);
+	closePipeMatrix(pipe_for_control_P, n, WRITE);
+	freePipeMatrix(pipe_for_control_P, n);
+	freePipeMatrix(pipe_for_P, n);
 	printf("A HA FINITO DI LEGGERE\n");
 	wait(NULL); 	//? NON SO SE SERVA
 	unlink(FIFO_NAME);
 	int i = 0; 
-	while(i < n){
-		close(pipe_for_P[i][READ]);
-		i++;
-	}
 	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
 	writeToReport(data, def_file_list, def_file_list_size, fd);
 	close(fd);

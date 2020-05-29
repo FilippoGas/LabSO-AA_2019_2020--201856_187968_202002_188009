@@ -66,10 +66,13 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 	}
 }
 
-int **readFromPipes(int **pipe_for_P, int *p_pid_array, char ***p_argv_matrix, int n, char **files, int nfiles){
+int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char ***p_argv_matrix, int n, char **files, int nfiles, int pipe_from_M){
 	int **data = initResMatrix(nfiles);
 	int byteRead = -1;
 	while(byteRead != 0){
+		if(pipe_from_M == -1){
+			execChangeOnTheFly(pipe_from_M, n);
+		}
 		int i = 0;
 		byteRead = 0;
 		while(i < n){

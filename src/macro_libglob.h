@@ -26,6 +26,8 @@
 
 #define SETREC 3	//Code for setting recursive search in directories
 
+#define PIPEFORM 4
+
 #define COMMAND 0	//Code of argument as command
 
 #define NOTCOMMAND 1
@@ -54,9 +56,9 @@
 
 #define COLS 10						//COLONNE STAMPATE NELLA TABELLA DEI CARATTERI
 
-#define ARGS_P_START_FILE_OFFSET 4			//INDICE DI INIZIO FILE IN P
+#define ARGS_P_START_FILE_OFFSET 6			//INDICE DI INIZIO FILE IN P
 
-#define ARGS_Q_START_FILE_OFFSET 5			//INDICE DI INIZIO FILE IN Q
+#define ARGS_Q_START_FILE_OFFSET 7			//INDICE DI INIZIO FILE IN Q
 
 
 //COMADI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
