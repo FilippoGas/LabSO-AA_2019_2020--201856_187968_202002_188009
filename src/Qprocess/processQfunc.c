@@ -43,6 +43,15 @@ void printFormatString(char **format){
   }
 }
 
+//Controlla se le statistiche di quel file sono già state scritte nella pipe
+//A idFile va passata i-ARGS_P_START_FILE_OFFSET
+int isWrittenFile(int *writtenFile,int idFile){
+  if(writtenFile[idFile]==1){
+    return 1;
+  }
+  return 0;
+}
+
 //Calcola l'offset
 int computeOffset(int parte, int denominatore, int size){
 	int offset = ((double)(parte)/((double)denominatore)*size);
