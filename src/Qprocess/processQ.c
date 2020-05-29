@@ -8,7 +8,8 @@ int main(int argc, char *argv[]){
   //Salva i file descriptor in un array
   int i=0;
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
-    int fd  = openFile(argv[i + ARGS_Q_START_FILE_OFFSET]);
+    	//CONTROLLER SULLA PIPE DEI MESSAGGI DA P
+	int fd  = openFile(argv[i + ARGS_Q_START_FILE_OFFSET]);
     int size = computeSize(fd);
   //Per ogni file vado a calcolarmi l'offset, l'end e la stringa formato che andrò a scrivere nella pipe
     int offset = computeOffset(parte,denominatore,size);
