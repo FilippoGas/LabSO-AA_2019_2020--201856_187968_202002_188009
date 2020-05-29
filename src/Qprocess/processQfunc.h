@@ -16,3 +16,5 @@ int computeSize(int fileDescriptor);
 int openFile(char *name);
 
 void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeRead, int *pipeWrite);
+
+int isWrittenFile(int *writtenFile,int idFile);
