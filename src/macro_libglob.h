@@ -61,17 +61,17 @@
 #define ARGS_Q_START_FILE_OFFSET 7			//INDICE DI INIZIO FILE IN Q
 
 
-//COMADI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
+//COMANDI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
 
-#define AGGIUNTA "\\add "
+#define MOD_ADD "\\add"
 
-#define RIMOZIONE "\\remove "
+#define MOD_REMOVE "\\remove"
 
-#define CAMBIAM "\\changem "
+#define MOD_CHANGE_M "\\changem"
 
-#define CAMBIAN "\\changen "
+#define MOD_CHANGE_N "\\changen"
 
-
+#define MOD_END "#"
 
 
 
