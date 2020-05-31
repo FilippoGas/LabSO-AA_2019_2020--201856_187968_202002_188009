@@ -45,8 +45,8 @@ void printFormatString(char **format){
 
 //Controlla se le statistiche di quel file sono già state scritte nella pipe
 //A idFile va passata i-ARGS_P_START_FILE_OFFSET
-int isWrittenFile(int *writtenFile,int idFile){
-  if(writtenFile[idFile]==1){
+int isWrittenFile(int *writtenFiles,int idFile){
+  if(writtenFiles[idFile]==1){
     return 1;
   }
   return 0;
@@ -74,16 +74,55 @@ int computeSize(int fileDescriptor){
 	 return errorSysCall(lseek(fileDescriptor,0,SEEK_END));
 }
 
-void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeRead, int *pipeWrite){
+void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeRead, int *pipeWrite, int *pipeReadOnTheFly, int *pipeWriteOnTheFly){
 	(*parte) = atoi(argv[1]);
   (*denominatore) = atoi(argv[2]);
   (*pipeRead) = atoi(argv[3]);
   (*pipeWrite) = atoi(argv[4]);
+  (*pipeReadOnTheFly) = atoi(argv[5]);
+  (*pipeWriteOnTheFly) = atoi(argv[6]);
 }
 
 int openFile(char *name){
-	int last = strlen(name) - 1;
+	int last = strlen(name) ;
 	char temp[PATH_MAX + 1] = "";
 	strncpy(temp, name, last);
 	return errorOpenInQ(open(temp, O_RDONLY), temp);
+}
+
+void addHandler(int pipeReadOnTheFly, int pipeWrite, int counterFilesOnTheFly, int parte, int denominatore, char *message){
+  int byteRead = -1;
+  do{
+    byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
+    if(byteRead>0 && strcmp(message, MOD_END)){
+      int fd = openFile(message);
+      int size = computeSize(fd);
+      int offset = computeOffset(parte,denominatore,size);
+      int end = computeEnd(parte,denominatore,size);
+      char *format = computeCountingOnFile(fd,counterFilesOnTheFly,offset,end);
+      errorSysCall(write(pipeWrite,format, PIPE_BUF));
+    }
+  }while(strcmp(message,MOD_END) && byteRead!=0);
+}
+
+void removeHandler(int pipeReadOnTheFly, int *removedFiles, int *writtenFiles, char *message, int argc, char *argv[]){
+  int byteRead = -1;
+  do{
+    byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
+    if(byteRead>0 && strcmp(message, MOD_END)){
+      if(!isWrittenFile(writtenFiles,idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET)){
+        removedFiles[idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET] = 1;
+      }
+    }
+  }while(strcmp(message,MOD_END) && byteRead!=0);
+}
+
+int idFile(char *file, int argc, char *argv[]){
+  int i=ARGS_Q_START_FILE_OFFSET;
+  while(i<argc){
+    if(!strcmp(argv[i],file)){
+      return i-1;
+    }
+    i++;
+  }
 }
