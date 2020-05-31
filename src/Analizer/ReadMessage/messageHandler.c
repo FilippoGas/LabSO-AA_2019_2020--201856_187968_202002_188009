@@ -76,7 +76,7 @@ int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char
 	int *finished = (int *)calloc(n, sizeof(int));
 	int *n_files_for_P = getNFilesForP(p_argv_matrix, n);
 	while(byteRead != 0){
-		if(pipe_from_M == -1){
+		if(pipe_from_M != -1){
 			execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data);
 		}
 		int i = 0;

@@ -27,9 +27,12 @@ int main(int argc, char *argv[]){
 	if(pipe_to_main[READ] != -1 && pipe_to_main[WRITE] != -1){
 		close(pipe_to_main[READ]);
 		int i = 0;
+		char message[PIPE_BUF + 1];
+		sprintf(message, "%d", def_file_list_size);
+		write(pipe_to_main[WRITE], message, strlen(message));
 		while(i < def_file_list_size){
 			char message[PATH_MAX + 2];
-			sprintf(message, "%s\n", def_file_list[i]);
+			sprintf(message, "%s", def_file_list[i]);
 			write(pipe_to_main[WRITE], message, strlen(message));
 		}
 		close(pipe_to_main[WRITE]);
