@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
 
 	int nP = 0;
 	printf("A INIZIA A LEGGERE\n");	
-	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, def_file_list, def_file_list_size, pipe_from_main[READ]);
+	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, &def_file_list, &def_file_list_size, pipe_from_main[READ], m);
 	printf("A ha finito di leggere\n");
 	free(p_pid_array);
 	closePipeMatrix(pipe_for_P, n, READ);
