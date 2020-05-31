@@ -41,11 +41,11 @@ void execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, ch
 		char **mods;
 		int realsize;
 		int nmods = getModContent(pipe_from_M, &mods, &realsize);
-		if(!strcmp(mod_type, MOD_ADD)){
+		if(!strcmp(mod_type, MOD_REMOVE)){
 			printf("DEVO AGGIUNGERE FILE\n");
 			removeFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, finished, n, m);
 		}
-		else if(!strcmp(mod_type, MOD_REMOVE)){
+		else if(!strcmp(mod_type, MOD_ADD)){
 			printf("DEVO TOGLIERE FILE\n");
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_M)){
