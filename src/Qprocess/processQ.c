@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
     //CONTROLLER SULLA PIPE DEI MESSAGGI DA P
     int byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
-    if(byteRead!=0){
+    if(byteRead>0){
       if(!strcmp(message,MOD_ADD)){
         addHandler(pipeReadOnTheFly,pipeWrite,counterFilesOnTheFly,parte,denominatore,message);
       }
