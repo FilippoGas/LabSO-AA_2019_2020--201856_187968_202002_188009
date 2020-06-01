@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
 			char message[PATH_MAX + 2];
 			sprintf(message, "%s", def_file_list[i]);
 			write(pipe_to_main[WRITE], message, strlen(message));
+			i++;
 		}
 		close(pipe_to_main[WRITE]);
 	}
@@ -57,22 +58,39 @@ int main(int argc, char *argv[]){
 	//genero n processi P, chiudendo per ognuno le pipe che non gli appartengono
 	int *p_pid_array = startAllP(n, pipe_for_P, pipe_for_control_P, p_argv_matrix);
 	
-
+	
 	int nP = 0;
 	printf("A INIZIA A LEGGERE\n");	
 	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, &def_file_list, &def_file_list_size, pipe_from_main[READ], m);
 	printf("A ha finito di leggere\n");
+	
+	unlink(FIFO_NAME);
+	int i = 0; 
+	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
+	writeToReport(data, def_file_list, def_file_list_size, fd);
+	
+	if(pipe_from_main[READ] != -1 && pipe_from_main[WRITE] != -1){
+		char **file_with_missing_data;
+		int missing_data_size = getFileMissingData(def_file_list, def_file_list_size, data, &file_with_missing_data);
+		char ***new_p_argv_matrix = createArgsForP(n, m, file_with_missing_data, missing_data_size, pipe_for_P, pipe_for_control_P);
+		int *new_pid_array = startAllP(n, pipe_for_P, pipe_for_control_P, new_p_argv_matrix);
+		int **new_data = readFromPipes(pipe_for_P, pipe_for_control_P, new_pid_array, new_p_argv_matrix, n, &file_with_missing_data, &missing_data_size, pipe_from_main[READ], m);
+		writeToReport(new_data, file_with_missing_data, missing_data_size, fd);
+		
+		freeStringArray(file_with_missing_data, missing_data_size);
+		freeArgsForP(new_p_argv_matrix, n);
+		free(new_pid_array);
+	}
+
+	
+	
+	
 	free(p_pid_array);
 	closePipeMatrix(pipe_for_P, n, READ);
 	closePipeMatrix(pipe_for_control_P, n, WRITE);
 	freePipeMatrix(pipe_for_control_P, n);
 	freePipeMatrix(pipe_for_P, n);
 	printf("A HA FINITO DI LEGGERE\n");
-	wait(NULL); 	//? NON SO SE SERVA
-	unlink(FIFO_NAME);
-	int i = 0; 
-	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
-	writeToReport(data, def_file_list, def_file_list_size, fd);
 	close(fd);
 
 

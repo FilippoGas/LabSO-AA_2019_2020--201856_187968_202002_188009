@@ -166,11 +166,11 @@ void freeIntMatrix(int **in, int n){
 	free(in);
 }
 
-void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A){
+void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A, int **pipe_control_for_Q){
 	int byteRead = -1;
 	while(byteRead != 0){
 		if(pipe_from_A != -1){
-			execChangeOnTheFly(pipe_from_A, m);
+			execChangeOnTheFly(pipe_from_A, m, pipe_control_for_Q);
 		}
 		int i = 0;
 		byteRead = 0;

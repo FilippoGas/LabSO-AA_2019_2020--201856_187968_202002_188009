@@ -86,7 +86,7 @@ void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeR
 int openFile(char *name){
 	int last = strlen(name) ;
 	char temp[PATH_MAX + 1] = "";
-	strncpy(temp, name, last);
+	strncpy(temp, name, last - 1);
 	return errorOpenInQ(open(temp, O_RDONLY), temp);
 }
 

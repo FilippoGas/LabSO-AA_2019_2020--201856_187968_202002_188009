@@ -29,5 +29,5 @@ int **initPipes(int m);
 int **initEmptyPipes(int m);
 
 void freeIntMatrix(int **in, int n);
-void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A);
+void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A, int **pipe_control_for_Q);
 

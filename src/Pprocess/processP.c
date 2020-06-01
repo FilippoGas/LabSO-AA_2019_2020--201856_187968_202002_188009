@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 
 	//freeStringArray(argvQ, nfiles + ARGS_Q_START_FILE_OFFSET + 1);
 	
-	readFromPipes(pipe_for_Q, m, pipe_write, pipe_control[READ]);
+	readFromPipes(pipe_for_Q, m, pipe_write, pipe_control[READ], pipe_control_for_Q);
 	
 	//Chiudo P
 	int i = 0;
