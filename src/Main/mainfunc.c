@@ -1,6 +1,5 @@
 #include"mainfunc.h"
 
-#define ANAME "./TestArea/anal"
 #define NCHIAMATECOST 12
 
 
@@ -56,20 +55,20 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 	ret[0] = ANAME;
 	//N
 	ret[1] = malloc(4);
-	sprintf(ret[1],"-n ");
+	sprintf(ret[1],"-n");
 	ret[2] = malloc(cifre(n)+1);
 	sprintf(ret[2],"%d",n);
 
 	//M
 	ret[3] = malloc(4);
-	sprintf(ret[3], "-m ");
+	sprintf(ret[3], "-m");
 	ret[4] = malloc(cifre(m)+1);
 	sprintf(ret[4], "%d", m);
 	//FILE e CARTELLE
 	i = 0;
 	for( i=0; i < nvari; i++ ){
 		if( elimin[i] == 0 ){
-		ret[i + 5] = malloc(strlen(vari[i]));
+		ret[i + 5] = calloc(strlen(vari[i]) + 1, sizeof(char));
 		sprintf(ret[i + 5], "%s",vari[i]);
 		}
 		else{
@@ -77,18 +76,20 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 			ret[i + 5][0] = '\0';
 		}
 	}
+	i += 5;
 	//RECU
 	if(rec == 1){
-		ret[lung - 7] = malloc(4);
-		sprintf(ret[lung - 7],"-r ");
+		ret[i] = malloc(4);
+		sprintf(ret[i],"-r");
+		i++;
 	}
-	ret[lung - 6] = malloc(3);
-	sprintf(ret[lung - 6],"-p ");
-	ret[lung - 5] = intToChar( pipe_to_a[READ] );
-	ret[lung - 4] = intToChar( pipe_to_a[WRITE] );
-	ret[lung - 3] = intToChar( pipe_from_a[READ] );
-	ret[lung - 2] = intToChar( pipe_from_a[WRITE] );
-	ret[lung - 1] = malloc(1);
+	ret[i] = malloc(3);
+	sprintf(ret[i],"-p");
+	ret[i + 1] = intToChar( pipe_to_a[READ] );
+	ret[i + 2] = intToChar( pipe_to_a[WRITE] );
+	ret[i + 3] = intToChar( pipe_from_a[READ] );
+	ret[i + 4] = intToChar( pipe_from_a[WRITE] );
+	ret[i + 5] = NULL;
 
 	return ret;
 }
@@ -101,17 +102,18 @@ void eseguiAnal( char **execAnal,int lung){
 	}
 	if( f == 0 ){
 		execvp(execAnal[0], execAnal);
+		
 		fprintf( stderr, "Errore di esecuzione Analizer\n" );
 		exit(-1);
 	}
 	else {
 		//DEBUG
-		printf( "Ricordati il freeStringArray\n" );
+		printf( "Ricordati ilffreeStringArray\n" );
     int i=1;
-    for(i=1;i<lung;i++){
-        free(execAnal[i]);
-    }
-    free(execAnal);
+    //for(i=1;i<lung;i++){
+    //    free(execAnal[i]);
+    //}
+    //free(execAnal);
 	}
 }
 
@@ -209,7 +211,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin, int pipe_to_a[2], int pipe_from_a[2] ){
 	//Iniz. di dir e file nel caso in cui non sono stati allocati
 	if( (*nvari) < 1 ){
-		*vari = malloc(1);
+		(*vari) = (char **)malloc(1 * sizeof(char **));
 	}
 	int i=0, option = 1;
 	char *aggiunta, **execAnal;
@@ -217,7 +219,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 	while(option >= 0){
 		lung = (*nvari) + NCHIAMATECOST;
 		printOpAnal();
-
+		
 		char *input = getIn();
 		//Controllo se si vuole tornare al menu' principale
 		if( !(strcmp(input, "q") && strcmp(input, "b") && strcmp(input, "back")) ){
@@ -233,15 +235,20 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 		switch(option) {
 			case 1:
 				//creo l'exec e faccio partire l'analizer
-        pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
-        pipe2( pipe_from_a, __O_DIRECT );
+       				pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
+        			pipe2( pipe_from_a, __O_DIRECT );
 				execAnal = createExec( *n, *m, *vari, *nvari, *rec ,*elimin,pipe_to_a,pipe_from_a);
 				eseguiAnal( execAnal, lung );
-        close( pipe_to_a[READ] );
-        close( pipe_from_a[WRITE] );
-        freeStringArray( *vari,*nvari ); free( *elimin ); *nvari = 0;
-        leggo_input_pipe(vari,nvari,elimin,pipe_from_a);
-        break;
+        			close( pipe_to_a[READ] );
+        			close( pipe_from_a[WRITE] );
+				if((*vari) != NULL)
+					freeStringArray(*vari, *nvari); 
+				if((*elimin) != NULL)
+					free(*elimin); 
+				(*nvari) = 0;
+
+        			leggo_input_pipe(vari,nvari,elimin,pipe_from_a, pipe_to_a);
+				break;
 			case 2:
 				//Add dir o file
 				addFile(vari,nvari,elimin,pipe_to_a);
@@ -269,17 +276,16 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 
 			case 69:
 				//Visualizza linea di comando
-				printf("Faccio partire Analizer\n");
 				execAnal = createExec(*n, *m, *vari, *nvari, *rec, *elimin, pipe_to_a, pipe_from_a);
 				for( i = 0; i < lung; i++ ){
 					if( execAnal[i] != NULL )
 						printf( "%s ", execAnal[i] );
 				}
 				printf("\n");
-			  for(i=1;i<lung;i++){
-          free(execAnal[i]);
-        }
-        free(execAnal);
+			  	for(i=1;i<lung;i++){
+          				free(execAnal[i]);
+        			}
+        			free(execAnal);
 				break;
 			case -1:
 				exitAnal();
@@ -303,11 +309,13 @@ void startReporter(){
 	while( f < 0 )
 		f=fork();
 	if( f == 0 ){
-		char *questo = RNAME;
-		execvp(questo,&questo);
+		char *questo[] = {RNAME, NULL};
+		execvp(questo[0], questo);
+		perror("");
+		exit(-1);
 	}
 	int status;
-	wait(&status);
+	waitpid(f, &status, 000);
 }
 
 //Chiudo il programma
@@ -315,7 +323,7 @@ void ending(){
 	//TODO: Uccidere gli zombie rimanenti
 	printf("Grazie per aver utilizzato il programma di analisi.\n");
 	printf("E ricoedatevi sempre:\n");
-	printf("\x1b[33m\t\t Se volete qualita', il nostro nome e' GEFF!\n");
+	printf("\x1b[33m\t\t Se volete qualita', il nostro nome e' GEFF!\033[0m\n");
 	exit(0);
 }
 
@@ -330,17 +338,19 @@ char *getInputorExit(){
 }
 
 //Leggo i path dei file che mi vengono da A
-void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a[2] ){
-	char message[PIPE_BUF];
+void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a[2], int pipe_to_a[2]){
+	char message[PIPE_BUF + 1];
 	read( pipe_from_a[READ], message, PIPE_BUF );
 	(*ninput) = atoi(message);
 	(*input)=calloc( (*ninput), sizeof(char *) );
 	int i=0;
 	for(i=0; i < (*ninput); i++ ){
-		read( pipe_from_a[READ], message, PIPE_BUF );
-		(*input)[i] = calloc( strlen(message), sizeof(char) );
-		sprintf( (*input)[i], "%s", message );
+		char message1[PIPE_BUF + 1] = "";
+		read( pipe_from_a[READ], message1, PIPE_BUF );
+		(*input)[i] = calloc( strlen(message1) + 1, sizeof(char) );
+		sprintf( (*input)[i], "%s", message1);
 	}
+	write(pipe_to_a[WRITE], "1", 1);
 	*elimin = calloc( *ninput, sizeof(int) );
 }
 
@@ -357,24 +367,21 @@ void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2
 	for( i = 1; i < argc; i++ ){
 		dich[i] = argv[i];
 	}
-	dich[lung - 6] = malloc(3 * sizeof(char));
-	sprintf(dich[lung - 6],"-p");
-	dich[lung - 5] = intToChar( pipe_to_a[READ] );
-	dich[lung - 4] = intToChar( pipe_to_a[WRITE] );
-	dich[lung - 3] = intToChar( pipe_from_a[READ] );
-	dich[lung - 2] = intToChar( pipe_from_a[WRITE] );
-	dich[lung - 1] = NULL;
+	int first_dim = i;
+	dich[i] = malloc(3 * sizeof(char));
+	sprintf(dich[i],"-p");
+	dich[i + 1] = intToChar( pipe_to_a[READ] );
+	dich[i + 2] = intToChar( pipe_to_a[WRITE] );
+	dich[i + 3] = intToChar( pipe_from_a[READ] );
+	dich[i + 4] = intToChar( pipe_from_a[WRITE] );
+	dich[i + 5] = NULL;
 	eseguiAnal(dich,lung);
 	close(pipe_to_a[READ]);
 	close(pipe_from_a[WRITE]);
-	i=5;
-	for( i = 5; i > 0; i-- ){
-		free(dich[lung - i]);
+	for(; first_dim > i + 6; i++ ){
+		free(dich[first_dim]);
 	}
-	printf("pipe_to_a= %d %d\n",pipe_to_a[0],pipe_to_a[1] );
-	printf("pipe_form_a= %d %d\n",pipe_from_a[0],pipe_from_a[1] );
-
-	leggo_input_pipe(input,ninput,elimin,pipe_from_a);
+	leggo_input_pipe(input,ninput,elimin,pipe_from_a, pipe_to_a);
 }
 
 
@@ -483,12 +490,24 @@ void presetAnal( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimi
 		risp=getIn();
 		if(!(strcmp(risp,"S")&&strcmp(risp,"s"))){
 			(*n)=3;(*m)=4;
-			freeStringArray(*vari,*nvari);
-			(*vari) = 0;
+			if((*vari) != NULL)
+				freeStringArray(*vari,*nvari);
+			(*nvari) = 0;
 			(*rec) = 0;
-			free(*elimin);
+			if((*elimin) != NULL)
+				free(*elimin);
 			//TODO COMANDO DI BLOCCO A ???
 		}
 	}
 	free(risp);
+}
+
+void freeStringArray(char **stringarray, int n){
+	int i = 0;
+	while(i < n){
+		if(stringarray[i] != NULL)
+			free(stringarray[i]);
+		i++;
+	}
+	free(stringarray);
 }

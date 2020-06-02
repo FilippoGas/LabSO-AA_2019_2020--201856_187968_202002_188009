@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,10 @@
 #define PNAME "/TestArea/Executable/P.out"		//PLACEHOLDER
 
 #define QNAME "/TestArea/Executable/Q.out"		//PLACEHOLDER
+
+#define RNAME "/TestArea/Executable/Report.out"		//PLACEHOLDER
+
+#define ANAME "/TestArea/Executable/A.out"		//PLACEHOLDER
 
 #define INTMAXCHAR 13					//TO VERIFY
 

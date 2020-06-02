@@ -37,6 +37,8 @@ int main(int argc, char *argv[]){
 			i++;
 		}
 		close(pipe_to_main[WRITE]);
+		char dummy[1];
+		while((read(pipe_from_main[READ], dummy, 1)) < 0);
 	}
 
 	// apro una pipe per P
@@ -50,8 +52,8 @@ int main(int argc, char *argv[]){
 	
 	// Creo la matrice con gli argomenti per P
 	char ***p_argv_matrix = createArgsForP(n, m, def_file_list, def_file_list_size, pipe_for_P, pipe_for_control_P);
-	printf("QUESTA E` LA TABELLA DEGLI ARGOMENTI DI P:\n");
-	printArgumentMatrix(p_argv_matrix, n);
+	//printf("QUESTA E` LA TABELLA DEGLI ARGOMENTI DI P:\n");
+	//printArgumentMatrix(p_argv_matrix, n);
 	
 	//printf("\n\n\n\n\n\nORA GENERO I PROCESSI P e ASPETTO CHE MI INVIINO OGNUNO M MESSAGGI\n\n\n");
 	
@@ -60,9 +62,9 @@ int main(int argc, char *argv[]){
 	
 	
 	int nP = 0;
-	printf("A INIZIA A LEGGERE\n");	
+	//printf("A INIZIA A LEGGERE\n");	
 	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, &def_file_list, &def_file_list_size, pipe_from_main[READ], m);
-	printf("A ha finito di leggere\n");
+	//printf("A ha finito di leggere\n");
 	
 	unlink(FIFO_NAME);
 	int i = 0; 
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]){
 	closePipeMatrix(pipe_for_control_P, n, WRITE);
 	freePipeMatrix(pipe_for_control_P, n);
 	freePipeMatrix(pipe_for_P, n);
-	printf("A HA FINITO DI LEGGERE\n");
+	//printf("A HA FINITO DI LEGGERE\n");
 	close(fd);
 
 

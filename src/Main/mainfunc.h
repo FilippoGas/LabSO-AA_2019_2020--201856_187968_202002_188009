@@ -51,8 +51,10 @@ char *getInputorExit();
 
 void cpArray(char ***array1, int *narray1, char **array2, int narray2);
 
-void leggo_input_pipe(char ***input,int *ninput, int **elimin,int pipe_from_a[2]);
+void leggo_input_pipe(char ***input,int *ninput, int **elimin,int pipe_from_a[2], int pipe_to_a[2]);
 
 void firstStartAnal(char *argv[],int argc, int pipe_to_a[2], int pipe_from_a[2], char ***input,int *ninput,int **elimin);
+
+void freeStringArray(char **stringarray, int n);
 
 #endif
