@@ -31,9 +31,9 @@ int main(int argc, char *argv[]){
     char *format = computeCountingOnFile(fd,i + ARGS_P_START_FILE_OFFSET,offset,end);	//mi serve indice
     //printf("Scrivo nella pipe: %s\n", format);
     //Scrivo nella pipe la stringa formato
-    if(!removedFiles[i-ARGS_P_START_FILE_OFFSET]){
+    if(!removedFiles[i]){
       if(errorSysCall(write(pipeWrite,format, PIPE_BUF))>-1){
-        writtenFiles[i-ARGS_P_START_FILE_OFFSET] = 1;
+        writtenFiles[i] = 1;
       }
     }
     //Stampo a video la stringa formato
