@@ -1,11 +1,13 @@
-#include"../macro_libglob.h"
 #include"../Analizer/CheckInput/inputcheck.h"
-
+#include"messages.h"
 #define AZIONI 3
-#define AZIONIMENUANAL 9
+#define AZIONIMENUANAL 7
 #define NUMAZIONIPOSSIBILI 6
 #define NPATHANAL 8
 #define PATHANAL "./TestArea/anal"
+
+
+
 
 
 
@@ -28,6 +30,21 @@ char *getIn(){
   return ret;
 }
 
+int cifre(int num){
+	int ret = 1;
+	while( num/10 != 0 ){
+		ret++;
+		num = num/10;
+	}
+	return ret;
+}
+
+
+char *intToChar(int num){
+	char *ret = calloc( cifre(num)+1, sizeof(char) );
+	sprintf(ret,"%d",num);
+	return ret;
+}
 
 void printOptions(){
 	int i=0;
@@ -41,7 +58,7 @@ void printOptions(){
 
 void printOpAnal(){
 	int i=0;
-	char *lazAnal[AZIONIMENUANAL]={"Iniziare Analazer","Aggiungere file/s","Aggiungere cartella/e","Impostare ricorsione su cartelle", "Impostare m", "Impostare n","Eliminare file","Eliminare cartella","reset impostazioni"};
+	char *lazAnal[AZIONIMENUANAL]={"Iniziare Analazer","Aggiungere file o cartelle","Impostare ricorsione su cartelle", "Impostare m", "Impostare n","Eliminare file o cartelle","reset impostazioni"};
 	printf("\nANALIZER:\n");
 	printf("AZIONI:\n");
 	for(i=0;i<AZIONIMENUANAL;i++){
@@ -51,16 +68,7 @@ void printOpAnal(){
 	printf("b/back/return tornare al Menu'\n");
 }
 
-void freeMem(char **execAnal){
-	int i=0;
-	for( i=0; i < NUMAZIONIPOSSIBILI; i++ ){
-		if(execAnal[i] != NULL)
-			free(execAnal[i]);
-	}
-	free(execAnal);
-}
-
-void presetAnal(int *n, int *m, char ***file, char ***dir, int *nfile, int *ndir, int *rec){
+void presetAnal(int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin){
 	printf("Sei sicuro di voler resettare la linea di dichiarazione di Analizer? S/n\n");
 	char *risp=getIn();
 	if(!(strcmp(risp,"S")&&strcmp(risp,"s"))){
@@ -69,63 +77,34 @@ void presetAnal(int *n, int *m, char ***file, char ***dir, int *nfile, int *ndir
 		risp=getIn();
 		if(!(strcmp(risp,"S")&&strcmp(risp,"s"))){
 			(*n)=3;(*m)=4;
-			freeStringArray(*file,*nfile);
-			freeStringArray(*dir,*ndir);
-			(*nfile)=0;(*ndir)=0;
-			(*rec)=0;
+			freeStringArray(*vari,*nvari);
+			(*vari) = 0;
+			(*rec) = 0;
+			free(*elimin);
+			//TODO COMANDO DI BLOCCO A ???
 		}
 	}
 	free(risp);
 }
 
-
-void addtoArray(char ***array,int *ndata,char *add){
-	int nadd=0;
-	char *ptr = add;
-	char **datisep;
-	while( ptr != NULL ){
-		while( strcspn(ptr," ") < 1 && strlen(ptr) > 1){
-    	ptr++;
-    }
-
-  	if(strlen(ptr) > 1){
-    	nadd++;
-   		char **tmp = calloc( nadd, sizeof(char *) );
-   		int lung = strcspn( ptr, " " );
-      int i=0;
-      for( i=0; i < nadd - 1; i++ ){
-      	tmp[i] = datisep[i];
-      }
-      tmp[nadd - 1] = malloc(lung+1);
-      strncpy(tmp[nadd - 1], ptr, lung);
-      tmp[nadd - 1][lung] = '\0';
-      if(nadd != 0){
-      	freeStringArray(datisep,nadd - 1);
-      }
-      datisep = tmp;
-      ptr = ptr + lung;
-    }
-    else{
-    	ptr = NULL;
-    }
+void addtoArray(char ***array,int *ndata,char *add,int **elimin){
+	char **tmp = calloc( (*ndata) + 1, sizeof(char *) );
+	int i = 0;
+	for( i = 0; i < (*ndata); i++ ){
+		tmp[i] = (*array)[i];
 	}
-	if( nadd != 0 ){
-		char **tmp = calloc( (*ndata) + nadd,sizeof(char *) );
-		int i = 0;
-		for( i = 0; i < (*ndata); i++ ){
-			tmp[i] = malloc( strlen((*array)[i]) );
-			sprintf( tmp[i], "%s", (*array)[i] );
-		}
-		i = 0;
-		for(i=0; i < nadd; i++){
-			tmp[i + (*ndata)] = datisep[i];
-		}
-		freeStringArray(*array,(*ndata));
-		*array = tmp;
-		(*ndata)++;
+	tmp[*ndata]=add;
+	free(*array);
+	*array = tmp;
+	(*ndata)++;
+	int *newelimin=calloc( (*ndata), sizeof(int) );
+	i=0;
+	for( i=0; i < (*ndata) - 1; i++){
+		newelimin[i]=(*elimin)[i];
 	}
+	free(*elimin);
+	*elimin = newelimin;
 }
-
 
 void recurtion( int *rec ){
 	if( (*rec) == 0 ){
@@ -140,6 +119,7 @@ void recurtion( int *rec ){
 
 int	isNum(char *pnum){
 	int ret = 0;
+	if(pnum != NULL)
 	if(strlen(pnum) > 0)
 		if(strlen(pnum) == strspn(pnum,"0123456789")){
 			ret = 1;
@@ -147,14 +127,16 @@ int	isNum(char *pnum){
 	return ret;
 }
 
-
-void setmN( int *num, char selez ){
+void setmN( int *num, char selez,int pipe[2]){
 	int exit = 0;
 	while( exit < 1 ){
 		printf("Scrivi un numero per %c\n",selez);
 		char *cnum = getIn();
 		if(isNum(cnum)){
 			(*num) = atoi(cnum);
+			//DEBUG
+			sms_change_mn(cnum,selez,pipe);
+			//EDEBUG
 			exit = 1;
 		}
 		else{
@@ -166,27 +148,18 @@ void setmN( int *num, char selez ){
 }
 
 void exitAnal(){
-	printf("TODO exitAnal?\n");
 }
 
-int cifre(int num){
-	int ret = 1;
-	while( num/10 != 0 ){
-		ret++;
-		num = num/10;
-	}
-	return ret;
-}
-
-char **createExec(int n,int m,char **file,char **dir,int nfile,int ndir,int rec){
-	//path n m nfile ndir r NULL
-	int lung = 1 + 2 + 2 + nfile + ndir + 1 + 1;
+char **createExec(int n,int m,char **vari,int nvari,int rec,int *elimin,int pipe_to_a[2],int pipe_from_a[2]){
+	//path n m nvari r -p NULL
+	int lung = 1 + 2 + 2 + nvari + 1 + 5 + 1;
 	char **ret = calloc(lung, sizeof(char *));
-	int i = 0;
+	int i=0;
 	for(i=0; i < lung; i++){
 		ret[i] = NULL;
 	}
-	//
+	//Aggiungi path_analizer
+
 	ret[0] = PATHANAL;
 	//N
 	ret[1] = malloc(4);
@@ -199,23 +172,31 @@ char **createExec(int n,int m,char **file,char **dir,int nfile,int ndir,int rec)
 	sprintf(ret[3], "-m ");
 	ret[4] = malloc(cifre(m)+1);
 	sprintf(ret[4], "%d", m);
-	//FILE
+	//FILE e CARTELLE
 	i = 0;
-	for(i=0; i < nfile; i++){
-		ret[i + 5] = malloc(strlen(file[i]));
-		sprintf(ret[i + 5], "%s",file[i]);
-	}
-	//DIR
-	i = 0;
-	for(i=0; i < ndir; i++){
-		ret[i + nfile + 5] = malloc(strlen(dir[i]));
-		sprintf(ret[i + nfile + 5], "%s",dir[i]);
+	for( i=0; i < nvari; i++ ){
+		if( elimin[i] == 0 ){
+		ret[i + 5] = malloc(strlen(vari[i]));
+		sprintf(ret[i + 5], "%s",vari[i]);
+		}
+		else{
+			ret[i + 5] = malloc(1);
+			ret[i + 5][0] = '\0';
+		}
 	}
 	//RECU
 	if(rec == 1){
-		ret[lung-2] = malloc(4);
-		sprintf(ret[lung -2],"-r ");
+		ret[lung - 7] = malloc(4);
+		sprintf(ret[lung - 7],"-r ");
 	}
+	ret[lung - 6] = malloc(3);
+	sprintf(ret[lung - 6],"-p ");
+	ret[lung - 5] = intToChar( pipe_to_a[READ] );
+	ret[lung - 4] = intToChar( pipe_to_a[WRITE] );
+	ret[lung - 3] = intToChar( pipe_from_a[READ] );
+	ret[lung - 2] = intToChar( pipe_from_a[WRITE] );
+	ret[lung - 1] = NULL;
+
 	return ret;
 }
 
@@ -225,85 +206,99 @@ void eseguiAnal(char **execAnal,int lung){
 		f = fork();
 	}
 	if( f == 0 ){
-		execv(execAnal[0], execAnal);
+		execvp(execAnal[0], execAnal);
+		fprintf( stderr, "Errore di esecuzione Analizer\n" );
+		exit(-1);
 	}
 	else {
 		//DEBUG
-		printf("Ricordati il freeStringArray\n");
+		printf( "Ricordati il freeStringArray\n" );
 		//freeStringArray(execAnal,lung-1);
 	}
 }
 
-void elimSelec(char ***file,int *nfile, char *filedir){
-	int exit = 0;
-	while(exit < 1){
-		printf("Scrivi il nome di un%s\n",filedir);
-		char *nome = getIn();
-		int i=0;
-		int trovato = 0;
-		//Cerco il nome dato
-		for( i=0; i < (*nfile) && trovato == 0; i++ ){
-			if(!strcmp(nome,(*file)[i])){
-				trovato = 1;
-			}
-		}
+void elimSelec(char **vari,int nvari,int **elimin,int pipe[2]){
+	printf("Che file vuoi eliminare?\n");
+	printf("Se si vuole tornare al menu' digitare q\n");
+	printf("Digita un numero fra i seguenti:\n" );
 
-		if(trovato == 1){
-			//Caso in cui ho trovato il nome dato
-			char **tmp = calloc( (*nfile) - 1, sizeof(char *) );
-			//mi salvo la posizione del file da eliminare
-			int floc = i-1;
-			i = 0;
-			//copio la prima parte
-			for(i = 0; i < floc; i++){
-				tmp[i] = (*file)[i];
+	int i=0,j=1;
+	for(i = 0;i < (nvari);i++){
+		if((*elimin)[i]==0){
+			printf("%d. %s\n",j,(vari)[i]);
+			j++;
+		}
+	}
+	sleep(1);
+	int nnomi = j-1;
+	char *cnum = getIn();
+	if(isNum(cnum)&&atoi(cnum)>nnomi){
+		free(cnum);
+		cnum = malloc(3);
+		sprintf(cnum,"NO");
+	}
+	while(!isNum(cnum)&&strcmp(cnum,"q")){
+		printf("Mi dispiace ma il comando digitato non e' un numero,\n");
+		printf("o e' un numero troppo alto.\n");
+		printf("Digitare un numero fra i seguenti elencati:\n");
+		i=0;j=1;
+		for(i = 0; i < nvari;i++)
+			if( (*elimin)[i] == 0 ){
+				printf("%d. %s\n",j,vari[i]);
+				j++;
 			}
-			//Elimino la locazione di memoria
-			free((*file)[floc]);
-			//Copio la seconda parte
-			i = floc + 1;
-			for(i = floc + 1; i < (*nfile); i++){
-				tmp[i-1] = (*file)[i];
+			free(cnum);
+			cnum = getIn();
+			if(isNum(cnum)&&atoi(cnum)>nnomi){
+				free(cnum);
+				cnum = malloc(3);
+				sprintf(cnum,"NO");
 			}
-			//Copio nel file
-			free(*file);
-			(*nfile)--;
-			*file = tmp;
-			printf( "Elimitato \"%s\"\n", nome );
-			printf("Eliminare altro? S/n");
+	}
+	int num = atoi(cnum);
+	i=0;j=0;
+	for(i = 0; i < nvari && num != j; i++){
+		if( (*elimin)[i] == 0 ){
+			j++;
 		}
-		else{
-			//Caso in cui non ho trovato il nome
-			printf( "Non ho trovato nessun%s con il nome \"%s\".\n", filedir, nome );
-			printf( "Riprovare? S/n\n" );
+		if(num == j){
+			(*elimin)[i] = 1;
 		}
-		//Richiesta di ricominciare
-		char *risp = getIn();
-		if( !(strcmp(risp,"S")&&strcmp(risp,"s")) )
-			exit = 0;
-		else exit = 1;
-		free(risp);
-		free(nome);
-		}
+	}
+	free(cnum);
+	//sms_rmfile((*vari)[i],pipe);
+	i--;
+	printf("Eliminto \"%s\"\n",vari[i]);
+}
+
+void addFile(char ***vari,int *nvari,int **elimin,int pipe[2]){
+	printf( "Digirare uno o piu' cartelle o file\n" );
+	char *aggiunta = getIn();
+	while(index(aggiunta,' ') != NULL){
+		printf("Aggiungere solo un file alla volta, grazie.\n");
+		free(aggiunta);
+		aggiunta = getIn();
+	}
+	addtoArray(vari,nvari,aggiunta,elimin);
+	//DEBUG
+	sms_addfile((*vari)[(*nvari)-1],pipe);
+	//EDEBUG
 }
 
 //Menu di anal
-void enterAnalMenu(int *n,int *m,char ***file,char ***dir,int *nfile,int *ndir,int *rec){
+void enterAnalMenu(int *n, int *m, char ***vari, int *nvari, int *rec,int **elimin,int pipe_to_a[2],int pipe_from_a[2]){
 	//Iniz. di dir e file nel caso in cui non sono stati allocati
-	if( *nfile < 1 ){
-		*file = malloc(1);
-	}
-	if(*ndir<1){
-		*dir = malloc(1);
+	if( (*nvari) < 1 ){
+		*vari = malloc(1);
 	}
 	int i=0, option = 1;
-	char *aggiunta, **execAnal;;
+	char *aggiunta, **execAnal;
 	int lung;
 	while(option >= 0){
 		//La lungezza di execAnal
 		//DEBUG quando faccio il freeStringArray su execAnal mi dice
 		//lunghezza di free() errata
-		lung=1 + 2 + 2 + (*nfile) + (*ndir) + 2;
+		lung=1 + 2 + 2 + (*nvari) + 2;
 		printOpAnal();
 
 		char *input = getIn();
@@ -321,52 +316,38 @@ void enterAnalMenu(int *n,int *m,char ***file,char ***dir,int *nfile,int *ndir,i
 		switch(option) {
 			case 1:
 				//creo l'exec e faccio partire l'analizer
-				printf("Faccio partire Analizer\n");
-				execAnal = createExec(*n,*m,*file,*dir,*nfile,*ndir,*rec);
-				eseguiAnal(execAnal,lung);
+				execAnal = createExec( *n, *m, *vari, *nvari, *rec ,*elimin,pipe_to_a,pipe_from_a);
+				eseguiAnal( execAnal, lung );
 				break;
 			case 2:
-				//Add File
-				printf( "Digitare uno o piu' file\n" );
-				aggiunta = getIn();
-				addtoArray(file,nfile,aggiunta);
-				free(aggiunta);
+				//Add dir o file
+				addFile(vari,nvari,elimin,pipe_to_a);
 				break;
 			case 3:
-				//Add dir
-				printf( "Digirare uno o piu' cartelle" );
-				aggiunta = getIn();
-				addtoArray(dir,ndir,aggiunta);
-				free(aggiunta);
-				break;
-			case 4:
 				//Accendo e spengo la ricorsione
 				recurtion(rec);
 				break;
-			case 5:
+			case 4:
 				//set M
-				setmN(m,'m');
+				setmN(m,'m',pipe_to_a);
+				break;
+			case 5:
+				//set N
+				setmN(n,'n',pipe_to_a);
 				break;
 			case 6:
-				//set N
-				setmN(n,'n');
+			//Elimina selettivamente i file
+				elimSelec(*vari, *nvari,elimin,pipe_to_a);
 				break;
 			case 7:
-				//Elimina selettivamente file
-				elimSelec(file, nfile, " file");
-				break;
-			case 8:
-				elimSelec(dir, ndir, "a cartella");
-				//Elimina selettivamente dir
-				break;
-			case 9:
 				//Reset Anal
-				presetAnal(n, m, file, dir, nfile, ndir, rec);
+				presetAnal( n, m, vari, nvari, rec, elimin);
 				break;
 
 			case 69:
 				//Visualizza linea di comando
-				execAnal = createExec(*n, *m, *file, *dir, *nfile, *ndir, *rec);
+				printf("Faccio partire Analizer\n");
+				execAnal = createExec(*n, *m, *vari, *nvari, *rec, *elimin, pipe_to_a, pipe_from_a);
 				for( i = 0; i < lung; i++ ){
 					if( execAnal[i] != NULL )
 						printf("%s ",execAnal[i]);
@@ -386,11 +367,8 @@ void enterAnalMenu(int *n,int *m,char ***file,char ***dir,int *nfile,int *ndir,i
 		}
 	}
 	//Nel caso non ci siano piu' files o dir
-	if(*nfile<1){
-		free(*file);
-	}
-	if(*ndir<1){
-		free(*dir);
+	if((*nvari) < 1){
+		free(*vari);
 	}
 }
 
@@ -409,14 +387,12 @@ void startReporter(){
 }
 
 void ending(){
-	//TODO: Uccidere gli zo2bie rimanenti
+	//TODO: Uccidere gli zombie rimanenti
 	printf("Grazie per aver utilizzato il programma di analisi.\n");
 	printf("E ricoedatevi sempre:\n");
 	printf("\x1b[33m\t\t Se volete qualita', il nostro nome e' GEFF!\n");
 	exit(0);
 }
-
-
 
 char *getInputorExit(){
 	char *ret = getIn();
@@ -427,58 +403,126 @@ char *getInputorExit(){
 	return ret;
 }
 
-
-/*
- *
- {
- * CREARE una pipe fra M e A
- * Controllare pipe per nuovi file/cartelle bloccante
- * No discriminazione fra cartelle e file
- * Elimina i file dopo aver ricevuto i dati da pipe
- * -p due pipe  Mscrive Mlegge Ascrive Alegge
- }
- *
- */
-
-
-
-
-int main( int argv, char *argc[] ){
-	int f = fork();
-	while ( f < 0 ) {
-		f = fork();
+void cpArray(char ***array1, int *narray1, char **array2, int narray2){
+	char *tmp[(*narray1)];
+	if( (*narray1) > 1 ){
+		int i=0;
+		for( i=0; i < (*narray1); i++ ){
+			tmp[i] = (*array1)[i];
+		}
+		free( (*array1) );
 	}
-	if( f == 0 ){
-		argc[0] = PATHANAL;
-		f = execv(argc[0],argc);
-		if( f < 0 ){
-			exit(-1);
+	(*array1) = calloc( (*narray1) + narray2, sizeof(char *) );
+	int i = 0;
+	for(i = 0; i < (*narray1); i++ ){
+		(*array1)[i]=tmp[i];
+	}
+	i = 0;
+	for( i = 0; i < narray2; i++ ){
+		(*array1)[i+(*narray1)] = array2[i];
+	}
+	(*narray1) = *narray1 + narray2;
+}
+
+
+
+void leggo_input_pipe(char ***input,int *ninput, int **elimin,int pipe_from_a[2]){
+	char message[PIPE_BUF];
+	int byte = read(pipe_from_a[READ],message,PIPE_BUF);
+	printf("Il primo messaggio che e' arrivato e':%s\n",message);
+	printf("byte = %d\n",byte );
+	(*ninput) = atoi(message);
+	(*input)=calloc( (*ninput), sizeof(char *) );
+	int i=0;
+	for(i=0; i < (*ninput); i++ ){
+		read(pipe_from_a[READ], message, PIPE_BUF);
+		(*input)[i] = calloc( strlen(message), sizeof(char) );
+		sprintf((*input)[i], "%s", message);
+	}
+	*elimin = calloc(*ninput,sizeof(int));
+	printf("input ha :\n" );
+	for(i=0;i<(*ninput);i++){
+		printf("%s\n",(*input)[i]);
+	}
+	//EDEBUG
+	//DEBUG
+	/*
+	*ninput = 0;
+	*input = malloc(1);
+	*elimin = malloc(1);
+	*/
+	//EDEBUG
+}
+
+
+void firstStartAnal(char *argv[],int argc, int pipe_to_a[2], int pipe_from_a[2], char ***input,int *ninput,int **elimin){
+	pipe2(pipe_to_a,__O_DIRECT | O_NONBLOCK);
+	pipe2(pipe_from_a,__O_DIRECT);							//Controlla
+
+	//dichiarazione
+	int lung=argc+7;
+	char *dich[lung];
+	dich[0] = PATHANAL;
+	int i = 1;
+	for( i = 1; i < argc; i++ ){
+		dich[i] = argv[i];
+	}
+	dich[lung - 6] = malloc(3 * sizeof(char));
+	sprintf(dich[lung - 6],"-p");
+	dich[lung - 5] = intToChar( pipe_to_a[READ] );
+	dich[lung - 4] = intToChar( pipe_to_a[WRITE] );
+	dich[lung - 3] = intToChar( pipe_from_a[READ] );
+	dich[lung - 2] = intToChar( pipe_from_a[WRITE] );
+	dich[lung - 1] = NULL;
+	eseguiAnal(dich,lung);
+	close(pipe_to_a[READ]);
+	close(pipe_from_a[WRITE]);
+	i=5;
+	for( i = 5; i > 0; i-- ){
+		free(dich[lung - i]);
+	}
+	printf("pipe_to_a= %d %d\n",pipe_to_a[0],pipe_to_a[1] );
+	printf("pipe_form_a= %d %d\n",pipe_from_a[0],pipe_from_a[1] );
+
+	leggo_input_pipe(input,ninput,elimin,pipe_from_a);
+}
+
+int main( int argc, char *argv[] ){
+	int pipe_to_a[2], pipe_from_a[2];
+	char **input;
+	int *elimin,ninput=0;
+
+	firstStartAnal( argv, argc, pipe_to_a, pipe_from_a, &input, &ninput, &elimin);
+	int i=0;
+	int n = 3, m = 4, rec = 0;
+	for(i = 0; i < argc; i++){
+		if( !strcmp(argv[i],"-n") ){
+			if(isNum(argv[i+1]))
+				n = atoi(argv[i+1]);
+		}
+		else if( !strcmp(argv[i],"-m") ){
+			if(isNum(argv[i+1]))
+				m = atoi(argv[i+1]);
+		}
+		else if( !strcmp(argv[i],"-r") ){
+			rec = 1;
 		}
 	}
-	char **input,**file,**dir;
-
-	int n=3,m=4,rec=0,nfile=0,ndir=0,ninput=0;
-	//Leggo gli args, tutto di Giaco
-	if(argv>1){
-		readInput(argv,argc,&input,&ninput,&n,&m,&rec);
-		validateInput(input,ninput,&file,&dir,&nfile,&ndir);
-	}
 	printf("Grazie per aver scelto il programma di analisi dati di G.E.F.F. & co.\n\n");
-	sleep(1);
 	printf( "Con che azione volete cominciare?\n" );
 	printOptions();
 
 	int option;
 	//Menu principale
 	while( option >= 0 ){
-		char *input = getInputorExit();
-		option = atoi(input);
-		free(input);
+		char *azione = getInputorExit();
+		option = atoi(azione);
+		free(azione);
 		printf("\n");
 		switch(option){
 			case 1:
 				//Apri il menu di anal
-				enterAnalMenu(&n,&m,&file,&dir,&nfile,&ndir,&rec);
+				enterAnalMenu(&n,&m,&input,&ninput,&rec,&elimin,pipe_to_a,pipe_from_a);
 				printf( "Siete nel menu' principale.\n" );
 				break;
 
@@ -501,8 +545,6 @@ int main( int argv, char *argc[] ){
 		}
 		printOptions();
 	}
-	//Libero i due array
-	freeStringArray(dir,ndir);
-	freeStringArray(file,nfile);
+	freeStringArray( input, ninput );
 	return 0;
 }
