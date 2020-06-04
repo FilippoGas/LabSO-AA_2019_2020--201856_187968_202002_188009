@@ -11,9 +11,7 @@ void printMenu(){
     printf("    3) Print stats for categories\n");
     printf("    4) Print absolute stats per directory\n");
     printf("    5) Print percentage stats per directory\n");
-    printf("    6) print absolute stats to file\n");
-    printf("    7) Print percentage stats to file\n");
-    printf("    8) Update reports\n");
+    printf("    6) Update reports\n");
     printf("    0) Exit\n");
     printf("\n");
     printf("> ");
@@ -450,7 +448,7 @@ void generateRandomReportFile(int **reports, char **fileNames, int nfiles){
 
 }
 
-void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection){
+void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection, int *categoriesSelection){
     
     if(selection){
 
@@ -509,13 +507,27 @@ void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *se
 
         int totalChar = getTotalChar(reports[i]);
 
-        printf("\n LETTERS: %d - %.2f%c\n",letters,getPerc(letters,totalChar),'%');
-        printf("\n UPPERCASE LETTERS: %d - %.2f%c\n",upperCase,getPerc(upperCase,totalChar),'%');
-        printf("\n LOWERCASE LETTERS: %d - %.2f%c\n",lowerCase,getPerc(lowerCase,totalChar),'%');
-        printf("\n NUMBERS: %d - %.2f%c\n",numbers,getPerc(numbers,totalChar),'%');
-        printf("\n PUNCTUATION: %d - %.2f%c\n",punctuation,getPerc(punctuation,totalChar),'%');
-        printf("\n SYMBOLS: %d - %.2f%c\n",symbols,getPerc(symbols,totalChar),'%');
-        printf("\n EXTENDED ASCII TABLE: %d - %.2f%c\n",extendedASCII,getPerc(extendedASCII,totalChar),'%');
+        if(categoriesSelection[0]){
+            printf("\n LETTERS: %d - %.2f%c\n",letters,getPerc(letters,totalChar),'%');
+        }
+        if(categoriesSelection[1]){
+            printf("\n UPPERCASE LETTERS: %d - %.2f%c\n",upperCase,getPerc(upperCase,totalChar),'%');
+        }
+        if(categoriesSelection[2]){
+            printf("\n LOWERCASE LETTERS: %d - %.2f%c\n",lowerCase,getPerc(lowerCase,totalChar),'%');
+        }
+        if(categoriesSelection[3]){
+            printf("\n NUMBERS: %d - %.2f%c\n",numbers,getPerc(numbers,totalChar),'%');
+        }
+        if(categoriesSelection[4]){
+            printf("\n PUNCTUATION: %d - %.2f%c\n",punctuation,getPerc(punctuation,totalChar),'%');
+        }
+        if(categoriesSelection[5]){
+            printf("\n SYMBOLS: %d - %.2f%c\n",symbols,getPerc(symbols,totalChar),'%');
+        }
+        if(categoriesSelection[6]){
+            printf("\n EXTENDED ASCII TABLE: %d - %.2f%c\n",extendedASCII,getPerc(extendedASCII,totalChar),'%');
+        }
     
     }
 
@@ -703,4 +715,37 @@ int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelec
         }
     }
     return 0;
+}
+
+
+void getCategoriesSelection(int *categoriesSelection){
+
+    int sel;  
+    int i = 0;
+
+    printf("\n\n ****************************************************************");
+    printf("\n AVAILABLE CATEGORIES FOR REPORT\n");
+    printf(" ****************************************************************\n\n");
+
+    printf("\n    1) LETTERS");
+    printf("\n    2) UPPERCASE LETTERS");
+    printf("\n    3) LOWERCASE LETTERS");
+    printf("\n    4) NUMBERS");
+    printf("\n    5) PUNCTUATION");
+    printf("\n    6) SYMBOLS");
+    printf("\n    7) EXTENDED ASCII TABLE");
+
+    printf("\n\n Type the numbers of the desired category one at a time followed by ENTER, or 0 to exit the selection\n\n");
+
+    i = 0;
+    do{
+        printf("> ");
+        sel = getUserOption(0,7);
+
+        if(sel){
+
+            categoriesSelection[sel-1] = 1;
+
+        }
+    }while(sel != 0);
 }

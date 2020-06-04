@@ -82,7 +82,7 @@ void generateRandomReportFile(int **reports, char **fileNames, int nfiles);
 /**
  *Print statistic for different categories of char  
  */
-void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection,int nselection);
+void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection,int nselection, int *categoriesSelection);
 
 /**
  * free memory used by reports
@@ -113,3 +113,9 @@ void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **d
  * check if a file is in one of the selected directories
 */
 int inSelectedDirs(char *fileName,char **dirs, int *dirSelection,int nDirSelection);
+
+
+/**
+ * get the selection of categories to report
+*/
+void getCategoriesSelection(int *categoriesSelection);

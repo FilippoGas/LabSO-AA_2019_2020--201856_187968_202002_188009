@@ -24,8 +24,9 @@ int main(int argc, char *argv[]){
 
         printMenu();
 
-        control = getUserOption(0,8);
+        control = getUserOption(0,6);
 
+        int categoriesSelection[7] = {0,0,0,0,0,0,0};
         int *selection = NULL;
         int nselection = 0;
         int *dirSelection = NULL;
@@ -57,7 +58,14 @@ int main(int argc, char *argv[]){
                 if(control){
                     getFileSelection(fileNames,nfiles,&selection, &nselection);
                 }
-                printCategoriesReports(reports,fileNames,nfiles,selection,nselection);
+                getCategoriesSelection(categoriesSelection);
+                int i;
+                for ( i = 0; i < 5; i++)
+                {
+                    printf("%d ",categoriesSelection[i]);
+                }
+                
+                printCategoriesReports(reports,fileNames,nfiles,selection,nselection,categoriesSelection);
             break;
 
             case 4:
@@ -73,16 +81,6 @@ int main(int argc, char *argv[]){
             break;
 
             case 6:
-                printFileSelection();
-                control = getUserOption(0,1);
-            break;
-
-            case 7:
-                printFileSelection();
-                control = getUserOption(0,1);  
-            break;
-
-            case 8:
                 readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate,0);
             break;
 
