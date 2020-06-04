@@ -78,3 +78,54 @@ void fillReports(int *report,char *buff);
  * Generate a report file, fac-simile to the one produced by analizer, for debugging purpose only
 */
 void generateRandomReportFile(int **reports, char **fileNames, int nfiles);
+
+/**
+ *Print statistic for different categories of char  
+ */
+void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection,int nselection, int *categoriesSelection);
+
+/**
+ * free memory used by reports
+*/
+void freeReports(int ***reports, int size);
+
+/**
+ * free memory used by fileNames
+*/
+void freeFileNames(char ***fileNames, int size);
+
+/**
+ * get all the available directories from file names and save them into dirs, return the number of dirs
+*/
+int getDirs(char **fileNames, int nfiles, char ***dirs);
+
+/**
+ * get the selection of directories to print
+*/
+void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelection);
+
+/**
+ * print reports for the selected directories
+*/
+void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int *dirSelection, int nDirSelection, int percentage);
+
+/**
+ * check if a file is in one of the selected directories
+*/
+int inSelectedDirs(char *fileName,char **dirs, int *dirSelection,int nDirSelection);
+
+
+/**
+ * get the selection of categories to report
+*/
+void getCategoriesSelection(int *categoriesSelection);
+
+/**
+ * free memory used by directory selection
+*/
+void freeDirSelection(int **dirSelection, int nDirSelection);
+
+/**
+ * free memory used by dirs
+*/
+void freeDirs(char ***dirs, int ndirs);

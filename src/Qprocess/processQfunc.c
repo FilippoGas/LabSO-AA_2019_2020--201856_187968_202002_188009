@@ -90,17 +90,18 @@ int openFile(char *name){
 	return errorOpenInQ(open(temp, O_RDONLY), temp);
 }
 
-void addHandler(int pipeReadOnTheFly, int pipeWrite, int counterFilesOnTheFly, int parte, int denominatore, char *message){
+void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore, char *message, int *argc, char *argv[]){
   int byteRead = -1;
   do{
     byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
     if(byteRead>0 && strcmp(message, MOD_END)){
-      int fd = openFile(message);
+      appendToArgv(argv,argc,message);
+      /*int fd = openFile(message);
       int size = computeSize(fd);
       int offset = computeOffset(parte,denominatore,size);
       int end = computeEnd(parte,denominatore,size);
-      char *format = computeCountingOnFile(fd,counterFilesOnTheFly,offset,end);
-      errorSysCall(write(pipeWrite,format, PIPE_BUF));
+      char *format = computeCountingOnFile(fd,idFile(message,argc,argv),offset,end);
+      errorSysCall(write(pipeWrite,format, PIPE_BUF));*/
     }
   }while(strcmp(message,MOD_END) && byteRead!=0);
 }
@@ -125,4 +126,17 @@ int idFile(char *file, int argc, char *argv[]){
     }
     i++;
   }
+}
+
+void appendToArgv(char *argv[],int *argc, char *file){
+  char **temp = (char **)malloc(((*argc)+1)*sizeof(char *));
+  memmove(temp,argv,sizeof(char *)*(*argc));
+  temp[(*argc)] = file;
+  (*argc)++;
+  int i=0;
+  while(i<(*argc)){
+    argv[i]=temp[i];
+    i++;
+  }
+  free(temp);
 }

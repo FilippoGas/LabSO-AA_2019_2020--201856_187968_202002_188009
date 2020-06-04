@@ -8,9 +8,10 @@ void printMenu(){
     printf("\n\n");
     printf("    1) Print absolute stats\n");
     printf("    2) Print percentage stats\n");
-    printf("    3) print absolute stats to file\n");
-    printf("    4) Print percentage stats to file\n");
-    printf("    5) Update reports\n");
+    printf("    3) Print stats for categories\n");
+    printf("    4) Print absolute stats per directory\n");
+    printf("    5) Print percentage stats per directory\n");
+    printf("    6) Update reports\n");
     printf("    0) Exit\n");
     printf("\n");
     printf("> ");
@@ -18,7 +19,7 @@ void printMenu(){
 
 int getUserOption(int min, int max){
     
-    int option,done = 1;
+    int option = 0,done = 1;
     
 
     while(done){
@@ -49,12 +50,12 @@ void generateRandomReports(int ***reports, int nfiles){
 
     (*reports) = malloc(nfiles * sizeof(int *));
 
-    int i=0;
-    for ( i ; i < nfiles ; i++ )
+    int i;
+    for ( i = 0 ; i < nfiles ; i++ )
     {
         (*reports)[i] = malloc(ASCII_SIZE * sizeof(int));
-        int j=0;
-        for ( j; j < ASCII_SIZE; j++){
+        int j;
+        for ( j = 0; j < ASCII_SIZE; j++){
             (*reports)[i][j] = rand() % 5000;
         }
         
@@ -88,11 +89,12 @@ void printFileSelection(){
 
 void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselection){
 
-    int sel, buff[10000];  //invece che dim=1000, check se supero la dimensione e la aumento
+    int bufdim = 1000;
+    int sel, buff[bufdim];  //invece che dim=1000, check se supero la dimensione e la aumento
 
     int i = 0;
 
-    for ( i ; i < nfiles; i++){
+    for ( i = 0 ; i < bufdim; i++){
         buff[i] = -1;
     }
 
@@ -100,8 +102,7 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
     printf("\n AVAILABLE FILES FOR REPORT\n");
     printf(" ****************************************************************\n\n");
 
-    i = 0;
-    for ( i ; i < nfiles; i++){
+    for ( i = 0 ; i < nfiles; i++){
         printf("    %d) %s\n",i+1,fileNames[i]);
     }
 
@@ -123,18 +124,24 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
 
     (*nselection) = i;
     (*selection) = malloc((*nselection) * sizeof(int));
-    
+
     i = 0;
+    printf("\nhere i %d\n",(*nselection));          //CHECK QUI
     while(buff[i] != -1){
+        printf("\nin while i %d\n",i);
         (*selection)[i] = buff[i];
         i++;
     }
-
+    printf("\nafter while\n");
 }
 
 void removeUnselectedReports(int ***reports, int *selection, int nselection){
 
+    printf("\nbegin removeReports with nseleciton %d\n",nselection);
+
     int **temp = malloc(nselection * sizeof(int*));
+
+    printf("\nafter temp malloc\n");
 
     int i = 0;
     for ( i = 0; i < nselection; i++)
@@ -149,19 +156,20 @@ void removeUnselectedReports(int ***reports, int *selection, int nselection){
             
     }
 
-    (*reports) = temp;    
+    (*reports) = temp;
 
 }
 
 void removeUnselectedNames(char ***fileNames, int *selection, int nselection){
 
+    
     char **temp = malloc(nselection * sizeof(char*));
-
     int i = 0;
+
     for ( i = 0; i < nselection; i++)
     {
-        temp[i] = malloc(sizeof(fileNames[selection[i]]));
-        sprintf(temp[i],"%s",(*fileNames)[i]);
+        temp[i] = malloc(sizeof(char) * (strlen((*fileNames)[selection[i]])+1));
+        sprintf(temp[i],"%s",(*fileNames)[selection[i]]);
     }
     
     (*fileNames) = temp;
@@ -172,8 +180,7 @@ void removeUnselectedNames(char ***fileNames, int *selection, int nselection){
 
 void printReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection, int percentage){
 
-    if(selection){
-
+    if(selection && nselection < nfiles){
         //tolgo da reports e da nileNames i file non desiderati
         nfiles = nselection;
         removeUnselectedReports(&reports,selection,nselection);
@@ -181,15 +188,15 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
 
     }
 
-    int i = 0;
-    for (i ; i < nfiles ; i++){
+    int i;
+    for (i = 0 ; i < nfiles ; i++){
 
         printf("\n\n ****************************************************************");
-        printf("\n FILE NAME: %s    FILE PATH: un giorno ci sarà\n",fileNames[i]);
+        printf("\n FILE: %s\n",fileNames[i]);
         printf(" ****************************************************************\n\n");
 
-        int j = ASCII_START; 
-        for ( j ; j < ALPHABET_SIZE ; j++){
+        int j; 
+        for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
 
             if(j == 127){
 
@@ -218,6 +225,15 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
         printf("\n\n");
 
     }
+    
+    if(selection){
+        free(selection);
+    }
+
+    if(selection && nselection < nfiles){
+        freeReports(&reports,nselection);
+        freeFileNames(&fileNames,nselection);
+    }
         
 }
 
@@ -225,8 +241,8 @@ int getTotalChar(int *report){
 
     int totalChar= 0;
 
-    int i = 0;
-    for( i ; i < ALPHABET_SIZE ; i++){
+    int i;
+    for( i = 0 ; i < ALPHABET_SIZE ; i++){
         totalChar+=report[i];
     }
 
@@ -304,7 +320,12 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
 
     char buff[4096];
     int empty = 1;
-    while(read(fd,buff,22) > 0){
+    while(read(fd,buff,22) == 22){
+        if(!stopRecursion){
+            printf("\nReading from PIPE\n");
+        }else{
+            printf("\nReading from FILE\n");
+        }
         empty = 0;
         char *timestamp = strtok(buff," ");
         (*lastUpdate) = atoi(timestamp);
@@ -314,22 +335,30 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
         (*reports) = malloc((*nfiles)* sizeof(int*));
         (*fileNames) = malloc((*nfiles)* sizeof(char*));
 
-        int i = 0;
-        for ( i ; i < (*nfiles); i++)
+        int i;
+        for ( i = 0 ; i < (*nfiles); i++)
         {
             (*reports)[i] = malloc(ALPHABET_SIZE * sizeof(int));
-            (*fileNames)[i] = malloc( 4096 * sizeof(char));
-            read(fd,(*fileNames)[i],4096);
+
+            char name[4096];
+            read(fd,name,4096);
+            strtok(name,"/");
+            char *nameOnly = strtok(NULL," ");
+
+            (*fileNames)[i] = calloc(1,(sizeof(char)* strlen(nameOnly)+(2*sizeof(char)))); //+2 (/ iniziale e carattere terminatore)
+            strcat((*fileNames)[i],"/");
+            strcat((*fileNames)[i],nameOnly);
             read(fd,buff,4096);
             fillReports((*reports)[i],buff);
         }
 	printf("FINITO WHILE\n");
-
     }
 
     //Se la FIFO è vuota richiamo ricorsivamente readPipe con fd riferito al file invece che alla FIFO
     if(empty && !stopRecursion){		
         
+        printf("\nOpening file\n");
+
         fd = openReportFile();
         if(fd != -1){
 
@@ -415,5 +444,325 @@ void generateRandomReportFile(int **reports, char **fileNames, int nfiles){
 	}
 
     close(fd);
+
+}
+
+void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection, int *categoriesSelection){
+    
+    if(selection){
+
+        //tolgo da reports e da nileNames i file non desiderati
+        nfiles = nselection;
+        removeUnselectedReports(&reports,selection,nselection);
+        removeUnselectedNames(&fileNames,selection,nselection);
+
+    }
+
+    int i;
+    for (i = 0 ; i < nfiles ; i++){
+
+        int letters = 0;
+        int upperCase = 0;
+        int lowerCase = 0;
+        int numbers = 0;
+        int symbols = 0;
+        int punctuation = 0;
+        int extendedASCII = 0;
+
+        printf("\n\n ****************************************************************");
+        printf("\n FILE: %s\n",fileNames[i]);
+        printf(" ****************************************************************\n\n");
+
+        int j; 
+        for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
+
+            if(j>=48 && j<=57){
+                numbers+=reports[i][j];
+            }
+
+            if(j>=65 && j<=90){
+                letters+=reports[i][j];
+                upperCase+=reports[i][j];
+            }
+            
+            if(j>=97 && j<=122){
+                letters+=reports[i][j];
+                lowerCase+=reports[i][j];
+            }
+
+            if((j>=34 && j<=43) || (j>=60 && j<=62) || (j>=91 && j<=96) || (j>=123 && j<=126) || j==45 || j==47 || j== 64){
+                symbols+=reports[i][j];
+            }
+
+            if(j==32 || j==33 || j== 44 || j==46 || j==58 || j==59 || j==63){
+                punctuation+=reports[i][j];
+            }
+
+            if(j>=128){
+                extendedASCII+=reports[i][j];
+            }
+
+        }
+
+        int totalChar = getTotalChar(reports[i]);
+
+        if(categoriesSelection[0]){
+            printf("\n LETTERS: %d - %.2f%c\n",letters,getPerc(letters,totalChar),'%');
+        }
+        if(categoriesSelection[1]){
+            printf("\n UPPERCASE LETTERS: %d - %.2f%c\n",upperCase,getPerc(upperCase,totalChar),'%');
+        }
+        if(categoriesSelection[2]){
+            printf("\n LOWERCASE LETTERS: %d - %.2f%c\n",lowerCase,getPerc(lowerCase,totalChar),'%');
+        }
+        if(categoriesSelection[3]){
+            printf("\n NUMBERS: %d - %.2f%c\n",numbers,getPerc(numbers,totalChar),'%');
+        }
+        if(categoriesSelection[4]){
+            printf("\n PUNCTUATION: %d - %.2f%c\n",punctuation,getPerc(punctuation,totalChar),'%');
+        }
+        if(categoriesSelection[5]){
+            printf("\n SYMBOLS: %d - %.2f%c\n",symbols,getPerc(symbols,totalChar),'%');
+        }
+        if(categoriesSelection[6]){
+            printf("\n EXTENDED ASCII TABLE: %d - %.2f%c\n",extendedASCII,getPerc(extendedASCII,totalChar),'%');
+        }
+    
+    }
+
+    
+}
+
+
+void freeReports(int ***reports, int size){
+
+    int i = 0;
+
+    for ( i = 0; i < size; i++)
+    {
+        free((*reports)[i]);
+    }
+    
+    free((*reports));
+
+}
+
+void freeFileNames(char ***fileNames, int size){
+
+    int i = 0;
+
+    for ( i = 0; i < size; i++)
+    {
+        free((*fileNames)[i]);
+    }
+    printf("\nafter for\n");
+    free((*fileNames));
+
+}
+
+int getDirs(char **fileNames, int nfiles, char ***dirs){
+
+    char **tempDirs = malloc(nfiles * sizeof(char*));
+    int ndirs = 0, firstSlash = 0;
+    
+    int i;
+    for ( i = 0; i < nfiles; i++)
+    {
+        tempDirs[i] = NULL;
+    }
+    //cycle for every file name
+    for ( i = 0; i < nfiles; i++)
+    {
+        int j;
+        firstSlash = 1;
+        for(j = 0 ; j < strlen(fileNames[i]) ; j++){
+            int doubleDir = 0;
+            if(fileNames[i][j] == 47){
+                if(firstSlash){
+                    firstSlash = 0;
+                }else{
+                    char buff[j+1];
+                    strncpy(buff,fileNames[i],j);
+                    buff[j] = '\0';
+                    //check if already saved
+                    int k = 0;
+                    while(tempDirs[k] != NULL){
+                        if(strcmp(tempDirs[k],buff) == 0){
+                            doubleDir = 1;
+                        }
+                        k++;
+                    }
+                    if(!doubleDir){
+                        tempDirs[ndirs] = malloc(sizeof(buff));
+                        sprintf(tempDirs[ndirs],"%s",buff);
+                        ndirs++;
+                    }
+                }
+            }
+        }
+    }
+    (*dirs) = malloc(ndirs * sizeof(char*));
+    i = 0;
+    while(tempDirs[i] != NULL){
+        (*dirs)[i] = malloc(sizeof(tempDirs[i]));
+        sprintf((*dirs)[i],"%s",tempDirs[i]);
+        i++;
+    }
+    for ( i = 0; i < nfiles; i++)
+    {
+        free(tempDirs[i]);
+    }
+    free(tempDirs);
+    return ndirs;
+}
+
+void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelection){
+    
+    int sel, buff[100];  //invece che dim=1000, check se supero la dimensione e la aumento
+
+    int i;
+
+    for (i = 0 ; i < ndirs; i++){
+        buff[i] = -1;
+    }
+
+    printf("\n\n ****************************************************************");
+    printf("\n AVAILABLE DIRECTORIES FOR REPORT\n");
+    printf(" ****************************************************************\n\n");
+
+    for ( i = 0 ; i < ndirs; i++){
+        printf("    %d) %s\n",i+1,dirs[i]);
+    }
+
+    printf("\n Type the numbers of the desired directories one at a time followed by ENTER, or 0 to exit the selection\n\n");
+
+    i = 0;
+    do{
+        printf("> ");
+        sel = getUserOption(0,ndirs);
+
+        if(sel){
+
+            buff[i] = sel-1;
+            i++;
+
+        }
+        
+    }while(sel != 0);
+
+    (*nDirSelection) = i;
+    (*dirSelection) = malloc((*nDirSelection) * sizeof(int));
+
+    i = 0;
+    while(buff[i] != -1){
+        (*dirSelection)[i] = buff[i];
+        i++;
+    }
+}
+
+void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int *dirSelection, int nDirSelection, int percentage){
+
+    int i;
+    for (i = 0; i < nfiles ; i++){
+
+        if(inSelectedDirs(fileNames[i],dirs,dirSelection,nDirSelection)){   
+            printf("\n\n ****************************************************************");
+            printf("\n FILE: %s\n",fileNames[i]);
+            printf(" ****************************************************************\n\n");
+
+            int j; 
+            for ( j = ASCII_START; j < ALPHABET_SIZE ; j++){
+
+                if(j == 127){
+
+                    if(percentage){
+                        printf("| %4c : %.2f%c   ",32,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+                    }else{
+                        printf("| %4c : %4d  ",32,(reports[i][j]));
+                    }
+
+                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
+                        printf("|\n\n");
+                    }
+
+                }else{
+                    if(percentage){
+                        printf("| %4c : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+                    }else{
+                        printf("| %4c : %4d  ",j,(reports[i][j]));
+                    }
+                    if(((j-ASCII_START+1)%COLS)==0 && j!=0){
+                        printf("|\n\n");
+                    }
+                }
+            }   
+            printf("\n\n");
+        }
+    }
+    freeDirSelection(&dirSelection,nDirSelection);
+}
+
+int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelection){
+
+    int i;
+    for ( i = 0; i < nDirSelection; i++)
+    {
+        if(strstr(fileName,dirs[dirSelection[i]]) != NULL){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+void getCategoriesSelection(int *categoriesSelection){
+
+    int sel;  
+
+    printf("\n\n ****************************************************************");
+    printf("\n AVAILABLE CATEGORIES FOR REPORT\n");
+    printf(" ****************************************************************\n\n");
+
+    printf("\n    1) LETTERS");
+    printf("\n    2) UPPERCASE LETTERS");
+    printf("\n    3) LOWERCASE LETTERS");
+    printf("\n    4) NUMBERS");
+    printf("\n    5) PUNCTUATION");
+    printf("\n    6) SYMBOLS");
+    printf("\n    7) EXTENDED ASCII TABLE");
+
+    printf("\n\n Type the numbers of the desired category one at a time followed by ENTER, or 0 to exit the selection\n\n");
+
+    do{
+        printf("> ");
+        sel = getUserOption(0,7);
+
+        if(sel){
+
+            categoriesSelection[sel-1] = 1;
+
+        }
+    }while(sel != 0);
+}
+
+void freeDirSelection(int **dirSelection, int nDirSelection){
+
+    int i;
+    for ( i = 0; i < nDirSelection; i++)
+    {
+        free(dirSelection[i]);
+    }
+    free(dirSelection);
+
+}
+
+void freeDirs(char ***dirs, int ndirs){
+
+    int i;
+    for ( i = 0; i < ndirs; i++)
+    {
+        free((*dirs)[i]);
+    }
+    free((*dirs));
 
 }
