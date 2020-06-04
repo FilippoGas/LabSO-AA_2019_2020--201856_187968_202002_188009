@@ -71,25 +71,25 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 	}
 }
 
-int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char ***p_argv_matrix, int n, char ***files, int *nfiles, int pipe_from_M, int m){
+int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, char ****p_argv_matrix, int *n, char ***files, int *nfiles, int pipe_from_M, int *m){
 	int **data = initResMatrix(*nfiles);
 	int byteRead = -1;
-	int *finished = (int *)calloc(n, sizeof(int));
+	int *finished = (int *)calloc(*n, sizeof(int));
 	int *file_finished = (int *)calloc(*nfiles, sizeof(int));
-	int *n_files_for_P = getNFilesForP(p_argv_matrix, n);
+	int *n_files_for_P = getNFilesForP(*p_argv_matrix, *n);
 	while(byteRead != 0){
 		int mod = 0;
 		if(pipe_from_M != -1){
-			mod = execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data, &file_finished);
+			mod = execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data, &file_finished, pipe_for_P, pipe_control, p_pid_array);
 		}
 		if(mod != 3 && mod != 4){
 			int i = 0;
 			byteRead = 0;
-			while(i < n){
+			while(i < (*n)){
 				char message[PIPE_BUF];
-				int temp = read(pipe_for_P[i][READ], message, PIPE_BUF);
+				int temp = read((*pipe_for_P)[i][READ], message, PIPE_BUF);
 				if(temp > 0){
-					readMessage(message, data, p_pid_array, n, p_argv_matrix, *files, *nfiles, finished, file_finished);
+					readMessage(message, data, *p_pid_array, *n, *p_argv_matrix, *files, *nfiles, finished, file_finished);
 					int dfifo = openFIFO();
 					if(dfifo != -1){
 						writeToReport(data, *files, *nfiles, dfifo);
@@ -103,6 +103,7 @@ int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char
 	}
 	free(n_files_for_P);
 	free(finished);
+	free(n_files_for_P);
 	return data;
 }
 

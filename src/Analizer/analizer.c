@@ -63,11 +63,11 @@ int main(int argc, char *argv[]){
 	
 	int nP = 0;
 	//printf("A INIZIA A LEGGERE\n");	
-	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, &def_file_list, &def_file_list_size, pipe_from_main[READ], m);
+	int **data = readFromPipes(&pipe_for_P, &pipe_for_control_P, &p_pid_array, &p_argv_matrix, &n, &def_file_list, &def_file_list_size, pipe_from_main[READ], &m);
 	//printf("A ha finito di leggere\n");
 	
 	
-	if(pipe_from_main[READ] != -1 && pipe_from_main[WRITE] != -1){
+	/*if(pipe_from_main[READ] != -1 && pipe_from_main[WRITE] != -1){
 		char **file_with_missing_data;
 		int missing_data_size = getFileMissingData(def_file_list, def_file_list_size, data, &file_with_missing_data);
 		char ***new_p_argv_matrix = createArgsForP(n, m, file_with_missing_data, missing_data_size, pipe_for_P, pipe_for_control_P);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]){
 		freeArgsForP(new_p_argv_matrix, n);
 		free(new_pid_array);
 	}
-
+	*/
 	unlink(FIFO_NAME);
 	int i = 0; 
 	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	

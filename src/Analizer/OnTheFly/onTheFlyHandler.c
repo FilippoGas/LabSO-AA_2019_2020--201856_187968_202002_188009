@@ -34,7 +34,7 @@ void freeModContent(char **content, int size){
 
 
 
-int execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished){
+int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){
 	int res = 0;
 	char mod_type[PIPE_BUF + 1];
 	int byte = read(pipe_from_M, mod_type, PIPE_BUF);
@@ -44,23 +44,23 @@ int execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, cha
 		int nmods = getModContent(pipe_from_M, &mods, &realsize);
 		if(!strcmp(mod_type, MOD_REMOVE)){
 			printf("DEVO TOGLIERE FILE\n");
-			removeFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, finished, n, m, file_finished);
+			removeFiles(mods, nmods, files, nfiles, data, *p_argv_matrix, n_files_for_P, finished, *n, *m, file_finished);
 			res = 1;
 		}
 		else if(!strcmp(mod_type, MOD_ADD)){
 			printf("DEVO AGGIUNGERE FILE\n");
-			addFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, n);
+			addFiles(mods, nmods, files, nfiles, data, *p_argv_matrix, n_files_for_P, *n, file_finished);
 			res = 2;
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_M)){
 			printf("DEVO CAMBIARE M\n");
-			changeM();
+			changeM(mods, nmods, m, *n, p_argv_matrix, *files, *nfiles, finished, pipe_for_P, pipe_control, p_pid_array);
 			res = 3;
 			
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_N)){
 			printf("DEVO CAMBIARE N\n");
-			changeN();
+			changeN(mods, nmods, *m, n, p_argv_matrix, *files, *nfiles, finished, pipe_for_P, pipe_control, p_pid_array);
 			res = 4;
 		}
 		else{
@@ -120,7 +120,6 @@ void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **f
 	if(i != -1){
 		free((*files)[i]);
 		free((*data)[i]);
-		free((*file_finished)[i])
 		while(j < nfiles - 1){
 			(*files[i]) = (*files)[i + 1];
 			(*data[i]) = (*data)[i + 1];
@@ -129,7 +128,7 @@ void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **f
 		}
 		(*files)[nfiles - 1] = NULL;
 		(*data)[nfiles - 1] = NULL;
-		(*file_finished)[nfiles - 1] = NULL;
+		(*file_finished)[nfiles - 1] = 0;
 		(*files) = (char **)realloc((*files), (nfiles * sizeof(char *)) - sizeof(char *));
 		(*data) = (int **)realloc((*data), (nfiles * sizeof(int *)) - sizeof(int *));
 		(*file_finished) = (int *)realloc((*file_finished), (nfiles - 1) * sizeof(int));
@@ -230,7 +229,7 @@ void addToFiles(char ***files, int *nfiles, int ***data, char *name, int **file_
 	(*data)[*nfiles] = (int *)calloc(ALPHABET_SIZE, sizeof(int));
 	
 	(*file_finished) = (int *)realloc((*file_finished), ((*nfiles) + 1) * sizeof(int));
-	(*file_finished)[nfiles] = 0;
+	(*file_finished)[*nfiles] = 0;
 
 	(*nfiles)++;
 }
@@ -261,7 +260,10 @@ int getFileMissingData(char **def_file_list, int def_file_list_size, int **data,
 	return res;
 }
 
-void changeM(char **mods, char ***p_argv_matrix, int n, int *m, int **finished, char ***files, int *nfiles){ //MANCA L'ARRAY DEI PID ARRAY DI P E 
+
+
+
+void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){ 
 	int newm = atoi(mods[0]);
 	int i = 0;
 	
@@ -271,8 +273,33 @@ void changeM(char **mods, char ***p_argv_matrix, int n, int *m, int **finished, 
 
 	//CREA I NUOVI PROCESSI
 	char **new_files;
-	int new_files_size = filesNotRead(*files, *nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
+	int new_files_size = filesNotRead(*files, nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
 	
+	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
+	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
+	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE	
+	
+	char ***new_p_argv_matrix = createArgsForP(n, m, new_files, new_files_size); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA	
+
+}
+
+void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){ 
+	//E` ASSOLUTAMENTE UGUALE A CHANGEM CAMBIA SOLO N AL POSTO DI M
+	
+	int newn = atoi(mods[0]);
+	int i = 0;
+	
+	//CHIUDI LE PIPE IN LETTURA
+	
+	//Killa i processi
+
+	//CREA I NUOVI PROCESSI
+	char **new_files;
+	int new_files_size = filesNotRead(*files, nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
+	
+	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
+	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
+	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE	
 	
 	char ***new_p_argv_matrix = createArgsForP(n, m, new_files, new_files_size); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA	
 
@@ -281,7 +308,7 @@ void changeM(char **mods, char ***p_argv_matrix, int n, int *m, int **finished, 
 int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_files){
 	int res = 0;	
 	int i = 0;
-	(*new_files) = (char **)calloc(nfiles, sizeof(char *))
+	(*new_files) = (char **)calloc(nfiles, sizeof(char *));
 	while(i < nfiles){
 		if(finished[i] < oldm){
 			(*new_files)[res] = calloc(PATH_MAX + 1, sizeof(char));
@@ -290,7 +317,7 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 		}
 		i++;
 	}
-	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *))
+	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *));
 	return res;
 }
 
