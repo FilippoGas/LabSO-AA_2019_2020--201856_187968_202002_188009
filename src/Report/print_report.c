@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]){
 
     int ret = 0, reporting = 1, control;
-    char *option, **fileNames, **dirs;
+    char **fileNames, **dirs;
     int **reports, nfiles = argc-1, lastUpdate, ndirs = 0;
 
     //getFileNames(&fileNames,nfiles,argv);
@@ -86,11 +86,12 @@ int main(int argc, char *argv[]){
 
             case 0:
                 printf("Exiting...\n");
+                freeReports(&reports,nfiles);
+                freeFileNames(&fileNames,nfiles);
+                freeDirs(&dirs,ndirs);
                 reporting = 0;
             break;
-
-        }
-
+        }   
     }
 
     close(fd);

@@ -50,12 +50,12 @@ void generateRandomReports(int ***reports, int nfiles){
 
     (*reports) = malloc(nfiles * sizeof(int *));
 
-    int i=0;
-    for ( i ; i < nfiles ; i++ )
+    int i;
+    for ( i = 0 ; i < nfiles ; i++ )
     {
         (*reports)[i] = malloc(ASCII_SIZE * sizeof(int));
-        int j=0;
-        for ( j; j < ASCII_SIZE; j++){
+        int j;
+        for ( j = 0; j < ASCII_SIZE; j++){
             (*reports)[i][j] = rand() % 5000;
         }
         
@@ -102,8 +102,7 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
     printf("\n AVAILABLE FILES FOR REPORT\n");
     printf(" ****************************************************************\n\n");
 
-    i = 0;
-    for ( i ; i < nfiles; i++){
+    for ( i = 0 ; i < nfiles; i++){
         printf("    %d) %s\n",i+1,fileNames[i]);
     }
 
@@ -189,15 +188,15 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
 
     }
 
-    int i = 0;
-    for (i ; i < nfiles ; i++){
+    int i;
+    for (i = 0 ; i < nfiles ; i++){
 
         printf("\n\n ****************************************************************");
         printf("\n FILE: %s\n",fileNames[i]);
         printf(" ****************************************************************\n\n");
 
-        int j = ASCII_START; 
-        for ( j ; j < ALPHABET_SIZE ; j++){
+        int j; 
+        for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
 
             if(j == 127){
 
@@ -242,8 +241,8 @@ int getTotalChar(int *report){
 
     int totalChar= 0;
 
-    int i = 0;
-    for( i ; i < ALPHABET_SIZE ; i++){
+    int i;
+    for( i = 0 ; i < ALPHABET_SIZE ; i++){
         totalChar+=report[i];
     }
 
@@ -336,8 +335,8 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
         (*reports) = malloc((*nfiles)* sizeof(int*));
         (*fileNames) = malloc((*nfiles)* sizeof(char*));
 
-        int i = 0;
-        for ( i ; i < (*nfiles); i++)
+        int i;
+        for ( i = 0 ; i < (*nfiles); i++)
         {
             (*reports)[i] = malloc(ALPHABET_SIZE * sizeof(int));
 
@@ -459,8 +458,8 @@ void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *se
 
     }
 
-    int i = 0;
-    for (i ; i < nfiles ; i++){
+    int i;
+    for (i = 0 ; i < nfiles ; i++){
 
         int letters = 0;
         int upperCase = 0;
@@ -474,8 +473,8 @@ void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *se
         printf("\n FILE: %s\n",fileNames[i]);
         printf(" ****************************************************************\n\n");
 
-        int j = ASCII_START; 
-        for ( j ; j < ALPHABET_SIZE ; j++){
+        int j; 
+        for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
 
             if(j>=48 && j<=57){
                 numbers+=reports[i][j];
@@ -544,7 +543,7 @@ void freeReports(int ***reports, int size){
         free((*reports)[i]);
     }
     
-    free(*reports);
+    free((*reports));
 
 }
 
@@ -554,10 +553,10 @@ void freeFileNames(char ***fileNames, int size){
 
     for ( i = 0; i < size; i++)
     {
-        free(fileNames[i]);
+        free((*fileNames)[i]);
     }
-    
-    free(fileNames);
+    printf("\nafter for\n");
+    free((*fileNames));
 
 }
 
@@ -621,9 +620,9 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
     
     int sel, buff[100];  //invece che dim=1000, check se supero la dimensione e la aumento
 
-    int i = 0;
+    int i;
 
-    for ( i ; i < ndirs; i++){
+    for (i = 0 ; i < ndirs; i++){
         buff[i] = -1;
     }
 
@@ -631,8 +630,7 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
     printf("\n AVAILABLE DIRECTORIES FOR REPORT\n");
     printf(" ****************************************************************\n\n");
 
-    i = 0;
-    for ( i ; i < ndirs; i++){
+    for ( i = 0 ; i < ndirs; i++){
         printf("    %d) %s\n",i+1,dirs[i]);
     }
 
@@ -664,16 +662,16 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
 
 void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int *dirSelection, int nDirSelection, int percentage){
 
-    int i = 0;
-    for (i ; i < nfiles ; i++){
+    int i;
+    for (i = 0; i < nfiles ; i++){
 
         if(inSelectedDirs(fileNames[i],dirs,dirSelection,nDirSelection)){   
             printf("\n\n ****************************************************************");
             printf("\n FILE: %s\n",fileNames[i]);
             printf(" ****************************************************************\n\n");
 
-            int j = ASCII_START; 
-            for ( j ; j < ALPHABET_SIZE ; j++){
+            int j; 
+            for ( j = ASCII_START; j < ALPHABET_SIZE ; j++){
 
                 if(j == 127){
 
@@ -700,9 +698,8 @@ void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **d
             }   
             printf("\n\n");
         }
-
     }
-
+    freeDirSelection(&dirSelection,nDirSelection);
 }
 
 int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelection){
@@ -721,7 +718,6 @@ int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelec
 void getCategoriesSelection(int *categoriesSelection){
 
     int sel;  
-    int i = 0;
 
     printf("\n\n ****************************************************************");
     printf("\n AVAILABLE CATEGORIES FOR REPORT\n");
@@ -737,7 +733,6 @@ void getCategoriesSelection(int *categoriesSelection){
 
     printf("\n\n Type the numbers of the desired category one at a time followed by ENTER, or 0 to exit the selection\n\n");
 
-    i = 0;
     do{
         printf("> ");
         sel = getUserOption(0,7);
@@ -748,4 +743,26 @@ void getCategoriesSelection(int *categoriesSelection){
 
         }
     }while(sel != 0);
+}
+
+void freeDirSelection(int **dirSelection, int nDirSelection){
+
+    int i;
+    for ( i = 0; i < nDirSelection; i++)
+    {
+        free(dirSelection[i]);
+    }
+    free(dirSelection);
+
+}
+
+void freeDirs(char ***dirs, int ndirs){
+
+    int i;
+    for ( i = 0; i < ndirs; i++)
+    {
+        free((*dirs)[i]);
+    }
+    free((*dirs));
+
 }

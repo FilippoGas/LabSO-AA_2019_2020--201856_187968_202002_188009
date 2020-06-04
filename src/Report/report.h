@@ -119,3 +119,13 @@ int inSelectedDirs(char *fileName,char **dirs, int *dirSelection,int nDirSelecti
  * get the selection of categories to report
 */
 void getCategoriesSelection(int *categoriesSelection);
+
+/**
+ * free memory used by directory selection
+*/
+void freeDirSelection(int **dirSelection, int nDirSelection);
+
+/**
+ * free memory used by dirs
+*/
+void freeDirs(char ***dirs, int ndirs);
