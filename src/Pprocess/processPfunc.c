@@ -19,10 +19,12 @@ char **arrayStringSubset(int dim, int start, char **in){
  * FORMATO MESSAGGIO DA ANAL
  * ./p m pipe_read pipe_write file0 file1 . . . filek
  */
-int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, char ***files){
+int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, char ***files, int pipe_control[]){
 	(*m) = atoi(argv[1]);
 	(*pipe_read) = atoi(argv[2]);
 	(*pipe_write) = atoi(argv[3]);
+	pipe_control[READ] = atoi(argv[4]);
+	pipe_control[WRITE] = atoi(argv[5]);
 	(*files) = arrayStringSubset(argc, ARGS_P_START_FILE_OFFSET, argv);
 	return argc - ARGS_P_START_FILE_OFFSET;
 }
@@ -30,7 +32,7 @@ int readInput(int argc, char *argv[], int *m, int *pipe_read, int *pipe_write, c
 
 /*Creo Q.
  */
-int createChildren(int *pid, char **argvQ, int **pipe, int m, int i){
+int createChildren(int *pid, char **argvQ, int **pipe, int **pipe_control, int m, int i){
         int res = 0;
 	(*pid) = fork();
 
@@ -38,6 +40,8 @@ int createChildren(int *pid, char **argvQ, int **pipe, int m, int i){
 		int j = 0;
 		while(j < m){
 			if(j != i){
+				close(pipe_control[j][READ]);
+				close(pipe_control[i][WRITE]);
 				close(pipe[j][READ]);
 				close(pipe[j][WRITE]);
 			}
@@ -48,11 +52,11 @@ int createChildren(int *pid, char **argvQ, int **pipe, int m, int i){
 	return res;
 }
 
-int *startAllQ(int **pipe, char ***argvQ, int m){
+int *startAllQ(int **pipe, int **pipe_control, char ***argvQ, int m){
 	int i = 0;
 	int *pids = (int *)malloc(m * sizeof(int));
 	while(i < m){
-		if(createChildren(pids + i, argvQ[i], pipe, m, i)){
+		if(createChildren(pids + i, argvQ[i], pipe, pipe_control, m, i)){
 			perror("Error on creation of Q:");
 		}
 		close(pipe[i][WRITE]);
@@ -67,7 +71,7 @@ int *startAllQ(int **pipe, char ***argvQ, int m){
  * FORMATO CHIAMATA Q:
  * ./Q nQ m pipe_read pipe_write file0 file1 . . . filek NULL
  */
-char ***create_ArgvQ(int m, int **pipe, char **files, int nfiles){
+char ***create_ArgvQ(int m, int **pipe, int **pipe_control, char **files, int nfiles){
         char ***ret = (char ***)malloc(m * sizeof(char **));
 	int i = 0;
 	while(i < m){
@@ -86,11 +90,17 @@ char ***create_ArgvQ(int m, int **pipe, char **files, int nfiles){
 	
         	ret[i][4]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
         	sprintf(ret[i][4], "%d", pipe[i][WRITE]);
+        	
+		ret[i][5]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
+        	sprintf(ret[i][5], "%d", pipe_control[i][READ]);
+	
+        	ret[i][6]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
+        	sprintf(ret[i][6], "%d", pipe_control[i][WRITE]);
 
         	int j=0;
 		while(j < nfiles){
         	        ret[i][j + ARGS_Q_START_FILE_OFFSET]=(char *)malloc(strlen(files[j]) + 1);
-        	        sprintf(ret[i][j + 5], "%s ", files[j]);
+        	        sprintf(ret[i][j + ARGS_Q_START_FILE_OFFSET], "%s ", files[j]);
 			j++;
 		}
 		//ret[j+ARGS_Q_START_FILE_OFFSET]=NULL;
@@ -135,6 +145,18 @@ int **initPipes(int m){
 	return res;
 }
 
+int **initEmptyPipes(int m){
+	int **res = (int **)malloc(m * sizeof(int *));
+	int i = 0;
+	while(i < m){
+		res[i] = (int *)malloc(2 * sizeof(int));
+		res[i][0] = -1;
+		res[i][1] = -1;
+		i++;
+	}
+	return res;
+}
+
 void freeIntMatrix(int **in, int n){
 	int i = 0;
 	while(i < n){
@@ -144,9 +166,12 @@ void freeIntMatrix(int **in, int n){
 	free(in);
 }
 
-void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A){
+void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A, int **pipe_control_for_Q){
 	int byteRead = -1;
 	while(byteRead != 0){
+		if(pipe_from_A != -1){
+			execChangeOnTheFly(pipe_from_A, m, pipe_control_for_Q);
+		}
 		int i = 0;
 		byteRead = 0;
 		while(i < m){

@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,8 @@
 
 #define SETREC 3	//Code for setting recursive search in directories
 
+#define PIPEFORM 4
+
 #define COMMAND 0	//Code of argument as command
 
 #define NOTCOMMAND 1
@@ -39,6 +42,10 @@
 #define PNAME "/TestArea/Executable/P.out"		//PLACEHOLDER
 
 #define QNAME "/TestArea/Executable/Q.out"		//PLACEHOLDER
+
+#define RNAME "/TestArea/Executable/Report.out"		//PLACEHOLDER
+
+#define ANAME "/TestArea/Executable/A.out"		//PLACEHOLDER
 
 #define INTMAXCHAR 13					//TO VERIFY
 
@@ -54,22 +61,24 @@
 
 #define COLS 10						//COLONNE STAMPATE NELLA TABELLA DEI CARATTERI
 
-#define ARGS_P_START_FILE_OFFSET 4			//INDICE DI INIZIO FILE IN P
+#define ARGS_P_START_FILE_OFFSET 6			//INDICE DI INIZIO FILE IN P
 
-#define ARGS_Q_START_FILE_OFFSET 5			//INDICE DI INIZIO FILE IN Q
+#define PIPE_CONTROL_WRITE_IN_P 5
 
-
-//COMADI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
-
-#define AGGIUNTA "\\add "
-
-#define RIMOZIONE "\\remove "
-
-#define CAMBIAM "\\changem "
-
-#define CAMBIAN "\\changen "
+#define ARGS_Q_START_FILE_OFFSET 7			//INDICE DI INIZIO FILE IN Q
 
 
+//COMANDI DI RIMOZIONE AGGIUNTA CAMBIO N E M AL FLY
+
+#define MOD_ADD "\\add"
+
+#define MOD_REMOVE "\\remove"
+
+#define MOD_CHANGE_M "\\changem"
+
+#define MOD_CHANGE_N "\\changen"
+
+#define MOD_END "#"
 
 
 

@@ -23,7 +23,7 @@ struct dirent {
  * for n and m and save files not command argument in input (size = ninput), set if the
  * search in listed directory has to be recursive
  */
-void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive);
+void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive, int pipe_from_m[], int pipe_to_m[]);
 
 /* Changes the value for the option n with number contained in string value
 */
@@ -44,7 +44,7 @@ int typeOfCommand(char *value);
 /* Execute the command, already recognized by typeOfCommand in case of unrecognised command
  * prints the help file and exit
  */
-int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *recursive);
+int executeCommand(int type, int *n, int *m, int argc, int i, char **argv, int *recursive, int pipe_from_m[], int pipe_to_m[]);
 
 /* Recognize if string is completely a number
  */
@@ -131,4 +131,4 @@ void freeIdFile(struct idfile *in);
  */
 void freeIdfileArray(struct idfile **in, int n);
 
-int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive);
+int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive, int pipe_from_m[], int pipe_to_m[]);

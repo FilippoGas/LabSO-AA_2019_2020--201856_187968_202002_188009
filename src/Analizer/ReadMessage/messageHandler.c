@@ -4,7 +4,7 @@ int isTermination(char *in){
 	return !strcmp(in, END);
 }
 
-char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_for_p){
+char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_for_p, int *finished){
 	/* Leggo childId e FileNumberInChildId in modo da ottenere il nome del file
 	 */
 	int row = -1;
@@ -14,8 +14,10 @@ char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_fo
 	int value = atoi(temp);
 	int t = 0;
 	while(t < n && row == -1){
-		if(childId[t] == value)
+		if(childId[t] == value){
 			row = t;
+			finished[t]++;
+		}
 		t++;
 	}
 	temp = strtok(NULL , " ");
@@ -50,36 +52,43 @@ int **initResMatrix(int nFiles){
 
 
 
-void readMessage(char *message, int **value, int *childId, int n, char ***args_for_p, char ** file_list, int nFiles){
+void readMessage(char *message, int **value, int *childId, int n, char ***args_for_p, char ** file_list, int nFiles, int *finished){
 	/*FORMATO MESSAGGIO: 
 	 * childId FileNumberInChildID value1 value2 . . . value 256\n
 	 */
-	char *filename = getFileNameFromMessage(message, childId, n, args_for_p);
+	char *filename = getFileNameFromMessage(message, childId, n, args_for_p, finished);
 	int value_row = getPosInFileList(filename, file_list, nFiles);
 	free(filename);
-	int z = 0;
-	while(z < ALPHABET_SIZE){
-		char *temp = strtok(NULL, " ");
-		int value_read = atoi(temp);
-		value[value_row][z] += value_read;
-		z++;
+	if(value_row != -1){
+		int z = 0;
+		while(z < ALPHABET_SIZE ){
+			char *temp = strtok(NULL, " ");
+			int value_read = atoi(temp);
+			value[value_row][z] += value_read;
+			z++;
+		}
 	}
 }
 
-int **readFromPipes(int **pipe_for_P, int *p_pid_array, char ***p_argv_matrix, int n, char **files, int nfiles){
-	int **data = initResMatrix(nfiles);
+int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char ***p_argv_matrix, int n, char ***files, int *nfiles, int pipe_from_M, int m){
+	int **data = initResMatrix(*nfiles);
 	int byteRead = -1;
+	int *finished = (int *)calloc(n, sizeof(int));
+	int *n_files_for_P = getNFilesForP(p_argv_matrix, n);
 	while(byteRead != 0){
+		if(pipe_from_M != -1){
+			execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data);
+		}
 		int i = 0;
 		byteRead = 0;
 		while(i < n){
 			char message[PIPE_BUF];
 			int temp = read(pipe_for_P[i][READ], message, PIPE_BUF);
 			if(temp > 0){
-				readMessage(message, data, p_pid_array, n, p_argv_matrix, files, nfiles);
+				readMessage(message, data, p_pid_array, n, p_argv_matrix, *files, *nfiles, finished);
 				int dfifo = openFIFO();
 				if(dfifo != -1){
-					writeToReport(data, files, nfiles, dfifo);
+					writeToReport(data, *files, *nfiles, dfifo);
 					close(dfifo);
 				}
 			}
@@ -87,6 +96,8 @@ int **readFromPipes(int **pipe_for_P, int *p_pid_array, char ***p_argv_matrix, i
 			i++;
 		}	
 	}
+	free(n_files_for_P);
+	free(finished);
 	return data;
 }
 

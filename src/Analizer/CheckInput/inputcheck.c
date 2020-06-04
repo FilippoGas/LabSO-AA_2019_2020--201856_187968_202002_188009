@@ -20,6 +20,8 @@ int typeOfCommand(char *value){
 			res = HELP;
 		else if(value[1] == 'r')
 			res = SETREC;
+		else if(value[1] == 'p')
+			res = PIPEFORM;
 	}
 	return res;
 }
@@ -47,7 +49,7 @@ void changeNOrM(int type, int *n, int *m, char *value){
 		optionM(m, value);
 }
 
-int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *recursive){
+int executeCommand(int type, int *n, int *m, int argc, int i, char **argv, int *recursive, int pipe_from_m[], int pipe_to_m[]){
 	int res = 0;
 	char errorFile[PATH_MAX] = MANPATH;
 	strcat(errorFile, "analizer_usage.txt");
@@ -69,15 +71,23 @@ int executeCommand(int type, int *n, int *m, int argc, int i, char *value, int *
 	else if(type == SETREC){
 		(*recursive) = 1;
 	}
-	else{
+	else if(type == SETN || type == SETM){
 		if(i == argc - 1){
 			char *dummy = "0";
 			changeNOrM(type, n, m, dummy);
 		}
 		else{
-			changeNOrM(type, n, m, value);
-			res = isNumber(value);
+			changeNOrM(type, n, m, argv[i + 1]);
+			res = isNumber(argv[i + 1]);
 		}
+	}
+	else if(type == PIPEFORM && i + 2 < argc && isNumber(argv[i + 1]) && isNumber(argv[i + 2]) && isNumber(argv[i + 3]) && isNumber(argv[i + 4])){
+		pipe_from_m[READ] = atoi(argv[i + 1]);
+		pipe_from_m[WRITE] = atoi(argv[i + 2]);
+		pipe_to_m[READ] = atoi(argv[i + 3]);
+		pipe_to_m[WRITE] = atoi(argv[i + 4]);
+
+		res = 2;
 	}
 	return res;
 }
@@ -109,7 +119,7 @@ char **getNames(char *argv[], int *pos, int n){
 	return res;
 }
 
-void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive){
+void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *m, int *recursive, int pipe_from_m[], int pipe_to_m[]){
 	(*recursive) = 0;
 	int i = 1;
 	int pos[argc];
@@ -118,8 +128,11 @@ void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *
 		int type = typeOfArgument(argv[i]);
 		if(type == COMMAND){
 			int command = typeOfCommand(argv[i]);
-			if(executeCommand(command, n, m, argc, i, argv[i + 1], recursive))
+			int executed = executeCommand(command, n, m, argc, i, argv, recursive, pipe_from_m, pipe_to_m);
+			if(executed == 1)
 				i++;
+			else if(executed == 2)
+				i += 4;
 		}	
 		else{
 			pos[(*ninput)] = i;
@@ -223,13 +236,11 @@ int file_select(struct dirent   *entry) {
 		return 1;
 }
 
-
 char **lsDir(char *dir, int rec, int *n){
 	struct dirent **test;
 	int sizedir = scandir(dir, &test, file_select, 0);		
 	(*n) = sizedir;
 	char **res = initStringArray((*n), PATH_MAX + 1);
-
 	
 	int i = 0;
 	int j = 0;
@@ -269,7 +280,6 @@ void addSlashToDirs(char **dirs, int ndirs){
 		i++;
 	}
 }
-
 
 char **getContentOfDirs(char **dirs, int ndirs, int rec, int *resdim){
 	addSlashToDirs(dirs, ndirs);
@@ -362,11 +372,14 @@ void freeIdfileArray(struct idfile **in, int n){
 	}
 	free(in);
 }
-int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive){
+int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive, int pipe_from_m[], int pipe_to_m[]){
 	int nfiles, ndirs, ninput;
 	char **input, **dir_list, **file_list;
-	readInput(argc, argv, &input, &ninput, n, m, recursive);
-
+	pipe_from_m[READ] = -1;
+	pipe_from_m[WRITE] = -1;
+	pipe_to_m[READ] = -1;
+	pipe_to_m[WRITE] = -1;
+	readInput(argc, argv, &input, &ninput, n, m, recursive, pipe_from_m, pipe_to_m);
 	validateInput(input, ninput, &file_list, &dir_list, &nfiles, &ndirs);
 	int dir_content_size;
 	char **dir_content = getContentOfDirs(dir_list, ndirs, *recursive, &dir_content_size);
