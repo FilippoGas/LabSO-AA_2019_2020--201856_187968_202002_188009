@@ -34,7 +34,8 @@ void freeModContent(char **content, int size){
 
 
 
-void execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data){
+int execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished){
+	int res = 0;
 	char mod_type[PIPE_BUF + 1];
 	int byte = read(pipe_from_M, mod_type, PIPE_BUF);
 	if(byte > 0){
@@ -43,23 +44,32 @@ void execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, ch
 		int nmods = getModContent(pipe_from_M, &mods, &realsize);
 		if(!strcmp(mod_type, MOD_REMOVE)){
 			printf("DEVO TOGLIERE FILE\n");
-			removeFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, finished, n, m);
+			removeFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, finished, n, m, file_finished);
+			res = 1;
 		}
 		else if(!strcmp(mod_type, MOD_ADD)){
 			printf("DEVO AGGIUNGERE FILE\n");
 			addFiles(mods, nmods, files, nfiles, data, p_argv_matrix, n_files_for_P, n);
+			res = 2;
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_M)){
 			printf("DEVO CAMBIARE M\n");
+			changeM();
+			res = 3;
+			
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_N)){
 			printf("DEVO CAMBIARE N\n");
+			changeN();
+			res = 4;
 		}
 		else{
 			fprintf(stderr, "I cannot recognize mod command %s\n", mod_type);
 		}
 		freeModContent(mods, nmods); //DA CONTROLLARE SE CI VA REALSIZE O NMODS + 1
+
 	}
+	return res;
 }
 
 int *getNFilesForP(char ***p_argv_matrix, int n){
@@ -76,20 +86,18 @@ int *getNFilesForP(char ***p_argv_matrix, int n){
 	return res;
 }
 
-void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, char ***p_argv_matrix, int *n_files_for_P, int *finished, int n, int m){
+void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, char ***p_argv_matrix, int *n_files_for_P, int *finished, int n, int m, int **file_finished){
 	int i = 0;
 	int *stopped = (int *)calloc(n, sizeof(int));
 	int *pipes = (int *)calloc(n, sizeof(int));
 	while(i < nmods){
-		removeFile(mods[i], files, *nfiles, data);
+		removeFile(mods[i], files, *nfiles, data, file_finished);
 		int index = getPWithFile(p_argv_matrix, n, mods[i], pipes);
-		if(notFinished(n_files_for_P[index], finished[index], m)){
-			if(!stopped[index]){
-				write(pipes[index], MOD_REMOVE, strlen(MOD_REMOVE));
-				stopped[index] = 1;
-			}
-			write(pipes[index], mods[i], strlen(mods[i]));
+		if(!stopped[index]){
+			write(pipes[index], MOD_REMOVE, strlen(MOD_REMOVE));
+			stopped[index] = 1;
 		}
+		write(pipes[index], mods[i], strlen(mods[i]));
 		(*nfiles)--;
 		i++;
 	}
@@ -106,20 +114,25 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 	free(stopped);
 }
 
-void removeFile(char *to_remove, char ***files, int nfiles, int ***data){
+void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **file_finished){
 	int i = findFile(to_remove, *files, nfiles);
 	int j = i;
 	if(i != -1){
-		free(files[i]);
-		free(data[i]);
+		free((*files)[i]);
+		free((*data)[i]);
+		free((*file_finished)[i])
 		while(j < nfiles - 1){
 			(*files[i]) = (*files)[i + 1];
 			(*data[i]) = (*data)[i + 1];
+			(*file_finished[i]) = (*file_finished)[i + 1];
+
 		}
 		(*files)[nfiles - 1] = NULL;
 		(*data)[nfiles - 1] = NULL;
+		(*file_finished)[nfiles - 1] = NULL;
 		(*files) = (char **)realloc((*files), (nfiles * sizeof(char *)) - sizeof(char *));
 		(*data) = (int **)realloc((*data), (nfiles * sizeof(int *)) - sizeof(int *));
+		(*file_finished) = (int *)realloc((*file_finished), (nfiles - 1) * sizeof(int));
 	}
 	else{
 		fprintf(stderr, "Cannot find file to remove\n");
@@ -160,7 +173,7 @@ int notFinished(int nfiles, int value, int m){
 	return (nfiles * m) <= value;
 }
 
-void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, char ***p_argv_matrix, int *n_files_for_P, int n){
+void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, char ***p_argv_matrix, int *n_files_for_P, int n, int **file_finished){
 	int i = 0;
 	int *stopped = (int *)calloc(n, sizeof(int));
 
@@ -173,7 +186,7 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 		write((*p_argv_matrix)[index_P_min][PIPE_CONTROL_WRITE_IN_P], mods[i], strlen(mods[i]));
 		n_files_for_P[index_P_min]++;
 		addFileToPArgv(p_argv_matrix + index_P_min, mods[i]);
-		addToFiles(files, nfiles, data, mods[i]);
+		addToFiles(files, nfiles, data, mods[i], file_finished);
 		i++;
 	}
 	i = 0;
@@ -208,12 +221,17 @@ void addFileToPArgv(char ***p_argv, char *name){
 	(*p_argv[i + 1]) = NULL;
 }
 
-void addToFiles(char ***files, int *nfiles, int ***data, char *name){
+void addToFiles(char ***files, int *nfiles, int ***data, char *name, int **file_finished){
 	(*files) = (char **)realloc((*files), ((*nfiles) + 1) * sizeof(char *));
 	(*files)[*nfiles] = (char *)calloc(PATH_MAX + 1, sizeof(char));
 	sprintf((*files)[*nfiles], "%s", name);
+	
 	(*data) = (int **)realloc((*data), ((*nfiles) + 1) * sizeof(int *));
 	(*data)[*nfiles] = (int *)calloc(ALPHABET_SIZE, sizeof(int));
+	
+	(*file_finished) = (int *)realloc((*file_finished), ((*nfiles) + 1) * sizeof(int));
+	(*file_finished)[nfiles] = 0;
+
 	(*nfiles)++;
 }
 
@@ -242,3 +260,38 @@ int getFileMissingData(char **def_file_list, int def_file_list_size, int **data,
 	}
 	return res;
 }
+
+void changeM(char **mods, char ***p_argv_matrix, int n, int *m, int **finished, char ***files, int *nfiles){ //MANCA L'ARRAY DEI PID ARRAY DI P E 
+	int newm = atoi(mods[0]);
+	int i = 0;
+	
+	//CHIUDI LE PIPE IN LETTURA
+	
+	//Killa i processi
+
+	//CREA I NUOVI PROCESSI
+	char **new_files;
+	int new_files_size = filesNotRead(*files, *nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
+	
+	
+	char ***new_p_argv_matrix = createArgsForP(n, m, new_files, new_files_size); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA	
+
+}
+
+int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_files){
+	int res = 0;	
+	int i = 0;
+	(*new_files) = (char **)calloc(nfiles, sizeof(char *))
+	while(i < nfiles){
+		if(finished[i] < oldm){
+			(*new_files)[res] = calloc(PATH_MAX + 1, sizeof(char));
+			sprintf((*new_files)[res], "%s", files[i]);
+			res++;
+		}
+		i++;
+	}
+	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *))
+	return res;
+}
+
+

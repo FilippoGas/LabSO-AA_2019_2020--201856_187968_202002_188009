@@ -1,6 +1,6 @@
 #include "../../macro_libglob.h"
 
-void execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data);
+int execChangeOnTheFly(int pipe_from_M, int n, int m, char ***p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data);
 
 int getModContent(int pipe_d, char ***content, int *realsize);
 

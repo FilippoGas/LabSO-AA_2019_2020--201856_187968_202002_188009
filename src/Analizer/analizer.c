@@ -66,10 +66,6 @@ int main(int argc, char *argv[]){
 	int **data = readFromPipes(pipe_for_P, pipe_for_control_P, p_pid_array, p_argv_matrix, n, &def_file_list, &def_file_list_size, pipe_from_main[READ], m);
 	//printf("A ha finito di leggere\n");
 	
-	unlink(FIFO_NAME);
-	int i = 0; 
-	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
-	writeToReport(data, def_file_list, def_file_list_size, fd);
 	
 	if(pipe_from_main[READ] != -1 && pipe_from_main[WRITE] != -1){
 		char **file_with_missing_data;
@@ -84,6 +80,10 @@ int main(int argc, char *argv[]){
 		free(new_pid_array);
 	}
 
+	unlink(FIFO_NAME);
+	int i = 0; 
+	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);	
+	writeToReport(data, def_file_list, def_file_list_size, fd);
 	
 	
 	

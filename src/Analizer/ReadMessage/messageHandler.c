@@ -52,7 +52,7 @@ int **initResMatrix(int nFiles){
 
 
 
-void readMessage(char *message, int **value, int *childId, int n, char ***args_for_p, char ** file_list, int nFiles, int *finished){
+void readMessage(char *message, int **value, int *childId, int n, char ***args_for_p, char ** file_list, int nFiles, int *finished, int *file_finished){
 	/*FORMATO MESSAGGIO: 
 	 * childId FileNumberInChildID value1 value2 . . . value 256\n
 	 */
@@ -67,6 +67,7 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 			value[value_row][z] += value_read;
 			z++;
 		}
+		file_finished[value_row]++;
 	}
 }
 
@@ -74,26 +75,30 @@ int **readFromPipes(int **pipe_for_P, int **pipe_control, int *p_pid_array, char
 	int **data = initResMatrix(*nfiles);
 	int byteRead = -1;
 	int *finished = (int *)calloc(n, sizeof(int));
+	int *file_finished = (int *)calloc(*nfiles, sizeof(int));
 	int *n_files_for_P = getNFilesForP(p_argv_matrix, n);
 	while(byteRead != 0){
+		int mod = 0;
 		if(pipe_from_M != -1){
-			execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data);
+			mod = execChangeOnTheFly(pipe_from_M, n, m, p_argv_matrix, files, nfiles, finished, n_files_for_P, &data, &file_finished);
 		}
-		int i = 0;
-		byteRead = 0;
-		while(i < n){
-			char message[PIPE_BUF];
-			int temp = read(pipe_for_P[i][READ], message, PIPE_BUF);
-			if(temp > 0){
-				readMessage(message, data, p_pid_array, n, p_argv_matrix, *files, *nfiles, finished);
-				int dfifo = openFIFO();
-				if(dfifo != -1){
-					writeToReport(data, *files, *nfiles, dfifo);
-					close(dfifo);
+		if(mod != 3 && mod != 4){
+			int i = 0;
+			byteRead = 0;
+			while(i < n){
+				char message[PIPE_BUF];
+				int temp = read(pipe_for_P[i][READ], message, PIPE_BUF);
+				if(temp > 0){
+					readMessage(message, data, p_pid_array, n, p_argv_matrix, *files, *nfiles, finished, file_finished);
+					int dfifo = openFIFO();
+					if(dfifo != -1){
+						writeToReport(data, *files, *nfiles, dfifo);
+						close(dfifo);
+					}
 				}
+				byteRead += temp;
+				i++;
 			}
-			byteRead += temp;
-			i++;
 		}	
 	}
 	free(n_files_for_P);
