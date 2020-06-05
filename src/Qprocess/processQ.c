@@ -2,7 +2,8 @@
 
 int main(int argc, char *argv[]){
   signal(SIGTERM, SIG_DFL);
-	int parte, denominatore, pipeRead, pipeWrite, pipeReadOnTheFly, pipeWriteOnTheFly;
+	sleep(50);	
+  int parte, denominatore, pipeRead, pipeWrite, pipeReadOnTheFly, pipeWriteOnTheFly;
   int *writtenFiles = (int *)calloc(argc-ARGS_Q_START_FILE_OFFSET,sizeof(int));
   int *removedFiles = (int *)calloc(argc-ARGS_Q_START_FILE_OFFSET,sizeof(int));
   char message[PIPE_BUF+1];

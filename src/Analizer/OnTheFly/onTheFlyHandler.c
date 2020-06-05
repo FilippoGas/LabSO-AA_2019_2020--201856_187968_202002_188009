@@ -7,11 +7,12 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 	int byte = -1;
 	int res;
 	do{
-		char message[PIPE_BUF + 1];
+		char message[PIPE_BUF + 1] = "";
 		byte = read(pipe_d, message, PIPE_BUF);
 		if(byte > 0){
 			(*content)[i] = (char *)calloc((PIPE_BUF + 1), sizeof(char));
 			sprintf((*content)[i], "%s", message);
+			printf("%s\n", (*content)[i]);
 			i++;
 			if(i >= size){
 				size *= 2;
@@ -19,8 +20,9 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 			}
 
 		}
-	}while(strcmp(MOD_END, (*content)[i]) && byte != 0);
+	}while(strcmp(MOD_END, (*content)[i - 1]) && byte != 0);
 	if(type == 0 || type == 1){
+		printf("VALIDO I FILE\n");
 		char **file_list, **dir_list;
 		int nfiles, ndirs;
 		validateInput(*content, i - 1, &file_list, &dir_list, &nfiles, &ndirs);
@@ -31,11 +33,13 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 		(*content) = getAllFullPath(file_list, nfiles, dir_content, dir_content_size, &res);
 		freeStringArray(file_list, nfiles);
 		freeStringArray(dir_content, dir_content_size);
+		printf("HO VALIDATO I FILE\n");
 	
 	}
 	else{
 		res = 1;
 	}
+	printf("Ho finito di leggere la pipe di controllo\n");
 	return res;
 }
 
@@ -214,7 +218,6 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 		int index_P_min = findPMinFile(n_files_for_P, n);
 		if(!stopped[index_P_min]){
 			write((*p_argv_matrix)[index_P_min][PIPE_CONTROL_WRITE_IN_P], MOD_ADD, strlen(MOD_ADD));
-			i++;
 		}
 		write((*p_argv_matrix)[index_P_min][PIPE_CONTROL_WRITE_IN_P], mods[i], strlen(mods[i]));
 		n_files_for_P[index_P_min]++;

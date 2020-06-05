@@ -79,11 +79,11 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 	i += 5;
 	//RECU
 	if(rec == 1){
-		ret[i] = malloc(4);
+		ret[i] = malloc(4 * sizeof(char));
 		sprintf(ret[i],"-r");
 		i++;
 	}
-	ret[i] = malloc(3);
+	ret[i] = malloc(4 * sizeof(char));
 	sprintf(ret[i],"-p");
 	ret[i + 1] = intToChar( pipe_to_a[READ] );
 	ret[i + 2] = intToChar( pipe_to_a[WRITE] );
@@ -194,7 +194,7 @@ void addtoArray( char ***array, int *ndata, char *add, int **elimin ){
 
 //Aggiungo un file, con il proprio path, nella lista dei file
 void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
-	printf( "Digirare uno o piu' cartelle o file\n" );
+	printf( "Digitare uno o piu' cartelle o file\n" );
 	char *aggiunta = getIn();
 	while(index(aggiunta,' ') != NULL){
 		printf("Aggiungere solo un file alla volta, grazie.\n");
@@ -203,6 +203,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 	}
 	addtoArray(vari,nvari,aggiunta,elimin);
 	//DEBUG
+	printf("%s\n", (*vari)[(*nvari) - 1]);
 	sms_addfile((*vari)[(*nvari)-1],pipe);
 	//EDEBUG
 }
@@ -219,7 +220,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 	while(option >= 0){
 		lung = (*nvari) + NCHIAMATECOST;
 		printOpAnal();
-		
+		printf("HO STAMPATO IL MENU\n");	
 		char *input = getIn();
 		//Controllo se si vuole tornare al menu' principale
 		if( !(strcmp(input, "q") && strcmp(input, "b") && strcmp(input, "back")) ){
@@ -230,12 +231,14 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 			option = 69;
 		}
 		else option = atoi(input);
+		printf("Prima di liberare input\n");
 		free(input);
+		printf("Dopo aver liberato input\n");
 		//Opzioni
 		switch(option) {
 			case 1:
 				//creo l'exec e faccio partire l'analizer
-       				pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
+				pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
         			pipe2( pipe_from_a, __O_DIRECT );
 				execAnal = createExec( *n, *m, *vari, *nvari, *rec ,*elimin,pipe_to_a,pipe_from_a);
 				eseguiAnal( execAnal, lung );
@@ -248,6 +251,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 				(*nvari) = 0;
 
         			leggo_input_pipe(vari,nvari,elimin,pipe_from_a, pipe_to_a);
+				close(pipe_to_a[READ]);
 				break;
 			case 2:
 				//Add dir o file
@@ -347,6 +351,7 @@ void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a
 	for(i=0; i < (*ninput); i++ ){
 		char message1[PIPE_BUF + 1] = "";
 		read( pipe_from_a[READ], message1, PIPE_BUF );
+		printf("%s\n", message1);
 		(*input)[i] = calloc( strlen(message1) + 1, sizeof(char) );
 		sprintf( (*input)[i], "%s", message1);
 	}

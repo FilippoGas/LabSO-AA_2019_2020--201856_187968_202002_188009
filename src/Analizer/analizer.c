@@ -15,7 +15,6 @@ void printIdfileArray(struct idfile **in, int size){
 }
 
 int main(int argc, char *argv[]){
-
 	int m = 3, n = 4, recursive, ret = 0, pipe_from_main[2], pipe_to_main[2];
 	char **def_file_list;
 	//Recupero input
