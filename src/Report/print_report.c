@@ -71,13 +71,13 @@ int main(int argc, char *argv[]){
             case 4:
                 ndirs = getDirs(fileNames,nfiles,&dirs);
                 getDirSelection(dirs,ndirs,&dirSelection,&nDirSelection);
-                printDirectoryReports(reports,fileNames,nfiles,dirs,ndirs,dirSelection,nDirSelection,0);
+                printDirectoryReports(reports,fileNames,nfiles,dirs,ndirs,&dirSelection,nDirSelection,0);
             break;
 
             case 5:
                 ndirs = getDirs(fileNames,nfiles,&dirs);
                 getDirSelection(dirs,ndirs,&dirSelection,&nDirSelection);
-                printDirectoryReports(reports,fileNames,nfiles,dirs,ndirs,dirSelection,nDirSelection,1);
+                printDirectoryReports(reports,fileNames,nfiles,dirs,ndirs,&dirSelection,nDirSelection,1);
             break;
 
             case 6:

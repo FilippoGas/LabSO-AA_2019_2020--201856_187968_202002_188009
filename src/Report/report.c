@@ -660,12 +660,12 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
     }
 }
 
-void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int *dirSelection, int nDirSelection, int percentage){
+void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int **dirSelection, int nDirSelection, int percentage){
 
     int i;
     for (i = 0; i < nfiles ; i++){
 
-        if(inSelectedDirs(fileNames[i],dirs,dirSelection,nDirSelection)){   
+        if(inSelectedDirs(fileNames[i],dirs,(*dirSelection),nDirSelection)){   
             printf("\n\n ****************************************************************");
             printf("\n FILE: %s\n",fileNames[i]);
             printf(" ****************************************************************\n\n");
@@ -699,7 +699,9 @@ void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **d
             printf("\n\n");
         }
     }
-    freeDirSelection(&dirSelection,nDirSelection);
+    printf("\npre free\n");
+    freeDirSelection(dirSelection,nDirSelection);
+    printf("\npost free\n");
 }
 
 int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelection){
@@ -747,12 +749,7 @@ void getCategoriesSelection(int *categoriesSelection){
 
 void freeDirSelection(int **dirSelection, int nDirSelection){
 
-    int i;
-    for ( i = 0; i < nDirSelection; i++)
-    {
-        free(dirSelection[i]);
-    }
-    free(dirSelection);
+    free((*dirSelection));
 
 }
 

@@ -107,7 +107,7 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
 /**
  * print reports for the selected directories
 */
-void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int *dirSelection, int nDirSelection, int percentage);
+void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int **dirSelection, int nDirSelection, int percentage);
 
 /**
  * check if a file is in one of the selected directories
