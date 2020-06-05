@@ -16,7 +16,7 @@ int getModContent(int pipe_d, char ***content, int *realsize){
 				size *= 2;
 				(*content) = realloc((*content), size * sizeof(char *));
 			}
-		
+
 		}
 	}while(strcmp(MOD_END, (*content)[i]) && byte != 0);
 	(*realsize) = size;
@@ -56,7 +56,7 @@ int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, 
 			printf("DEVO CAMBIARE M\n");
 			changeM(mods, nmods, m, *n, p_argv_matrix, *files, *nfiles, finished, pipe_for_P, pipe_control, p_pid_array);
 			res = 3;
-			
+
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_N)){
 			printf("DEVO CAMBIARE N\n");
@@ -155,7 +155,7 @@ int getPWithFile(char ***p_argv_matrix, int n, char *in, int *pipe){
 	int res = -1;
 	int i = 0;
 	while(i < n){
-		int j = 0; 
+		int j = 0;
 		while(p_argv_matrix[i][j] != NULL){
 			if(!strcmp(p_argv_matrix[i][j], in)){
 				res = i;
@@ -191,7 +191,7 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 	i = 0;
 	while(i < n){
 		if(stopped[i]){
-			write((*p_argv_matrix)[i][PIPE_CONTROL_WRITE_IN_P], MOD_END, strlen(MOD_END));	
+			write((*p_argv_matrix)[i][PIPE_CONTROL_WRITE_IN_P], MOD_END, strlen(MOD_END));
 		}
 		i++;
 	}
@@ -215,7 +215,7 @@ void addFileToPArgv(char ***p_argv, char *name){
 	while((*p_argv)[i] != NULL)
 		i++;
 	(*p_argv) = (char **)realloc((*p_argv), (i + 2) * sizeof(char *));
-	(*p_argv)[i] = (char *)calloc(PATH_MAX + 1, sizeof(char)); 
+	(*p_argv)[i] = (char *)calloc(PATH_MAX + 1, sizeof(char));
 	sprintf((*p_argv)[i], "%s", name);
 	(*p_argv[i + 1]) = NULL;
 }
@@ -224,10 +224,10 @@ void addToFiles(char ***files, int *nfiles, int ***data, char *name, int **file_
 	(*files) = (char **)realloc((*files), ((*nfiles) + 1) * sizeof(char *));
 	(*files)[*nfiles] = (char *)calloc(PATH_MAX + 1, sizeof(char));
 	sprintf((*files)[*nfiles], "%s", name);
-	
+
 	(*data) = (int **)realloc((*data), ((*nfiles) + 1) * sizeof(int *));
 	(*data)[*nfiles] = (int *)calloc(ALPHABET_SIZE, sizeof(int));
-	
+
 	(*file_finished) = (int *)realloc((*file_finished), ((*nfiles) + 1) * sizeof(int));
 	(*file_finished)[*nfiles] = 0;
 
@@ -263,50 +263,93 @@ int getFileMissingData(char **def_file_list, int def_file_list_size, int **data,
 
 
 
-void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){ 
+void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){
 	int newm = atoi(mods[0]);
 	int i = 0;
-	
+
 	//CHIUDI LE PIPE IN LETTURA
-	
+	while(i<n){
+		close((*pipe_for_P)[i][READ]);
+		close((*pipe_for_P)[i][WRITE]);
+		close((*pipe_control)[i][READ]);
+		close((*pipe_control)[i][WRITE]);
+		i++;
+	}
+
+	freePipeMatrix(*pipe_for_P,n);
+	freePipeMatrix(*pipe_control,n);
+	freeArgsForP(*p_argv_matrix,n);
+
 	//Killa i processi
+	//killAllP(**p_pid_array,n);
+	i=0;
+	while(i<n){
+		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
+		i++;
+	}
+	free(*p_pid_array);
 
 	//CREA I NUOVI PROCESSI
 	char **new_files;
 	int new_files_size = filesNotRead(*files, nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
-	
+	(*m) = newm;
+
 	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
-	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE	
-	
-	char ***new_p_argv_matrix = createArgsForP(n, m, new_files, new_files_size); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA	
+	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
+	(*pipe_for_P) = initPipeMatrix(n);
+	(*pipe_control) = initPipeMatrix(n);
+	(*p_argv_matrix) = createArgsForP(n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
+	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 
 }
 
-void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){ 
+void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){
 	//E` ASSOLUTAMENTE UGUALE A CHANGEM CAMBIA SOLO N AL POSTO DI M
-	
+
 	int newn = atoi(mods[0]);
 	int i = 0;
-	
+
 	//CHIUDI LE PIPE IN LETTURA
-	
+	while(i<(*n)){
+		close((*pipe_for_P)[i][READ]);
+		close((*pipe_for_P)[i][WRITE]);
+		close((*pipe_control)[i][READ]);
+		close((*pipe_control)[i][WRITE]);
+		i++;
+	}
+
+	freePipeMatrix(*pipe_for_P,n);
+	freePipeMatrix(*pipe_control,n);
+	freeArgsForP(*p_argv_matrix,n);
+
 	//Killa i processi
+	//killAllP(**p_pid_array,*n);
+	i=0;
+	while(i<(*n)){
+		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
+		i++;
+	}
+	free(*p_pid_array);
 
 	//CREA I NUOVI PROCESSI
 	char **new_files;
 	int new_files_size = filesNotRead(*files, nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
-	
+	(*n) = newn;
+
 	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
-	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE	
-	
-	char ***new_p_argv_matrix = createArgsForP(n, m, new_files, new_files_size); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA	
+	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
+
+	(*pipe_for_P) = initPipeMatrix(n);
+	(*pipe_control) = initPipeMatrix(n);
+	(*p_argv_matrix) = createArgsForP(*n, m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
+	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 
 }
 
 int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_files){
-	int res = 0;	
+	int res = 0;
 	int i = 0;
 	(*new_files) = (char **)calloc(nfiles, sizeof(char *));
 	while(i < nfiles){
@@ -320,5 +363,3 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *));
 	return res;
 }
-
-

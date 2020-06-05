@@ -6,7 +6,7 @@ char ***createArgsForP(int n, int m, char **files, int nFiles, int **pipeMatrix,
 	int i = 0, j = 0;
 	while(i < n){
 		res[i] = (char **)calloc(row_size_max, sizeof(char *));
-		
+
 		//NOME DI P
 		res[i][0] = (char *)malloc((strlen(PNAME) + 1) * sizeof(char));
 		sprintf(res[i][0], "%s", PNAME);

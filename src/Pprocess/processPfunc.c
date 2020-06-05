@@ -78,22 +78,22 @@ char ***create_ArgvQ(int m, int **pipe, int **pipe_control, char **files, int nf
 		ret[i] = calloc(nfiles + ARGS_Q_START_FILE_OFFSET + 1,sizeof(char *));
 		ret[i][0]=(char *)calloc((strlen(QNAME) + 1), sizeof(char));
         	sprintf(ret[i][0], "%s", QNAME);
-	
+
         	ret[i][1]=(char *)calloc((INTMAXCHAR + 1), sizeof(char));
 		sprintf(ret[i][1], "%d", i);
 
         	ret[i][2]=(char *)calloc((INTMAXCHAR + 1), sizeof(char));
         	sprintf(ret[i][2], "%d", m);
-	
+
         	ret[i][3]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
         	sprintf(ret[i][3], "%d", pipe[i][READ]);
-	
+
         	ret[i][4]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
         	sprintf(ret[i][4], "%d", pipe[i][WRITE]);
-        	
+
 		ret[i][5]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
         	sprintf(ret[i][5], "%d", pipe_control[i][READ]);
-	
+
         	ret[i][6]=(char *)calloc(INTMAXCHAR + 1, sizeof(char));
         	sprintf(ret[i][6], "%d", pipe_control[i][WRITE]);
 
@@ -185,4 +185,3 @@ void readFromPipes(int **pipe_for_Q, int m, int pipe_to_A, int pipe_from_A, int 
 		}
 	}
 }
-

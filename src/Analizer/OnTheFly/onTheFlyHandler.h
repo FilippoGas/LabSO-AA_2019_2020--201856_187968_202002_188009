@@ -27,4 +27,3 @@ int getFileMissingData(char **def_file_list, int def_file_list_size, int **data,
 void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array);
 
 void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char **files, int nfiles, int *finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array);
-
