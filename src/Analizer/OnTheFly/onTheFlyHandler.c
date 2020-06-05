@@ -358,6 +358,9 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 			sprintf((*new_files)[res], "%s", files[i]);
 			res++;
 		}
+		else{
+			finished[i] = INT_MAX; 
+		}
 		i++;
 	}
 	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *));
