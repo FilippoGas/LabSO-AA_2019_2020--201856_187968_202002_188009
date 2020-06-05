@@ -1,7 +1,8 @@
 #include "processQfunc.h"
 
 int main(int argc, char *argv[]){
-  int parte, denominatore, pipeRead, pipeWrite, pipeReadOnTheFly, pipeWriteOnTheFly;
+  signal(SIGTERM, SIG_DFL);
+	int parte, denominatore, pipeRead, pipeWrite, pipeReadOnTheFly, pipeWriteOnTheFly;
   int *writtenFiles = (int *)calloc(argc-ARGS_Q_START_FILE_OFFSET,sizeof(int));
   int *removedFiles = (int *)calloc(argc-ARGS_Q_START_FILE_OFFSET,sizeof(int));
   char message[PIPE_BUF+1];
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]){
       //Scrivo nella pipe la stringa formato
       //if(!removedFiles[i]){
       if(errorSysCall(write(pipeWrite,format, PIPE_BUF))>-1){
-        writtenFiles[i] = 1;
+	      writtenFiles[i] = 1;
       }
       errorSysCall(close(fd));
       free(format);

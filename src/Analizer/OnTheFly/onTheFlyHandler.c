@@ -1,10 +1,11 @@
 #include "onTheFlyHandler.h"
 
-int getModContent(int pipe_d, char ***content, int *realsize){
+int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 	int size = 10;
 	(*content) = (char **)malloc(size * sizeof(char *));
 	int i = 0;
 	int byte = -1;
+	int res;
 	do{
 		char message[PIPE_BUF + 1];
 		byte = read(pipe_d, message, PIPE_BUF);
@@ -19,8 +20,23 @@ int getModContent(int pipe_d, char ***content, int *realsize){
 
 		}
 	}while(strcmp(MOD_END, (*content)[i]) && byte != 0);
-	(*realsize) = size;
-	return i - 1;
+	if(type == 0 || type == 1){
+		char **file_list, **dir_list;
+		int nfiles, ndirs;
+		validateInput(*content, i - 1, &file_list, &dir_list, &nfiles, &ndirs);
+		int dir_content_size;
+		char **dir_content = getContentOfDirs(dir_list, ndirs, r, &dir_content_size);
+		freeStringArray(dir_list, ndirs);
+		freeModContent(*content, size);
+		(*content) = getAllFullPath(file_list, nfiles, dir_content, dir_content_size, &res);
+		freeStringArray(file_list, nfiles);
+		freeStringArray(dir_content, dir_content_size);
+	
+	}
+	else{
+		res = 1;
+	}
+	return res;
 }
 
 void freeModContent(char **content, int size){
@@ -32,16 +48,34 @@ void freeModContent(char **content, int size){
 	free(content);
 }
 
+int getType(char *mod_type){
+	int res;
+	if(!strcmp(mod_type, MOD_REMOVE)){
+		res = 0;
+	}
+	else if(!strcmp(mod_type, MOD_ADD)){
+		res = 1;
+	}
+	else if(!strcmp(mod_type, MOD_CHANGE_M)){
+		res = 2;
+	}
+	else if(!strcmp(mod_type, MOD_CHANGE_N)){
+		res = 3;
+	}
+	return res;
+}
 
 
-int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array){
+
+int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array, int r){
 	int res = 0;
 	char mod_type[PIPE_BUF + 1];
 	int byte = read(pipe_from_M, mod_type, PIPE_BUF);
 	if(byte > 0){
+	printf("MI E ARRIVATO UN COMANDO DI CAMBIO\n");
 		char **mods;
 		int realsize;
-		int nmods = getModContent(pipe_from_M, &mods, &realsize);
+		int nmods = getModContent(pipe_from_M, &mods, &realsize, getType(mod_type), r);
 		if(!strcmp(mod_type, MOD_REMOVE)){
 			printf("DEVO TOGLIERE FILE\n");
 			removeFiles(mods, nmods, files, nfiles, data, *p_argv_matrix, n_files_for_P, finished, *n, *m, file_finished);

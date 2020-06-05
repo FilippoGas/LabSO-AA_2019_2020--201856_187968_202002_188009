@@ -13,4 +13,4 @@ void readMessage(char *message, int **value, int *childId, int n, char ***args_f
 
 int **initResMatrix(int nFiles);
 
-int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, char ****p_argv_matrix, int *n, char ***files, int *nfiles, int pipe_from_M, int *m);
+int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, char ****p_argv_matrix, int *n, char ***files, int *nfiles, int pipe_from_M, int *m, int r);

@@ -144,88 +144,88 @@ void readInput(int argc, char *argv[], char ***input, int *ninput, int *n, int *
 }
 
 void validateInput(char **input, int ninput, char ***files, char ***dirs, int *nfiles, int *ndirs){
-	int file_pos[ninput], dir_pos[ninput];
-	(*nfiles) = 0;
-	(*ndirs) = 0;
-	int i = 0;
-	while(i < ninput){
-		int type = inputType(input[i]);
-		if(type == DIRECTORY){
-			dir_pos[(*ndirs)] = i;
-			(*ndirs)++;	
+		int file_pos[ninput], dir_pos[ninput];
+		(*nfiles) = 0;
+		(*ndirs) = 0;
+		int i = 0;
+		while(i < ninput){
+			int type = inputType(input[i]);
+			if(type == DIRECTORY){
+				dir_pos[(*ndirs)] = i;
+				(*ndirs)++;	
+			}
+			else if(type == FILES){
+				file_pos[(*nfiles)] = i;
+				(*nfiles)++;	
+			}
+			i++;
 		}
-		else if(type == FILES){
-			file_pos[(*nfiles)] = i;
-			(*nfiles)++;	
-		}
-		i++;
+		(*files) = getNames(input, file_pos, *nfiles);
+		(*dirs) = getNames(input, dir_pos, *ndirs);
+		freeStringArray(input, ninput);
 	}
-	(*files) = getNames(input, file_pos, *nfiles);
-	(*dirs) = getNames(input, dir_pos, *ndirs);
-	freeStringArray(input, ninput);
-}
 
-int inputType(char *in){
-	struct stat s;
-	int res = stat(in, &s);
-	
-	if(res == -1){
-		if(errno == ENOENT){
-			fprintf(stderr, "Object %s doesn't, exist, ignored.\n", in);
+	int inputType(char *in){
+		struct stat s;
+		int res = stat(in, &s);
+		
+		if(res == -1){
+			if(errno == ENOENT){
+				fprintf(stderr, "Object %s doesn't, exist, ignored.\n", in);
+			}
+			else{
+				perror("stat");
+				exit(1);
+			}
 		}
 		else{
-			perror("stat");
-			exit(1);
+			if(S_ISDIR(s.st_mode))
+				res = DIRECTORY;
+			else if(S_ISREG(s.st_mode))
+				res = FILES;
+			else{
+				res = 10;
+				fprintf(stderr, "Object %s is neither a file nor a directory, ignored.\n", in);
+			}
 		}
+		return res;
 	}
-	else{
-		if(S_ISDIR(s.st_mode))
-			res = DIRECTORY;
-		else if(S_ISREG(s.st_mode))
-			res = FILES;
-		else{
-			res = 10;
-			fprintf(stderr, "Object %s is neither a file nor a directory, ignored.\n", in);
+
+	void freeStringArray(char **in, int n){
+		int i = 0;
+		while(i < n){
+			free(in[i]);
+			i++;
 		}
+		free(in);
 	}
-	return res;
-}
 
-void freeStringArray(char **in, int n){
-	int i = 0;
-	while(i < n){
-		free(in[i]);
-		i++;
+	char **concatStringArray(char **first, char **second, int nfirst, int nsecond, int *resdim){
+		(*resdim) = nfirst + nsecond;
+		char **res = malloc((*resdim) * sizeof(char *));
+		int i = 0;
+		while(i < (*resdim)){
+			res[i] = malloc((PATH_MAX + 1) * sizeof(char));
+			if(i < nfirst)
+				strcpy(res[i], first[i]);
+			else
+				strcpy(res[i], second[i-nfirst]);
+			i++;
+		} 
+		return res;
 	}
-	free(in);
-}
 
-char **concatStringArray(char **first, char **second, int nfirst, int nsecond, int *resdim){
-	(*resdim) = nfirst + nsecond;
-	char **res = malloc((*resdim) * sizeof(char *));
-	int i = 0;
-	while(i < (*resdim)){
-		res[i] = malloc((PATH_MAX + 1) * sizeof(char));
-		if(i < nfirst)
-			strcpy(res[i], first[i]);
-		else
-			strcpy(res[i], second[i-nfirst]);
-		i++;
-	} 
-	return res;
-}
-
-char **initStringArray(int dimArray, int dimString){
-	char **res = malloc(dimArray * sizeof(char *));
-	int i = 0;
-	while(i < dimArray){
-		res[i] = calloc(dimString, sizeof(char));
-		i++;
+	char **initStringArray(int dimArray, int dimString){
+		char **res = malloc(dimArray * sizeof(char *));
+		int i = 0;
+		while(i < dimArray){
+			res[i] = calloc(dimString, sizeof(char));
+			i++;
+		}
+		return res;
 	}
-	return res;
-}
 
-int isNotParOrSameDir(char *in){
+	int isNotParOrSameDir(char *in){
 	return strcmp(in, "..") && strcmp(in, ".");
 }
 

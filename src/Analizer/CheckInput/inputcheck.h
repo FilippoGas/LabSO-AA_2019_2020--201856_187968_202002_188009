@@ -1,6 +1,9 @@
 #include "../../macro_libglob.h"
 /* Struttura che contiene percorso e nome del file (DEPRECATA), forse da spostare in report?
  */
+#ifndef INPUTCHECK
+#define INPUTCHECK
+
 struct idfile{
 
 	char* name;
@@ -132,3 +135,5 @@ void freeIdFile(struct idfile *in);
 void freeIdfileArray(struct idfile **in, int n);
 
 int manageInput(char ***def_file_list, int argc, char *argv[],  int *m, int *n, int *recursive, int pipe_from_m[], int pipe_to_m[]);
+
+#endif
