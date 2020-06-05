@@ -297,7 +297,7 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
 	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
-	(*pipe_for_P) = initPipeMatrix(n);
+	int **pipeP = initPipeMatrix(n);
 	(*pipe_control) = initPipeMatrix(n);
 	(*p_argv_matrix) = createArgsForP(n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
 	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
@@ -319,9 +319,9 @@ void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char
 		i++;
 	}
 
-	freePipeMatrix(*pipe_for_P,n);
-	freePipeMatrix(*pipe_control,n);
-	freeArgsForP(*p_argv_matrix,n);
+	freePipeMatrix(*pipe_for_P,*n);
+	freePipeMatrix(*pipe_control,*n);
+	freeArgsForP(*p_argv_matrix,*n);
 
 	//Killa i processi
 	//killAllP(**p_pid_array,*n);
@@ -341,10 +341,10 @@ void changeN(char **mods, int nmods, int m, int *n, char ****p_argv_matrix, char
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
 	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
 
-	(*pipe_for_P) = initPipeMatrix(n);
-	(*pipe_control) = initPipeMatrix(n);
+	(*pipe_for_P) = initPipeMatrix(*n);
+	(*pipe_control) = initPipeMatrix(*n);
 	(*p_argv_matrix) = createArgsForP(*n, m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
-	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
+	(*p_pid_array) = startAllP(*n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 
 }
 
