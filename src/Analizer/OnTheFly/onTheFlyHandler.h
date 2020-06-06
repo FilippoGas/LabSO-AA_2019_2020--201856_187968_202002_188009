@@ -1,6 +1,7 @@
 #include "../../macro_libglob.h"
 #include "../CheckInput/pPreprocessing.h"
 #include "../CheckInput/inputcheck.h"
+#include "../../Debug/utility.h"
 
 int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, char ***files, int *nfiles, int *finished, int *n_files_for_P, int ***data, int **file_finished, int ***pipe_for_P, int ***pipe_control, int **p_pid_array, int r);
 

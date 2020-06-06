@@ -34,7 +34,7 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 		freeStringArray(file_list, nfiles);
 		freeStringArray(dir_content, dir_content_size);
 		printf("HO VALIDATO I FILE\n");
-	
+
 	}
 	else{
 		res = 1;
@@ -217,9 +217,14 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 	while(i < nmods){
 		int index_P_min = findPMinFile(n_files_for_P, n);
 		if(!stopped[index_P_min]){
-			write((*p_argv_matrix)[index_P_min][PIPE_CONTROL_WRITE_IN_P], MOD_ADD, strlen(MOD_ADD));
+			write(atoi(p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]), MOD_ADD, strlen(MOD_ADD));
+			stopped[index_P_min] = 1;
+			//perror("");
+			//printArgumentMatrix(p_argv_matrix, n);
+			printf("index_P_min: %d, ARGOMENTO MATRIX: %s\n", index_P_min, p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]);
 		}
-		write((*p_argv_matrix)[index_P_min][PIPE_CONTROL_WRITE_IN_P], mods[i], strlen(mods[i]));
+		write(atoi(p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]), mods[i], strlen(mods[i]));
+		//perror("");
 		n_files_for_P[index_P_min]++;
 		addFileToPArgv(p_argv_matrix + index_P_min, mods[i]);
 		addToFiles(files, nfiles, data, mods[i], file_finished);
@@ -228,7 +233,9 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 	i = 0;
 	while(i < n){
 		if(stopped[i]){
-			write((*p_argv_matrix)[i][PIPE_CONTROL_WRITE_IN_P], MOD_END, strlen(MOD_END));
+			printf("STO CHIUDENDO IL MESS DAGGIUNTA PER P \n");
+			write(atoi(p_argv_matrix[i][PIPE_CONTROL_WRITE_IN_P]), MOD_END, strlen(MOD_END));
+			printf("i: %d, ARGOMENTO MATRIX: %s\n", i, p_argv_matrix[i][PIPE_CONTROL_WRITE_IN_P]);
 		}
 		i++;
 	}
@@ -254,7 +261,7 @@ void addFileToPArgv(char ***p_argv, char *name){
 	(*p_argv) = (char **)realloc((*p_argv), (i + 2) * sizeof(char *));
 	(*p_argv)[i] = (char *)calloc(PATH_MAX + 1, sizeof(char));
 	sprintf((*p_argv)[i], "%s", name);
-	(*p_argv[i + 1]) = NULL;
+	(*p_argv)[i + 1] = NULL;
 }
 
 void addToFiles(char ***files, int *nfiles, int ***data, char *name, int **file_finished){
@@ -306,13 +313,14 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 
 	//CHIUDI LE PIPE IN LETTURA
 	while(i<n){
+		printf("CHIUDO LE PIPE\n");
 		close((*pipe_for_P)[i][READ]);
 		close((*pipe_for_P)[i][WRITE]);
 		close((*pipe_control)[i][READ]);
 		close((*pipe_control)[i][WRITE]);
 		i++;
 	}
-
+	printf("DEALLOCO LE PIPE E LA STRINGA DEGLI ARGOMENTI\n");
 	freePipeMatrix(*pipe_for_P,n);
 	freePipeMatrix(*pipe_control,n);
 	freeArgsForP(*p_argv_matrix,n);
@@ -396,7 +404,7 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 			res++;
 		}
 		else{
-			finished[i] = INT_MAX; 
+			finished[i] = INT_MAX;
 		}
 		i++;
 	}

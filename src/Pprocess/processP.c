@@ -16,7 +16,7 @@ void killHandler(int signal){
 
 int main(int argc, char *argv[]){
 	signal(SIGTERM, killHandler);
-	sleep(50);
+	sleep(15);
 	int pipe_read, pipe_write, pipe_control[2];
 	char **files;
 	//./p m pipe_read pipe_write files
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 		pipe_control_for_Q = initPipes(m);
 	//Creo le chiamate per le Q
 	char ***argvQ = create_ArgvQ(m, pipe_for_Q, pipe_control_for_Q, files, nfiles);
-	//printArgumentMatrix(argvQ, m);
+	printArgumentMatrix(argvQ, m);
 	//Creo le Q
 	pids_Q = startAllQ(pipe_for_Q, pipe_control_for_Q, argvQ, m);
 

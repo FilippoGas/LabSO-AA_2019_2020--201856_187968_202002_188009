@@ -90,18 +90,28 @@ int openFile(char *name){
 	return errorOpenInQ(open(temp, O_RDONLY), temp);
 }
 
-void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore, char *message, int *argc, char *argv[]){
+void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore, char *message, int *argc, char **argv[]){
   int byteRead = -1;
   do{
-    byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
-    if(byteRead>0 && strcmp(message, MOD_END)){
-      appendToArgv(argv,argc,message);
+    char message1[PIPE_BUF+1]="";
+    byteRead = read(pipeReadOnTheFly,message1,PIPE_BUF);
+    //printf("")
+    //printf("BYTE LETTI DA Q %d",byteRead);
+    //printf("IL MESSAGGIO E' %s\n",message);
+    if(byteRead>0){
+      printf("IL MESSAGGIO E' %sx\n",message1);
+      if(strcmp(message1, MOD_END)){
+        sprintf(message1,"%s ",message1);
+        printf("IL MESSAGGIO E' %s\n",message1);
+        appendToArgv(argv,argc,message1);
+      }
       /*int fd = openFile(message);
       int size = computeSize(fd);
       int offset = computeOffset(parte,denominatore,size);
       int end = computeEnd(parte,denominatore,size);
       char *format = computeCountingOnFile(fd,idFile(message,argc,argv),offset,end);
       errorSysCall(write(pipeWrite,format, PIPE_BUF));*/
+      sprintf(message,"%s",message1);
     }
   }while(strcmp(message,MOD_END) && byteRead!=0);
 }
@@ -109,6 +119,7 @@ void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore
 void removeHandler(int pipeReadOnTheFly, int *removedFiles, int *writtenFiles, char *message, int argc, char *argv[]){
   int byteRead = -1;
   do{
+    sprintf(message,"");
     byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
     if(byteRead>0 && strcmp(message, MOD_END)){
       if(!isWrittenFile(writtenFiles,idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET)){
@@ -128,15 +139,27 @@ int idFile(char *file, int argc, char *argv[]){
   }
 }
 
-void appendToArgv(char *argv[],int *argc, char *file){
-  char **temp = (char **)malloc(((*argc)+1)*sizeof(char *));
+void appendToArgv(char **argv[],int *argc, char *file){
+    char **new_argv = malloc(((*argc)+2) * sizeof(char*));
+    int i;
+    for(i = 0; i < (*argc); i++){
+        size_t length = strlen((*argv)[i])+1;
+        new_argv[i] = malloc(length);
+        memcpy(new_argv[i], (*argv)[i], length);
+    }
+    new_argv[(*argc)] = calloc(strlen(file)+1,sizeof(char));
+    sprintf(new_argv[(*argc)],"%s",file);
+    new_argv[(*argc)+1] = NULL;
+    *argv = new_argv;
+    (*argc)++;
+  /*char **temp = (char **)malloc(((*argc)+1)*sizeof(char *));
   memmove(temp,argv,sizeof(char *)*(*argc));
-  temp[(*argc)] = file;
+  sprintf(temp[(*argc)],"%s",file);
   (*argc)++;
   int i=0;
   while(i<(*argc)){
     argv[i]=temp[i];
     i++;
   }
-  free(temp);
+  free(temp);*/
 }

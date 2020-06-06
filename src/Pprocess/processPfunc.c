@@ -60,6 +60,7 @@ int *startAllQ(int **pipe, int **pipe_control, char ***argvQ, int m){
 			perror("Error on creation of Q:");
 		}
 		close(pipe[i][WRITE]);
+		close(pipe_control[i][READ]);
 		i++;
 	}
 	return pids;
