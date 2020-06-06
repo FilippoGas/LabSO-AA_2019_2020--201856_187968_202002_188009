@@ -307,7 +307,9 @@ void printTime(const long int rawtime){
 void fillReports(int *report,char *buff){
 
     int j = 0;
-    report[j] = atoi(strtok(buff," "));
+    //remove first space
+    strtok(buff," ");
+    report[j] = atoi(strtok(NULL," "));
     for ( j = 1; j < ALPHABET_SIZE; j++)
     {
         report[j] = atoi(strtok(NULL," "));
@@ -562,7 +564,7 @@ void freeFileNames(char ***fileNames, int size){
 
 int getDirs(char **fileNames, int nfiles, char ***dirs){
 
-    char **tempDirs = malloc(nfiles * sizeof(char*));
+    char **tempDirs = calloc(1,nfiles * sizeof(char*));
     int ndirs = 0, firstSlash = 0;
     
     int i;
@@ -593,7 +595,7 @@ int getDirs(char **fileNames, int nfiles, char ***dirs){
                         k++;
                     }
                     if(!doubleDir){
-                        tempDirs[ndirs] = malloc(sizeof(buff));
+                        tempDirs[ndirs] = calloc(1,sizeof(buff));
                         sprintf(tempDirs[ndirs],"%s",buff);
                         ndirs++;
                     }
@@ -604,7 +606,7 @@ int getDirs(char **fileNames, int nfiles, char ***dirs){
     (*dirs) = malloc(ndirs * sizeof(char*));
     i = 0;
     while(tempDirs[i] != NULL){
-        (*dirs)[i] = malloc(sizeof(tempDirs[i]));
+        (*dirs)[i] = calloc(1,sizeof(tempDirs[i]));
         sprintf((*dirs)[i],"%s",tempDirs[i]);
         i++;
     }
@@ -699,9 +701,7 @@ void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **d
             printf("\n\n");
         }
     }
-    printf("\npre free\n");
     freeDirSelection(dirSelection,nDirSelection);
-    printf("\npost free\n");
 }
 
 int inSelectedDirs(char *fileName, char **dirs, int *dirSelection, int nDirSelection){
