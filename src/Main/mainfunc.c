@@ -102,7 +102,7 @@ void eseguiAnal( char **execAnal,int lung){
 	}
 	if( f == 0 ){
 		execvp(execAnal[0], execAnal);
-		
+
 		fprintf( stderr, "Errore di esecuzione Analizer\n" );
 		exit(-1);
 	}
@@ -220,7 +220,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 	while(option >= 0){
 		lung = (*nvari) + NCHIAMATECOST;
 		printOpAnal();
-		printf("HO STAMPATO IL MENU\n");	
+		printf("HO STAMPATO IL MENU\n");
 		char *input = getIn();
 		//Controllo se si vuole tornare al menu' principale
 		if( !(strcmp(input, "q") && strcmp(input, "b") && strcmp(input, "back")) ){
@@ -245,9 +245,9 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
         			close( pipe_to_a[READ] );
         			close( pipe_from_a[WRITE] );
 				if((*vari) != NULL)
-					freeStringArray(*vari, *nvari); 
+					freeStringArray(*vari, *nvari);
 				if((*elimin) != NULL)
-					free(*elimin); 
+					free(*elimin);
 				(*nvari) = 0;
 
         			leggo_input_pipe(vari,nvari,elimin,pipe_from_a, pipe_to_a);
@@ -493,15 +493,18 @@ void presetAnal( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimi
 		printf("Elimino tutti i dati salvati di dichiarazione, continuare? S/n\n");
 		free(risp);
 		risp=getIn();
-		if(!(strcmp(risp,"S")&&strcmp(risp,"s"))){
+		if(!(strcmp(risp,"S") && strcmp(risp,"s"))){
 			(*n)=3;(*m)=4;
-			if((*vari) != NULL)
+			if((*vari) != NULL){
 				freeStringArray(*vari,*nvari);
+				(*vari) = malloc(1);
+			}
 			(*nvari) = 0;
 			(*rec) = 0;
-			if((*elimin) != NULL)
+			if((*elimin) != NULL){
 				free(*elimin);
-			//TODO COMANDO DI BLOCCO A ???
+				*elimin = malloc(1);
+			}
 		}
 	}
 	free(risp);

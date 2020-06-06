@@ -12,10 +12,10 @@ void sms_rmfile(char *file,int pipe[2]){
   sms_endmessage(pipe);
 }
 void sms_change_mn(char *num,char selec,int pipe[2]){
-  if(selec=='m'){
+  if( selec == 'm' ){
     write(pipe[WRITE],MOD_CHANGE_M, strlen(MOD_CHANGE_M));
   }
-  else if(selec == 'n'){
+  else if( selec == 'n' ){
     write(pipe[WRITE],MOD_CHANGE_N, strlen(MOD_CHANGE_N));
   }
   else{
