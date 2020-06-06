@@ -129,3 +129,13 @@ void freeDirSelection(int **dirSelection, int nDirSelection);
  * free memory used by dirs
 */
 void freeDirs(char ***dirs, int ndirs);
+
+/**
+ * check if the file has already been selected
+*/
+int alreadySelectedFile(int file,int buff[], int size);
+
+/**
+ * check if directory has already been selected
+*/
+int alreadySelectedDirectory(int n, int buff[], int size);

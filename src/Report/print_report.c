@@ -6,8 +6,8 @@
 int main(int argc, char *argv[]){
 
     int ret = 0, reporting = 1, control;
-    char **fileNames, **dirs;
-    int **reports, nfiles = argc-1, lastUpdate, ndirs = 0;
+    char **fileNames = NULL, **dirs = NULL;
+    int **reports = NULL, nfiles = argc-1, lastUpdate, ndirs = 0;
 
     //getFileNames(&fileNames,nfiles,argv);
     //generateRandomReports(&reports,nfiles);
@@ -85,10 +85,16 @@ int main(int argc, char *argv[]){
             break;
 
             case 0:
-                printf("Exiting...\n");
-                freeReports(&reports,nfiles);
-                freeFileNames(&fileNames,nfiles);
-                freeDirs(&dirs,ndirs);
+                printf("    EXITING...\n");
+                if(reports != NULL){
+                     freeReports(&reports,nfiles);
+                }
+                if(fileNames != NULL){
+                    freeFileNames(&fileNames,nfiles);
+                }
+                if(dirs != NULL){
+                    freeDirs(&dirs,ndirs);
+                }
                 reporting = 0;
             break;
         }   
@@ -97,7 +103,8 @@ int main(int argc, char *argv[]){
     close(fd);
     unlink(FIFO_NAME);
 
-    printf("Quitting report\n\n");
+    sleep(1);
+    printf("    QUITTING REPORT.\n\n");
     return ret;
 
 }

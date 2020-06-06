@@ -89,14 +89,15 @@ void printFileSelection(){
 
 void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselection){
 
-    int bufdim = 1000;
-    int sel, buff[bufdim];  //invece che dim=1000, check se supero la dimensione e la aumento
+    //int bufdim = 1000;
+    int sel/*, buff[bufdim]*/;  //invece che dim=1000, check se supero la dimensione e la aumento
+    int buff[nfiles];
 
     int i = 0;
 
-    for ( i = 0 ; i < bufdim; i++){
+    for ( i = 0 ; i < nfiles; i++){
         buff[i] = -1;
-    }
+    }   
 
     printf("\n\n ****************************************************************");
     printf("\n AVAILABLE FILES FOR REPORT\n");
@@ -115,39 +116,52 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
 
         if(sel){
 
-            buff[i] = sel-1;
-            i++;
+            if(!alreadySelectedFile(sel-1,buff,nfiles)){
+                printf("\nin if\n");
+                buff[i] = sel-1;
+                i++;
+            }
 
         }
         
-    }while(sel != 0);
+    }while(sel != 0 && i < nfiles);
 
     (*nselection) = i;
     (*selection) = malloc((*nselection) * sizeof(int));
 
     i = 0;
-    printf("\nhere i %d\n",(*nselection));          //CHECK QUI
-    while(buff[i] != -1){
-        printf("\nin while i %d\n",i);
+    while(buff[i] != -1 && i < nfiles){
         (*selection)[i] = buff[i];
         i++;
     }
     printf("\nafter while\n");
 }
 
+int alreadySelectedFile(int n, int buff[], int size){
+
+    int i;
+    for ( i = 0; i < size; i++)
+    {
+        if (buff[i] == n)
+        {
+            return 1;
+        }
+        
+    }
+    
+
+    return 0;
+
+}
 void removeUnselectedReports(int ***reports, int *selection, int nselection){
 
-    printf("\nbegin removeReports with nseleciton %d\n",nselection);
 
     int **temp = malloc(nselection * sizeof(int*));
-
-    printf("\nafter temp malloc\n");
 
     int i = 0;
     for ( i = 0; i < nselection; i++)
     {
         temp[i] = malloc(ALPHABET_SIZE * sizeof(int));
-        //memcpy(temp[i],reports[selection[i]],sizeof(reports[selection[i]]));
         int j = 0;
         for ( j = 0; j < ALPHABET_SIZE; j++)
         {
@@ -258,7 +272,7 @@ float getPerc(int x, int y){
 
 int openFIFO(){
 
-	if(mkfifo(FIFO_NAME, 0777) == -1){		//DA CAMBIARE
+	if(mkfifo(FIFO_NAME, 0777) == -1){
 		if(errno != EEXIST){
 			perror("Fatal error on fifo creation: ");
 			exit(-1);
@@ -557,7 +571,7 @@ void freeFileNames(char ***fileNames, int size){
     {
         free((*fileNames)[i]);
     }
-    printf("\nafter for\n");
+
     free((*fileNames));
 
 }
@@ -620,7 +634,7 @@ int getDirs(char **fileNames, int nfiles, char ***dirs){
 
 void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelection){
     
-    int sel, buff[100];  //invece che dim=1000, check se supero la dimensione e la aumento
+    int sel, buff[ndirs];
 
     int i;
 
@@ -645,21 +659,39 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
 
         if(sel){
 
-            buff[i] = sel-1;
-            i++;
+            if(!alreadySelectedDirectory(sel-1,buff,ndirs)){
+                printf("\nin if\n");
+                buff[i] = sel-1;
+                i++;
+            }
 
         }
         
-    }while(sel != 0);
+    }while(sel != 0 && i < ndirs);
 
     (*nDirSelection) = i;
     (*dirSelection) = malloc((*nDirSelection) * sizeof(int));
 
     i = 0;
-    while(buff[i] != -1){
+    while(buff[i] != -1 && i <= ndirs){
         (*dirSelection)[i] = buff[i];
         i++;
     }
+}
+
+int alreadySelectedDirectory(int n, int buff[], int size){
+
+    int i;
+    for ( i = 0; i < size; i++)
+    {
+        if (buff[i] == n)
+        {
+            return 1;
+        }
+        
+    }
+    
+    return 0;
 }
 
 void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **dirs, int ndirs, int **dirSelection, int nDirSelection, int percentage){
