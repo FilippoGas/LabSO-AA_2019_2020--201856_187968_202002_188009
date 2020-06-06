@@ -19,7 +19,7 @@ void printMenu(){
 
 int getUserOption(int min, int max){
     
-    int option = 0,done = 1;
+    int option = 0, done = 1;
     
 
     while(done){
@@ -89,8 +89,7 @@ void printFileSelection(){
 
 void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselection){
 
-    //int bufdim = 1000;
-    int sel/*, buff[bufdim]*/;  //invece che dim=1000, check se supero la dimensione e la aumento
+    int sel;
     int buff[nfiles];
 
     int i = 0;
@@ -109,6 +108,8 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
 
     printf("\n Type the numbers of the desired files one at a time followed by ENTER, or 0 to exit the selection\n\n");
 
+    //doen't save repeated files
+
     i = 0;
     do{
         printf("> ");
@@ -117,11 +118,9 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
         if(sel){
 
             if(!alreadySelectedFile(sel-1,buff,nfiles)){
-                printf("\nin if\n");
                 buff[i] = sel-1;
                 i++;
             }
-
         }
         
     }while(sel != 0 && i < nfiles);
@@ -134,7 +133,6 @@ void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselec
         (*selection)[i] = buff[i];
         i++;
     }
-    printf("\nafter while\n");
 }
 
 int alreadySelectedFile(int n, int buff[], int size){
@@ -195,7 +193,6 @@ void removeUnselectedNames(char ***fileNames, int *selection, int nselection){
 void printReports(int **reports, char **fileNames, int nfiles, int *selection, int nselection, int percentage){
 
     if(selection && nselection < nfiles){
-        //tolgo da reports e da nileNames i file non desiderati
         nfiles = nselection;
         removeUnselectedReports(&reports,selection,nselection);
         removeUnselectedNames(&fileNames,selection,nselection);
@@ -212,6 +209,7 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
         int j; 
         for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
 
+            //char #127 is the DELETE char, that would shift the printing, SPACE is printed instead
             if(j == 127){
 
                 if(percentage){
@@ -272,6 +270,7 @@ float getPerc(int x, int y){
 
 int openFIFO(){
 
+    //FIFO creation
 	if(mkfifo(FIFO_NAME, 0777) == -1){
 		if(errno != EEXIST){
 			perror("Fatal error on fifo creation: ");
@@ -281,6 +280,7 @@ int openFIFO(){
  	
 	int fd;
 
+    //FIFO opening
 	if((fd = open(FIFO_NAME, O_RDONLY | O_NONBLOCK)) == -1){
 		if(errno != ENXIO){
 			perror("Fatal error on FIFO opening: ");
@@ -320,6 +320,8 @@ void printTime(const long int rawtime){
 
 void fillReports(int *report,char *buff){
 
+    //repotrs are suquences of 255 numbers, one per every ASCII character
+
     int j = 0;
     //remove first space
     strtok(buff," ");
@@ -334,9 +336,14 @@ void fillReports(int *report,char *buff){
 
 void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate, int stopRecursion){
 
+    //FIFO max message size 4960 byte
     char buff[4096];
-    int empty = 1;
+    int empty = 1;  //check for empty FIFO
+
+    //first line of message is timestamp, 22 byte
     while(read(fd,buff,22) == 22){
+
+        //if in a recursive cycle, read from file instead
         if(!stopRecursion){
             printf("\nReading from PIPE\n");
         }else{
@@ -347,11 +354,13 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
         (*lastUpdate) = atoi(timestamp);
         printTime(*lastUpdate);
 
+        //number of file reported in current message/file
         (*nfiles) = atoi(strtok(NULL," "));
         (*reports) = malloc((*nfiles)* sizeof(int*));
         (*fileNames) = malloc((*nfiles)* sizeof(char*));
 
         int i;
+        //for each file read name and report
         for ( i = 0 ; i < (*nfiles); i++)
         {
             (*reports)[i] = malloc(ALPHABET_SIZE * sizeof(int));
@@ -367,7 +376,6 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
             read(fd,buff,4096);
             fillReports((*reports)[i],buff);
         }
-	printf("FINITO WHILE\n");
     }
 
     //Se la FIFO è vuota richiamo ricorsivamente readPipe con fd riferito al file invece che alla FIFO
@@ -522,6 +530,7 @@ void printCategoriesReports(int **reports, char **fileNames, int nfiles, int *se
 
         int totalChar = getTotalChar(reports[i]);
 
+        //only print selected categories
         if(categoriesSelection[0]){
             printf("\n LETTERS: %d - %.2f%c\n",letters,getPerc(letters,totalChar),'%');
         }

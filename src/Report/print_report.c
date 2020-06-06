@@ -11,11 +11,10 @@ int main(int argc, char *argv[]){
 
     //getFileNames(&fileNames,nfiles,argv);
     //generateRandomReports(&reports,nfiles);
-    
-    
     //generateRandomReportFile(reports,fileNames,nfiles);
 
 
+    //FIFO opening for Analizer-Report comunication
     int fd = openFIFO();
 
     readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate,0);
@@ -24,6 +23,7 @@ int main(int argc, char *argv[]){
 
         printMenu();
 
+        //get user operation
         control = getUserOption(0,6);
 
         int categoriesSelection[7] = {0,0,0,0,0,0,0};

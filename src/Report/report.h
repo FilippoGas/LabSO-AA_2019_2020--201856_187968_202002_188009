@@ -4,9 +4,10 @@
 */
 void printMenu();
 
-/*
+/**
  * Read the user input and validate it, return the selected option
- * args: min and max value the selection can have
+ * min and max value the selection can have
+ * number selected from user
 */
 int getUserOption(int min, int max);
 
@@ -26,9 +27,9 @@ void getFileNames(char *** fileNames, int nfiles, char* argv[]);
 */
 void printFileSelection();
 
-/*
+/**
  *Let the user choose wich files in fileNames will be printed in the report
- *args: The list of all the filenames, the number of files, the reference to the list of selected files that has to be initialized,
+ The list of all the filenames, the number of files, the reference to the list of selected files that has to be initialized,
  *the reference of the variable holding the number of new files
 */
 void getFileSelection(char **fileNames, int nfiles, int **selection, int *nselection);
