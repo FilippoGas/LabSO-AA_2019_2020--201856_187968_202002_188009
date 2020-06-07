@@ -167,9 +167,9 @@ void elimSelec( char **vari, int nvari, int **elimin, int pipe[2] ){
 		}
 	}
 	free(cnum);
-	//sms_rmfile((*vari)[i],pipe);
+	sms_rmfile(vari[i],pipe);
 	i--;
-	printf("Eliminto \"%s\"\n",vari[i]);
+	printf("Eliminato \"%s\"\n",vari[i]);
 }
 
 //Aggiunge ad un array un dato e aggiunge una casella a elimina
@@ -465,7 +465,7 @@ void cpArray( char ***array1, int *narray1, char **array2, int narray2 ){
 void printOptions(){
 	int i=0;
 	printf("\nAZIONI:\n");
-	char *laz[AZIONI] = {"Analazer Menu'", "Reporter", "Lista Azioni"};
+	char *laz[AZIONI] = {"Analizer Menu'", "Reporter", "Lista Azioni"};
 	for(i=0;i<AZIONI; i++){
 		printf("%d. %s\n",i+1,laz[i]);
 	}
@@ -475,7 +475,7 @@ void printOptions(){
 //Fa il print delle Opzioni nel menu' di Analize
 void printOpAnal(){
 	int i=0;
-	char *lazAnal[AZIONIMENUANAL]={"Iniziare Analazer","Aggiungere file o cartelle","Impostare ricorsione su cartelle", "Impostare m", "Impostare n","Eliminare file o cartelle","reset impostazioni"};
+	char *lazAnal[AZIONIMENUANAL]={"Iniziare Analizer","Aggiungere file o cartelle","Impostare ricorsione su cartelle", "Impostare m", "Impostare n","Eliminare file o cartelle","reset impostazioni"};
 	printf("\nANALIZER:\n");
 	printf("AZIONI:\n");
 	for(i=0;i<AZIONIMENUANAL;i++){

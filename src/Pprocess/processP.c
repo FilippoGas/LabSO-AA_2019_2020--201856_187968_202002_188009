@@ -9,6 +9,7 @@ void killHandler(int signal){
 	printf("IL SIGTERM e` stato dichiarato\n");
 	while(i<m){
 		kill(pids_Q[i],SIGTERM);
+		perror("");
 		i++;
 	}
 	exit(0);

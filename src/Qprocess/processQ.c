@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
         removedFiles = realloc(removedFiles,argc*sizeof(int));
       }
       else if(!strcmp(message,MOD_REMOVE)){
+        printf("SONO Q E HO RICEVUTO IL MEX DI RIMOZIONE\n");
         removeHandler(pipeReadOnTheFly,removedFiles,writtenFiles,message,argc,argv);
       }
       strcpy(message,"");

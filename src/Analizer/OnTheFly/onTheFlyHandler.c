@@ -133,6 +133,9 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 		int index = getPWithFile(p_argv_matrix, n, mods[i], pipes);
 		if(!stopped[index]){
 			write(pipes[index], MOD_REMOVE, strlen(MOD_REMOVE));
+			//printf("IL FILE DESCRIPTOR DELLA PIPE E' %d",pipes[index]);
+			perror("");
+			printf("SCRIVO IL MEX DI RIMOZIONE SULLA PIPE\n");
 			stopped[index] = 1;
 		}
 		write(pipes[index], mods[i], strlen(mods[i]));
@@ -320,16 +323,17 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 		close((*pipe_control)[i][WRITE]);
 		i++;
 	}
-	printf("DEALLOCO LE PIPE E LA STRINGA DEGLI ARGOMENTI\n");
+
 	freePipeMatrix(*pipe_for_P,n);
 	freePipeMatrix(*pipe_control,n);
 	freeArgsForP(*p_argv_matrix,n);
-
+	printf(" HO DEALLOCATO LE PIPE E LA STRINGA DEGLI ARGOMENTI\n");
 	//Killa i processi
 	//killAllP(**p_pid_array,n);
 	i=0;
 	while(i<n){
 		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
+		//printf("KILLO I PROCESSI P\n");
 		i++;
 	}
 	free(*p_pid_array);
@@ -342,9 +346,11 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
 	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
-	int **pipeP = initPipeMatrix(n);
+	printf("RICREO LE PIPE\n");
+	(*pipe_for_P) = initPipeMatrix(n);
 	(*pipe_control) = initPipeMatrix(n);
 	(*p_argv_matrix) = createArgsForP(n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
+	printf("RISTARTO TUTTI I PROCESSI P\n");
 	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 
 }
