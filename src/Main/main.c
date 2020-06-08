@@ -7,7 +7,7 @@ int main( int argc, char *argv[] ){
 	char **input;
 	int *elimin,ninput = 0;
 	printf("Devo chiamare A\n");
-	firstStartAnal( argv, argc, pipe_to_a, pipe_from_a, &input, &ninput, &elimin);
+	int analpid = firstStartAnal( argv, argc, pipe_to_a, pipe_from_a, &input, &ninput, &elimin);
 	printf("Ho chiamato A per la prima volta\n");
 	int i=0;
 	int n = 3, m = 4, rec = 0;
@@ -31,14 +31,14 @@ int main( int argc, char *argv[] ){
 	int option;
 	//Menu principale
 	while( option >= 0 ){
-		char *azione = getInputorExit();
+		char *azione = getInputorExit(analpid);
 		option = atoi(azione);
 		free(azione);
 		printf("\n");
 		switch(option){
 			case 1:
 				//Apri il menu di anal
-				enterAnalMenu(&n,&m,&input,&ninput,&rec,&elimin,pipe_to_a,pipe_from_a);
+				enterAnalMenu(&n,&m,&input,&ninput,&rec,&elimin,pipe_to_a,pipe_from_a,&analpid);
 				printf( "Siete nel menu' principale.\n" );
 				break;
 

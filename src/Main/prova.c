@@ -8,19 +8,20 @@
 
 int main(){
 	signal(SIGPIPE, SIG_IGN);
-	int pipe[2];
-	pipe2(pipe,__O_DIRECT);
 	int f=fork();
-	if(f>0){
-	close(pipe[READ]);
-	int prova = write(pipe[WRITE],"lol",4);
-	printf("prova=%d\n",prova);
+	if(f > 0){
+		int status;
+		int i=0;
+		waitpid(f,&status,WNOHANG);
+		printf("f = %d\n",	WIFEXITED(status));
+		sleep(6);
+		waitpid(f,&status,WNOHANG);
+		printf("f = %d\n",	WIFEXITED(status));
 	}
 	else{
-		close(pipe[WRITE]);
-		char message[4];
-		read(pipe[READ],message,4);
-		printf("il messaggio e' lol");
+		printf("SONO IL FIGLIO!\n");
+		sleep(5);
+		printf("IL FIGLIO HA FINITO!!\n");
 	}
 	return 0;
 }

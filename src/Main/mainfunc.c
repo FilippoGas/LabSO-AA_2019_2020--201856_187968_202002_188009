@@ -95,7 +95,7 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 }
 
 //Fa partire A dal menu' di A
-void eseguiAnal( char **execAnal,int lung){
+int eseguiAnal( char **execAnal,int lung){
 	int f = fork();
 	while( f < 0 ){
 		f = fork();
@@ -107,11 +107,12 @@ void eseguiAnal( char **execAnal,int lung){
 		exit(-1);
 	}
 	else {
-    int i=1;
-    /*for(i=1;i<lung-1;i++){
+    int i = 1;
+    for( i=1; i < lung - 1; i++){
         free(execAnal[i]);
-    }*/
+    }
 	}
+	return f;
 }
 
 //Ritorna il numero dei file non eliminati
@@ -237,14 +238,16 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 }
 
 
-void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2]){
-	int test = write(pipe_to_a[WRITE], "", 0);
-	if( test < 0 ){
+void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2],int *analpid){
+	int status;
+	waitpid(*analpid, &status, WNOHANG);
+	if( WIFEXITED(status) == 1 && WEXITSTATUS(status) == 0){
 		int lung = (*nvari) + NCHIAMATECOST;
 		pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
 		pipe2( pipe_from_a, __O_DIRECT );
 		char **execAnal = createExec( *n, *m, *vari, *nvari, *rec ,*elimin,pipe_to_a,pipe_from_a);
-		eseguiAnal( execAnal, lung );
+		(*analpid) = eseguiAnal( execAnal, lung );
+
 		free(execAnal);
 		close( pipe_to_a[READ] );
 		close( pipe_from_a[WRITE] );
@@ -265,7 +268,7 @@ void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin
 
 
 //Menu di anal
-void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin, int pipe_to_a[2], int pipe_from_a[2] ){
+void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin, int pipe_to_a[2], int pipe_from_a[2], int *analpid ){
 	//Iniz. di dir e file nel caso in cui non sono stati allocati
 	if( (*nvari) < 1 ){
 		(*vari) = calloc(1 , sizeof(char **));
@@ -282,7 +285,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 			option = -1;
 		}
 		//Controllo se si vuole fare una stampa di execAnal
-		else if( !(strcmp(input, "v") && strcmp(input,"V")) ){
+		else if( !(strcmp(input, "v") && strcmp(input, "V")) ){
 			option = 69;
 		}
 		else option = atoi(input);
@@ -291,11 +294,11 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 		switch(option) {
 			case 1:
 				//creo l'exec e faccio partire l'analizer
-				startAnal(n, m, vari, nvari, rec ,elimin,pipe_to_a,pipe_from_a);
+				startAnal(n, m, vari, nvari, rec, elimin, pipe_to_a, pipe_from_a, analpid);
 				break;
 			case 2:
 				//Add dir o file
-				addFile(vari,nvari,elimin,pipe_to_a);
+				addFile( vari, nvari, elimin, pipe_to_a );
 				break;
 			case 3:
 				//Accendo e spengo la ricorsione
@@ -363,20 +366,32 @@ void startReporter(){
 }
 
 //Chiudo il programma
-void ending(){
-	//TODO: Uccidere gli zombie rimanenti
-	printf("Grazie per aver utilizzato il programma di analisi.\n");
-	printf("E ricoedatevi sempre:\n");
-	printf("\x1b[33m\t\t Se volete qualita', il nostro nome e' GEFF!\033[0m\n");
+void ending(int analpid){
+	int status;
+	waitpid(analpid,&status,WNOHANG);
+	if( WEXITSTATUS(status) > 0 ){
+		printf("Sto chiundendo");
+		fflush(stdout);
+		while(WEXITSTATUS(status)>0){
+			waitpid(analpid,&status,WNOHANG);
+			sleep(1);
+			printf(" .");
+			fflush(stdout);
+		}
+	}
+	printf("\nGrazie per aver utilizzato il programma di analisi.\n");
+	printf("E ricordatevi sempre:\n");
+	printf("\033[1m\033[33m\t\t Se volete qualita', il nostro nome e' GEFF!\033[0m\n");
+
 	exit(0);
 }
 
 //prendo un input o, se "q", esco
-char *getInputorExit(){
+char *getInputorExit(int analpid){
 	char *ret = getIn();
 	if( !(strcmp(ret,"q") && strcmp(ret,"quit") && strcmp(ret,"exit")) ){
 		free(ret);
-		ending();
+		ending(analpid);
 	}
 	return ret;
 }
@@ -400,7 +415,7 @@ void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a
 }
 
 //Faccio partire A per la prima volta
-void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2], char ***input,int *ninput, int **elimin ){
+int firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2], char ***input,int *ninput, int **elimin ){
 	pipe2(pipe_to_a,__O_DIRECT | O_NONBLOCK);
 	pipe2(pipe_from_a,__O_DIRECT);							//Controlla
 
@@ -413,7 +428,6 @@ void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2
 		dich[i] = argv[i];
 	}
 	int first_dim = i;
-	printf("DEVO LIBERARE LA STRINGA\n");
 	dich[i] = malloc(3 * sizeof(char));
 	sprintf(dich[i],"-p");
 	dich[i + 1] = intToChar( pipe_to_a[READ] );
@@ -421,14 +435,15 @@ void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2
 	dich[i + 3] = intToChar( pipe_from_a[READ] );
 	dich[i + 4] = intToChar( pipe_from_a[WRITE] );
 	dich[i + 5] = NULL;
-	eseguiAnal(dich,lung);
+	int analpid = eseguiAnal(dich,lung);
+	printf("analpid dopo eseguiAnal = %d\n",analpid);
 	close(pipe_to_a[READ]);
 	close(pipe_from_a[WRITE]);
-	for(; first_dim<i+5; first_dim++ ){
-		printf("DEVO LIBERARE LA STRINGA: %s\n",dich[first_dim]);
+	for(; first_dim > i + 6; i++ ){
 		free(dich[first_dim]);
 	}
 	leggo_input_pipe(input,ninput,elimin,pipe_from_a, pipe_to_a);
+	return analpid;
 }
 
 
