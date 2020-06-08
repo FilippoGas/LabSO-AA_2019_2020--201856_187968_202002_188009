@@ -383,9 +383,9 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
             char *nameOnly = strtok(NULL,"\n");
             int j = 0;
             for ( j = 4000; j >= 0 && nameOnly[j] == 32; j--){}
-            (*fileNames)[i] = calloc(1,(sizeof(char)*(j+2))); //+2 (/ iniziale e carattere terminatore)
+            (*fileNames)[i] = calloc(1,(sizeof(char)*(j+3))); //+2 (/ iniziale e carattere terminatore)
             strcat((*fileNames)[i],"/");
-            strncat((*fileNames)[i],nameOnly,j);
+            strncat((*fileNames)[i],nameOnly,j+1);
             read(fd,buff,4096);
             fillReports((*reports)[i],buff);
         }
