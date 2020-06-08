@@ -33,15 +33,15 @@ void recurtion( int *rec );
 
 int	isNum(char *pnum);
 
-void setmN( int *num, char selez,int pipe[2]);
+void setmN( int *num, char selez,int pipe[2], int analpid);
 
 char **createExec(int n,int m,char **vari,int nvari,int rec,int *elimin,int pipe_to_a[2],int pipe_from_a[2]);
 
 int eseguiAnal(char **execAnal,int lung);
 
-void elimSelec(char **vari, int nvari, int *elimin, int pipe[2]);
+void elimSelec(char **vari, int nvari, int *elimin, int pipe[2],int analpid);
 
-void addFile(char ***vari,int *nvari,int **elimin,int pipe[2]);
+void addFile(char ***vari,int *nvari,int **elimin,int pipe[2],int analpid);
 
 void enterAnalMenu(int *n, int *m, char ***vari, int *nvari, int *rec,int **elimin,int pipe_to_a[2],int pipe_from_a[2],int *mainpid);
 
