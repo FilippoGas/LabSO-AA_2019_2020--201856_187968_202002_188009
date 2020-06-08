@@ -18,7 +18,6 @@ int main(int argc, char *argv[]){
     int fd = openFIFO();
 
     readPipe(fd,&reports,&fileNames,&nfiles,&lastUpdate,0);
-
     while(reporting){
 
         printMenu();
