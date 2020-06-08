@@ -285,7 +285,7 @@ float getPerc(int x, int y){
 int openFIFO(){
 
     //FIFO creation
-	if(mkfifo(FIFO_NAME, 0777) == -1){
+	if(mkfifo(FIFO_NAME, 0600) == -1){
 		if(errno != EEXIST){
 			perror("Fatal error on fifo creation: ");
 			exit(-1);
