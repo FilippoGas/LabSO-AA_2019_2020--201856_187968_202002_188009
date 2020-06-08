@@ -131,11 +131,12 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 	while(i < nmods){
 		removeFile(mods[i], files, *nfiles, data, file_finished);
 		int index = getPWithFile(p_argv_matrix, n, mods[i], pipes);
+		printf("GETP TERMINA\n");
 		if(!stopped[index]){
-			write(pipes[index], MOD_REMOVE, strlen(MOD_REMOVE));
-			//printf("IL FILE DESCRIPTOR DELLA PIPE E' %d",pipes[index]);
+			int byte = write(atoi(p_argv_matrix[index][PIPE_CONTROL_WRITE_IN_P]), MOD_REMOVE, strlen(MOD_REMOVE));
+			printf("INDEX VALE' %d",index);
 			perror("");
-			printf("SCRIVO IL MEX DI RIMOZIONE SULLA PIPE\n");
+			printf("\tSCRIVO IL MEX DI RIMOZIONE SULLA PIPE, I BYTE SONO %d\n", byte);
 			stopped[index] = 1;
 		}
 		write(pipes[index], mods[i], strlen(mods[i]));
@@ -144,11 +145,11 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 	}
 	i = 0;
 	while(i < n){
-		if(notFinished(n_files_for_P[i], finished[i], m)){
+		//if(notFinished(n_files_for_P[i], finished[i], m)){
 			if(stopped[i]){
-				write(pipes[i], MOD_END, strlen(MOD_END));
+				write(atoi(p_argv_matrix[i][PIPE_CONTROL_WRITE_IN_P]), MOD_END, strlen(MOD_END));
 			}
-		}
+		//}
 		i++;
 	}
 	free(pipes);
@@ -157,15 +158,16 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 
 void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **file_finished){
 	int i = findFile(to_remove, *files, nfiles);
+	printf("I VALE %d\n",i);
 	int j = i;
 	if(i != -1){
 		free((*files)[i]);
 		free((*data)[i]);
 		while(j < nfiles - 1){
-			(*files[i]) = (*files)[i + 1];
-			(*data[i]) = (*data)[i + 1];
-			(*file_finished[i]) = (*file_finished)[i + 1];
-
+			(*files[j]) = (*files)[j + 1];
+			(*data[j]) = (*data)[j + 1];
+			(*file_finished[j]) = (*file_finished)[j + 1];
+			j++;
 		}
 		(*files)[nfiles - 1] = NULL;
 		(*data)[nfiles - 1] = NULL;
@@ -177,7 +179,7 @@ void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **f
 	else{
 		fprintf(stderr, "Cannot find file to remove\n");
 	}
-
+	printf("REMOVE FINITO\n");
 }
 
 int findFile(char *in, char **files, int nfiles){
@@ -189,7 +191,8 @@ int findFile(char *in, char **files, int nfiles){
 		}
 		i++;
 	}
-	return i;
+	printf("FIND FILE FINITO, RES VALE %d\n",res);
+	return res;
 }
 
 int getPWithFile(char ***p_argv_matrix, int n, char *in, int *pipe){
@@ -333,7 +336,7 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	i=0;
 	while(i<n){
 		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
-		//printf("KILLO I PROCESSI P\n");
+		printf("KILLO I PROCESSI P\n");
 		i++;
 	}
 	free(*p_pid_array);
@@ -415,5 +418,6 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 		i++;
 	}
 	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *));
+	printf("FILES NOT READ FINITO\n");
 	return res;
 }

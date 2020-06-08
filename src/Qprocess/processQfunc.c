@@ -110,14 +110,19 @@ void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore
 void removeHandler(int pipeReadOnTheFly, int *removedFiles, int *writtenFiles, char *message, int argc, char *argv[]){
   int byteRead = -1;
   do{
-    //printf("CICLO BUGGATO\n");
-    sprintf(message,"");
-    byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
-    if(byteRead>0 && strcmp(message, MOD_END)){
-      if(!isWrittenFile(writtenFiles,idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET)){
-        removedFiles[idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET] = 1;
+    char message1[PIPE_BUF+1]="";
+    byteRead = read(pipeReadOnTheFly,message1,PIPE_BUF);
+    if(byteRead>0){
+      if(strcmp(message1, MOD_END)){
+        sprintf(message1,"%s ",message1);
+        if(!isWrittenFile(writtenFiles,idFile(message1,argc,argv)-ARGS_P_START_FILE_OFFSET)){
+          removedFiles[idFile(message1,argc,argv)-ARGS_P_START_FILE_OFFSET] = 1;
+        }
       }
+      sprintf(message,"%s",message1);
+      printf("IL MESSAGGIO È %s\n",message);
     }
+
   }while(strcmp(message,MOD_END) && byteRead!=0);
 }
 
@@ -135,13 +140,21 @@ void appendToArgv(char **argv[],int *argc, char *file){
     char **new_argv = malloc(((*argc)+2) * sizeof(char*));
     int i;
     for(i = 0; i < (*argc); i++){
-        size_t length = strlen((*argv)[i])+1;
-        new_argv[i] = malloc(length);
-        memcpy(new_argv[i], (*argv)[i], length);
+        int length = strlen((*argv)[i])+1;
+        new_argv[i] = calloc(length, sizeof(char));
+        sprintf(new_argv[i], "%s", (*argv)[i]);
     }
     new_argv[(*argc)] = calloc(strlen(file)+1,sizeof(char));
     sprintf(new_argv[(*argc)],"%s",file);
-    new_argv[(*argc)+1] = NULL;
+    new_argv[(*argc)+1] = malloc(sizeof(char));
+	if((*argv)[*argc] != NULL){
+		int i = 0;
+		while(i < (*argc) + 1){
+			free((*argv)[i]);
+			i++;
+		}
+		free(*argv);
+	}
     *argv = new_argv;
     (*argc)++;
 }

@@ -5,7 +5,7 @@ int main( int argc, char *argv[] ){
 	signal(SIGPIPE, SIG_IGN);
 	int pipe_to_a[2], pipe_from_a[2];
 	char **input;
-	int *elimin,ninput=0;
+	int *elimin,ninput = 0;
 	printf("Devo chiamare A\n");
 	firstStartAnal( argv, argc, pipe_to_a, pipe_from_a, &input, &ninput, &elimin);
 	printf("Ho chiamato A per la prima volta\n");
@@ -16,7 +16,7 @@ int main( int argc, char *argv[] ){
 			if(isNum(argv[i+1]))
 				n = atoi(argv[i+1]);
 		}
-		else if( !strcmp(argv[i],"-m") ){
+		else if( !strcmp(argv[i],"-m" ) ){
 			if(isNum(argv[i+1]))
 				m = atoi(argv[i+1]);
 		}

@@ -1,9 +1,13 @@
-#include"../Analizer/CheckInput/inputcheck.h"
 #include"messages.h"
+
 #define AZIONI 3
+
 #define AZIONIMENUANAL 7
+
 #define NUMAZIONIPOSSIBILI 6
+
 #define NPATHANAL 8
+
 #define PATHANAL "./TestArea/anal"
 
 #ifndef MAINFUNC_H
@@ -35,7 +39,7 @@ char **createExec(int n,int m,char **vari,int nvari,int rec,int *elimin,int pipe
 
 void eseguiAnal(char **execAnal,int lung);
 
-void elimSelec(char **vari,int nvari,int **elimin,int pipe[2]);
+void elimSelec(char **vari, int nvari, int *elimin, int pipe[2]);
 
 void addFile(char ***vari,int *nvari,int **elimin,int pipe[2]);
 
