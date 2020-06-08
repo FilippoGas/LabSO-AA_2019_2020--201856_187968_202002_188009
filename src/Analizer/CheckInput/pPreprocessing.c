@@ -99,6 +99,7 @@ int initP(int *pid, char **args, int **pipe_for_P, int **pipe_for_control_P, int
 			}
 			j++;
 		}
+		//sleep(i*5+5);
 		res = execvp(args[0], args);
 	}
 	return res;

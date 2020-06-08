@@ -8,7 +8,7 @@ int main(int argc, char *argv[]){
   int *removedFiles = (int *)calloc(argc-ARGS_Q_START_FILE_OFFSET,sizeof(int));
   char message[PIPE_BUF+1]="";
   readInput(argc, argv, &parte, &denominatore, &pipeRead, &pipeWrite, &pipeReadOnTheFly, &pipeWriteOnTheFly);
-	
+
   printf("\n");
   close(pipeRead);
   printf("SONO Q\n");
@@ -16,13 +16,13 @@ int main(int argc, char *argv[]){
   int i=0;
   sleep(3);
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
-  int z = 0;
-  printf("\t SONO Q E HO I FILE:");
-  while(z < argc){
-  	printf(" %s", argv[z]);
-	z++;
-  }
-  printf("\n");
+    int z = 0;
+    printf("\t SONO Q E HO I FILE:");
+    while(z < argc){
+    	printf(" %s", argv[z]);
+  	   z++;
+    }
+    printf("\n");
     //CONTROLLER SULLA PIPE DEI MESSAGGI DA P
     int byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
     if(byteRead>0){
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]){
   errorSysCall(close(pipeWrite));
   free(writtenFiles);
   free(removedFiles);
+  printf("SONO Q E HO TERMINATO\n");
 	//FREE INPUT DATA
   return 0;
 }

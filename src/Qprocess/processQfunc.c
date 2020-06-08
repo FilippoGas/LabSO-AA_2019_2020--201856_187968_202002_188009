@@ -110,14 +110,19 @@ void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore
 void removeHandler(int pipeReadOnTheFly, int *removedFiles, int *writtenFiles, char *message, int argc, char *argv[]){
   int byteRead = -1;
   do{
-    //printf("CICLO BUGGATO\n");
-    sprintf(message,"");
-    byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);
-    if(byteRead>0 && strcmp(message, MOD_END)){
-      if(!isWrittenFile(writtenFiles,idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET)){
-        removedFiles[idFile(message,argc,argv)-ARGS_P_START_FILE_OFFSET] = 1;
+    char message1[PIPE_BUF+1]="";
+    byteRead = read(pipeReadOnTheFly,message1,PIPE_BUF);
+    if(byteRead>0){
+      if(strcmp(message1, MOD_END)){
+        sprintf(message1,"%s ",message1);
+        if(!isWrittenFile(writtenFiles,idFile(message1,argc,argv)-ARGS_P_START_FILE_OFFSET)){
+          removedFiles[idFile(message1,argc,argv)-ARGS_P_START_FILE_OFFSET] = 1;
+        }
       }
+      sprintf(message,"%s",message1);
+      printf("IL MESSAGGIO È %s\n",message);
     }
+
   }while(strcmp(message,MOD_END) && byteRead!=0);
 }
 

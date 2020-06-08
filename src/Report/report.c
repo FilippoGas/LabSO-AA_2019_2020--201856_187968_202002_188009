@@ -207,6 +207,20 @@ void printReports(int **reports, char **fileNames, int nfiles, int *selection, i
         printf(" ****************************************************************\n\n");
 
         int j; 
+        printf("\n  **EXTENDED ASCII TABLE CHARS (0-32)**\n\n\n");
+        for ( j = 0; j < ASCII_START; j++)
+        {
+            if(percentage){
+                printf("| %4d : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+            }else{
+                printf("| %4d : %4d  ",j,(reports[i][j]));
+            }
+            if(((j+1)%COLS)==0 && j!=0){
+                printf("|\n\n");
+            }
+        }
+        printf("\n\n");
+        printf("\n  **PRINTABLE ASCII TABLE CHARS**\n\n\n");
         for ( j = ASCII_START ; j < ALPHABET_SIZE ; j++){
 
             //char #127 is the DELETE char, that would shift the printing, SPACE is printed instead
@@ -330,8 +344,6 @@ void fillReports(int *report,char *buff){
     {
         report[j] = atoi(strtok(NULL," "));
     }
-     
-
 }
 
 void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpdate, int stopRecursion){
@@ -356,7 +368,7 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
 
         //number of file reported in current message/file
         (*nfiles) = atoi(strtok(NULL," "));
-        (*reports) = malloc((*nfiles)* sizeof(int*));
+        (*reports) = malloc((*nfiles) * sizeof(int*));
         (*fileNames) = malloc((*nfiles)* sizeof(char*));
 
         int i;
@@ -368,11 +380,12 @@ void readPipe(int fd,int ***reports, char ***fileNames, int *nfiles,int *lastUpd
             char name[4096];
             read(fd,name,4096);
             strtok(name,"/");
-            char *nameOnly = strtok(NULL," ");
-
-            (*fileNames)[i] = calloc(1,(sizeof(char)* strlen(nameOnly)+(2*sizeof(char)))); //+2 (/ iniziale e carattere terminatore)
+            char *nameOnly = strtok(NULL,"\n");
+            int j = 0;
+            for ( j = 4000; j >= 0 && nameOnly[j] == 32; j--){}
+            (*fileNames)[i] = calloc(1,(sizeof(char)*(j+2))); //+2 (/ iniziale e carattere terminatore)
             strcat((*fileNames)[i],"/");
-            strcat((*fileNames)[i],nameOnly);
+            strncat((*fileNames)[i],nameOnly,j);
             read(fd,buff,4096);
             fillReports((*reports)[i],buff);
         }
@@ -669,7 +682,6 @@ void getDirSelection(char **dirs, int ndirs,int **dirSelection,int *nDirSelectio
         if(sel){
 
             if(!alreadySelectedDirectory(sel-1,buff,ndirs)){
-                printf("\nin if\n");
                 buff[i] = sel-1;
                 i++;
             }
@@ -714,6 +726,20 @@ void printDirectoryReports(int **reports, char **fileNames, int nfiles, char **d
             printf(" ****************************************************************\n\n");
 
             int j; 
+            printf("\n  **EXTENDED ASCII TABLE CHARS (0-32)**\n\n\n");
+            for ( j = 0; j < ASCII_START; j++)
+            {
+                if(percentage){
+                    printf("| %4d : %.2f%c   ",j,getPerc(reports[i][j],getTotalChar(reports[i])),'%');
+                }else{
+                    printf("| %4d : %4d  ",j,(reports[i][j]));
+                }
+                if(((j+1)%COLS)==0 && j!=0){
+                    printf("|\n\n");
+                }
+            }
+        printf("\n\n");
+        printf("\n  **PRINTABLE ASCII TABLE CHARS**\n\n\n");
             for ( j = ASCII_START; j < ALPHABET_SIZE ; j++){
 
                 if(j == 127){
