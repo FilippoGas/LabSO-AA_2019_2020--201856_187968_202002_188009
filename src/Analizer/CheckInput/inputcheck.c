@@ -175,7 +175,7 @@ void validateInput(char **input, int ninput, char ***files, char ***dirs, int *n
 			}
 			else{
 				perror("stat");
-				exit(1);
+				exit(-1);
 			}
 		}
 		else{
