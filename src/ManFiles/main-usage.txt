@@ -1,13 +1,10 @@
-ANALIZER(1)			User Command
+MAIN(1)				User Command
 
 NAME
-	analizer - analize character frequency in listed files or directory.
-		   all the data will be put in a file ready for report. If 
-		   there is an instance of report running the data will be
-		   put in a named pipe (FIFO)
+	main - a menu wrapper for analizer and report
 
 SYNOPSYS
-	analizer [OPTION]... [FILES]... [DIRECTORIES]...
+	main [OPTION]... [FILES]... [DIRECTORIES]...
 
 DESCRIPTION
 	Analize character frequency in listed files.			
@@ -27,4 +24,4 @@ AUTHOR
 	and Giuseppe Lamorgese
 
 SEE ALSO
-	report-usage.txt main-usage.txt
+	report-usage.txt analizer-usage.txt
