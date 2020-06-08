@@ -331,9 +331,11 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	//Killa i processi
 	//killAllP(**p_pid_array,n);
 	i=0;
+	printf("Prima del while di uccsisione\n");
 	while(i<n){
+		printf("DEVO UCCIDERE IL PROCESSO %d\n", (*p_pid_array)[i]);
 		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
-		//printf("KILLO I PROCESSI P\n");
+		printf("KILLO I PROCESSI P\n");
 		i++;
 	}
 	free(*p_pid_array);

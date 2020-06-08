@@ -17,6 +17,7 @@ void killHandler(int signal){
 
 int main(int argc, char *argv[]){
 	signal(SIGTERM, killHandler);
+	printf("Allocato l'handler\n");
 	sleep(15);
 	int pipe_read, pipe_write, pipe_control[2];
 	char **files;
