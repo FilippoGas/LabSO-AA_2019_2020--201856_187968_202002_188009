@@ -1,0 +1,16 @@
+REPORT(1)	User Command
+NAME
+	report - prints reports received from analizer via PIPE or file.
+SYNOPSYS
+	report
+DESCRIPTION
+    
+    An interactive menu will facilitate the opeations.
+    
+    In any moment press 6) to update the report FIFO/file from analizer.	
+    
+    Selections of files, categories and directories are zero terminated,
+    
+    this means they take one value at a time and require the insertion of a 0 to close the selection.
+
+	 
