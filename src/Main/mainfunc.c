@@ -17,21 +17,28 @@ void recurtion( int *rec ){
 }
 
 //setta o M o N a seconda della selezione
-void setmN( int *num, char selez, int pipe[2] ){
+void setmN( int *num, char selez, int pipe[2],int analpid){
 	int exit = 0;
 	while( exit < 1 ){
 		printf("Scrivi un numero per %c\n",selez);
 		char *cnum = getIn();
-		if(isNum(cnum)){
+		if(isNum(cnum)&&atoi(cnum)>0){
 			(*num) = atoi(cnum);
-			//DEBUG
-			sms_change_mn(cnum,selez,pipe);
-			//EDEBUG
+			int status;
+			waitpid(analpid,&status,WNOHANG);
+
+			if(WEXITSTATUS(status)>0){
+				sms_change_mn(cnum,selez,pipe);
+			}
+			else{
+				printf("Non c'e' nessun analizer in esecuzione,\n");
+				printf("per attuare le modifiche farlo partire\n");//DEBUG
+			}
 			exit = 1;
 		}
 		else{
 			printf("La stringa digitata non e' un numero:\n");
-			printf("Scrivere un numero senza spazi o altri caratteri\n");
+			printf("Scrivere un numero diverso da zero, senza spazi e altri caratteri\n");
 			exit = 0;
 		}
 	}
@@ -128,7 +135,7 @@ int printlist(char **vari, int nvari, int *elimin){
 }
 
 //Elimina uno dei file dagli argomenti della chiamata di A
-void elimSelec(char **vari, int nvari, int *elimin, int pipe[2]){
+void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 	if(nvari > 0){
 		int nnomi = printlist(vari, nvari, elimin );
 		if( nnomi > 0 ){
@@ -172,7 +179,19 @@ void elimSelec(char **vari, int nvari, int *elimin, int pipe[2]){
 				}
 				printf("Finisce il for\n");
 				i--;
-				sms_rmfile(vari[i],pipe);
+				int status;
+				waitpid(analpid,&status,WNOHANG);
+
+				if(WEXITSTATUS(status)>0){
+					sms_rmfile(vari[i],pipe);
+				}
+				else{
+					printf("Non c'e' nessun analizer in esecuzione,\n");
+					printf("per attuare le modifiche farlo partire\n");//DEBUG
+				}
+
+
+
 				printf("Eliminto \"%s\"\n",vari[i]);
 			}
 			free(cnum);
@@ -207,7 +226,8 @@ void addtoArray( char ***array, int *ndata, char *add, int **elimin ){
 }
 
 //Aggiungo un file, con il proprio path, nella lista dei file
-void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
+void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid ){
+	//DEBUG
 	printf( "Digitare uno o piu' cartelle o file\n" );
 	printf("Per annullare non scrivere nulla\n");
 	char *aggiunta = getIn();
@@ -219,7 +239,16 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 			char *tmp = calloc( lung + 1, sizeof(char) );
 			strncat( tmp, puntat, lung );
 			addtoArray( vari, nvari, tmp, elimin );
-			sms_addfile( (*vari)[(*nvari) - 1], pipe );
+
+			int status;
+			waitpid(analpid,&status,WNOHANG);
+			if( WEXITSTATUS(status) > 0 ){
+				sms_addfile( (*vari)[(*nvari) - 1], pipe );
+			}
+			else{
+				printf("L'analizer non e' attivo per cambiare le modifiche farlo partire\n");
+			}
+
 			puntat = ptr+1;
 		}
 		else{
@@ -241,7 +270,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2],int *analpid){
 	int status;
 	waitpid(*analpid, &status, WNOHANG);
-	if( WIFEXITED(status) == 1 && WEXITSTATUS(status) == 0){
+	if( WIFEXITED(status) == 1 && WEXITSTATUS(status) <= 0){
 		int lung = (*nvari) + NCHIAMATECOST;
 		pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
 		pipe2( pipe_from_a, __O_DIRECT );
@@ -298,7 +327,7 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 				break;
 			case 2:
 				//Add dir o file
-				addFile( vari, nvari, elimin, pipe_to_a );
+				addFile( vari, nvari, elimin, pipe_to_a, *analpid );
 				break;
 			case 3:
 				//Accendo e spengo la ricorsione
@@ -306,15 +335,15 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 				break;
 			case 4:
 				//set M
-				setmN(m,'m',pipe_to_a);
+				setmN(m,'m',pipe_to_a,*analpid);
 				break;
 			case 5:
 				//set N
-				setmN(n,'n',pipe_to_a);
+				setmN(n,'n',pipe_to_a,*analpid);
 				break;
 			case 6:
 			//Elimina selettivamente i file
-				elimSelec( *vari, *nvari, *elimin, pipe_to_a );
+				elimSelec( *vari, *nvari, *elimin, pipe_to_a, *analpid);
 				break;
 			case 7:
 				//Reset Anal
