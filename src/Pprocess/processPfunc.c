@@ -41,7 +41,7 @@ int createChildren(int *pid, char **argvQ, int **pipe, int **pipe_control, int m
 		while(j < m){
 			if(j != i){
 				close(pipe_control[j][READ]);
-				close(pipe_control[i][WRITE]);
+				close(pipe_control[j][WRITE]);
 				close(pipe[j][READ]);
 				close(pipe[j][WRITE]);
 			}

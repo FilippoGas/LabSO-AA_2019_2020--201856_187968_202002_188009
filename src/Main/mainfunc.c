@@ -108,9 +108,9 @@ void eseguiAnal( char **execAnal,int lung){
 	}
 	else {
     int i=1;
-    for(i=1;i<lung-1;i++){
+    /*for(i=1;i<lung-1;i++){
         free(execAnal[i]);
-    }
+    }*/
 	}
 }
 
@@ -238,7 +238,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2] ){
 
 
 void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2]){
-	int test = write(pipe_to_a[WRITE], " ", 2);
+	int test = write(pipe_to_a[WRITE], "", 0);
 	if( test < 0 ){
 		int lung = (*nvari) + NCHIAMATECOST;
 		pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
@@ -413,6 +413,7 @@ void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2
 		dich[i] = argv[i];
 	}
 	int first_dim = i;
+	printf("DEVO LIBERARE LA STRINGA\n");
 	dich[i] = malloc(3 * sizeof(char));
 	sprintf(dich[i],"-p");
 	dich[i + 1] = intToChar( pipe_to_a[READ] );
@@ -423,7 +424,8 @@ void firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2
 	eseguiAnal(dich,lung);
 	close(pipe_to_a[READ]);
 	close(pipe_from_a[WRITE]);
-	for(; first_dim > i + 6; i++ ){
+	for(; first_dim<i+5; first_dim++ ){
+		printf("DEVO LIBERARE LA STRINGA: %s\n",dich[first_dim]);
 		free(dich[first_dim]);
 	}
 	leggo_input_pipe(input,ninput,elimin,pipe_from_a, pipe_to_a);
