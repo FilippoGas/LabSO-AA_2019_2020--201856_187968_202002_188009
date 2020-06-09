@@ -8,7 +8,9 @@ int main(int argc, char *argv[]){
     int ret = 0;
 
     if(argc == 2 && strcmp(argv[1],"-h") == 0){
-        execl("/bin/cat","cat","../ManFiles/report_usage.txt",0);
+	char manreport[PATH_MAX] = "";
+	sprintf(manreport, "%sreport_usage.txt", MANPATH);
+        execvp("/bin/cat","cat", manreport,0);
     }else{
 
         int reporting = 1, control;
