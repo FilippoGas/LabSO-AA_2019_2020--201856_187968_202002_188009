@@ -4,23 +4,23 @@
 
 
 //PRIMARY FUNCIONTS
-//Setta o togle l'opzione di ricorsione
+//Set or remove the recurtion option
 void recurtion( int *rec ){
 	if( (*rec) == 0 ){
-		printf( "La ricorsione e' attiva\n" );
+		printf( "The recursion is on.\n" );
 		(*rec) = 1;
 	}
 	else{
-		printf( "La ricorsione e' disattivata\n" );
+		printf( "The recursion is off.\n" );
 		(*rec) = 0;
 	}
 }
 
-//setta o M o N a seconda della selezione
+//set M or N depending to the selection
 void setmN( int *num, char selez, int pipe[2],int analpid){
 	int exit = 0;
 	while( exit < 1 ){
-		printf("Scrivi un numero per %c\n",selez);
+		printf("Type a number for %c\n",selez);
 		char *cnum = getIn();
 		if(isNum(cnum)&&atoi(cnum)>0){
 			(*num) = atoi(cnum);
@@ -28,18 +28,19 @@ void setmN( int *num, char selez, int pipe[2],int analpid){
 			exit = 1;
 		}
 		else{
-			printf("La stringa digitata non e' un numero:\n");
+			printf("The string typed is't a number\n" );
+			printf("Write a number different form 0m without spaces and other characters\n");
 			printf("Scrivere un numero diverso da zero, senza spazi e altri caratteri\n");
 			exit = 0;
 		}
 	}
 }
 
-//Esce dal menu' di A
+//Exit from menu' of A
 void exitAnal(){
 }
 
-//Crea la chiamata di A
+//Create the call of A
 char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, int pipe_to_a[2], int pipe_from_a[2] ){
 	//path n m nvari r -p NULL
 	int lung = nvari + NCHIAMATECOST;
@@ -48,8 +49,8 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 	for(i=0; i < lung; i++){
 		ret[i] = NULL;
 	}
-	//Aggiungi path_analizer
 
+	//Add path_analizer
 	ret[0] = ANAME;
 	//N
 	ret[1] = malloc(4);
@@ -62,7 +63,8 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 	sprintf(ret[3], "-m");
 	ret[4] = malloc(cifre(m)+1);
 	sprintf(ret[4], "%d", m);
-	//FILE e CARTELLE
+
+	//FILE and DIRS
 	i = 0;
 	for( i=0; i < nvari; i++ ){
 		if( elimin[i] == 0 ){
@@ -75,6 +77,7 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 		}
 	}
 	i += 5;
+
 	//RECU
 	if(rec == 1){
 		ret[i] = malloc(4 * sizeof(char));
@@ -92,7 +95,7 @@ char **createExec( int n, int m, char **vari, int nvari, int rec, int *elimin, i
 	return ret;
 }
 
-//Fa partire A dal menu' di A
+//Start analizer form the menu'
 int eseguiAnal( char **execAnal,int lung){
 	int f = fork();
 	while( f < 0 ){
@@ -104,16 +107,10 @@ int eseguiAnal( char **execAnal,int lung){
 		fprintf( stderr, "Errore di esecuzione Analizer\n" );
 		exit(-1);
 	}
-	else {
-    /*int i = 1;
-    for( i=1; i < lung - 1; i++){
-        free(execAnal[i]);
-    }*/
-	}
 	return f;
 }
 
-//Ritorna il numero dei file non eliminati
+//Return the numer of files or dirs not remuved
 int printlist(char **vari, int nvari, int *elimin){
 	int i=0,j=0;
 	for( i = 0; i < nvari; i++ ){
@@ -125,25 +122,23 @@ int printlist(char **vari, int nvari, int *elimin){
 	return j;
 }
 
-//Elimina uno dei file dagli argomenti della chiamata di A
+//Remove one of the argument of the call A
 void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 	if(nvari > 0){
 		int nnomi = printlist(vari, nvari, elimin );
 		if( nnomi > 0 ){
-			printf("Che file vuoi eliminare?\n");
-			printf("Se si vuole tornare al menu' digitare q .\n");
-			printf("Digita un numero fra i precedenti.\n" );
+			printf("Which file do you want to remove? Che file vuoi eliminare?\n");
+			printf("If you want to return to analizer menu' type q .\n");
+			printf("Type one of the previous numbers.\n" );
 			char *cnum = getIn();
 			if( isNum(cnum) && atoi(cnum) > nnomi && atoi(cnum) < 1){
 				free(cnum);
 				cnum = calloc( 3, sizeof(char) );
 				sprintf(cnum,"NO");
 			}
-			printf("arriva qua\n");
 			while( !isNum(cnum) && strcmp(cnum,"q")){
-				printf("Mi dispiace ma il comando digitato\n");
-				printf("non e' un numero oppure e' un numero troppo alto.\n\n");
-				printf("Digitare un numero fra i seguenti elencati:\n");
+				printf("Sorry but the typed command isn't a number or is to high.\n\n");
+				printf("Type one of the following numbers:\n");
 				printlist(vari,nvari,elimin);
 
 				free(cnum);
@@ -154,10 +149,7 @@ void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 					sprintf( cnum, "NO" );
 				}
 			}
-			printf("Supera il while\n");
 			if( strcmp( cnum, "q") ){
-				printf("Entra nell'if\n");
-
 				int num = atoi(cnum);
 				int i=0,j=0;
 				for(i = 0; i < nvari && num != j; i++){
@@ -168,23 +160,22 @@ void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 						elimin[i] = 1;
 					}
 				}
-				printf("Finisce il for\n");
 				i--;
 				sms_rmfile(vari[i],pipe);
-				printf("Eliminto \"%s\"\n",vari[i]);
+				printf("Removed \"%s\"\n",vari[i]);
 			}
 			free(cnum);
 		}
 		else{
-			printf("Non c'è nessun file da eliminare\n");
+			printf("There is no file to remove\n");
 		}
 	}
 	else{
-		printf("Non c'è nessun file da eliminare\n");
+		printf("There is no file to remove\n");
 	}
 }
 
-//Aggiunge ad un array un dato e aggiunge una casella a elimina
+//Add a file or dir in an array and add a box in a elimin
 void addtoArray( char ***array, int *ndata, char *add, int **elimin ){
 	char **tmp = calloc( (*ndata) + 1, sizeof(char *) );
 	int i = 0;
@@ -204,11 +195,11 @@ void addtoArray( char ***array, int *ndata, char *add, int **elimin ){
 	*elimin = newelimin;
 }
 
-//Aggiungo un file, con il proprio path, nella lista dei file
+//Add a file to the list with his path
 void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid ){
 	//DEBUG
-	printf( "Digitare uno o piu' cartelle o file\n" );
-	printf("Per annullare non scrivere nulla\n");
+	printf("Type one or more dirs or files\n" );
+	printf("To undo don't write nothing\n");
 	char *aggiunta = getIn();
 	char *puntat = aggiunta;
 	char *ptr = index(aggiunta,' ');
@@ -237,6 +228,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 }
 
 
+//Start the analizer if there is no analizer already started
 void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2],int *analpid){
 	int status;
 	int test = waitpid(*analpid, &status, WNOHANG);
@@ -260,14 +252,14 @@ void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin
 		close(pipe_to_a[READ]);
 	}
 	else{
-		printf( "L'analizer e' ancora in esecuzione, aspettare la sua terminazione\n" );
+		printf("The analizer is still in execution, wait until it's done.\n" );
 	}
 }
 
 
-//Menu di anal
+//Menu' of analizer
 void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin, int pipe_to_a[2], int pipe_from_a[2], int *analpid ){
-	//Iniz. di dir e file nel caso in cui non sono stati allocati
+	//Initialize vari in the case it hasn't been allocated
 	if( (*nvari) < 1 ){
 		(*vari) = calloc(1 , sizeof(char **));
 	}
@@ -278,28 +270,28 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 		lung = (*nvari) + NCHIAMATECOST;
 		printOpAnal();
 		char *input = getIn();
-		//Controllo se si vuole tornare al menu' principale
+		//Controll if you want to return in the main menu'
 		if( !(strcmp(input, "q") && strcmp(input, "b") && strcmp(input, "back")) ){
 			option = -1;
 		}
-		//Controllo se si vuole fare una stampa di execAnal
+		//Controll if you want to do a print of execAnal
 		else if( !(strcmp(input, "v") && strcmp(input, "V")) ){
 			option = 69;
 		}
 		else option = atoi(input);
 		free(input);
-		//Opzioni
+		//Options
 		switch(option) {
 			case 1:
-				//creo l'exec e faccio partire l'analizer
+				//Create the exec and try to start the analizer
 				startAnal(n, m, vari, nvari, rec, elimin, pipe_to_a, pipe_from_a, analpid);
 				break;
 			case 2:
-				//Add dir o file
+				//Add dir or file
 				addFile( vari, nvari, elimin, pipe_to_a, *analpid );
 				break;
 			case 3:
-				//Accendo e spengo la ricorsione
+				//Set or remove the recursion option
 				recurtion(rec);
 				break;
 			case 4:
@@ -315,12 +307,12 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 				elimSelec( *vari, *nvari, *elimin, pipe_to_a, *analpid);
 				break;
 			case 7:
-				//Reset Anal
+				//Reset Analiler
 				presetAnal( n, m, vari, nvari, rec, elimin );
 				break;
 
 			case 69:
-				//Visualizza linea di comando
+				//Visualize the call line of analizer
 				execAnal = createExec(*n, *m, *vari, *nvari, *rec, *elimin, pipe_to_a, pipe_from_a);
 				for( i = 0; i < lung; i++ ){
 					if( execAnal[i] != NULL )
@@ -336,20 +328,20 @@ void enterAnalMenu( int *n, int *m, char ***vari, int *nvari, int *rec, int **el
 				exitAnal();
 				break;
 			default:
-				printf("L'opzione inserita non e' valida\n\n");
-				printf("Prego digitare il numero di un azione in elenco:\n\n");
+				printf("The option entered is not valid\n\n" );
+				printf("Write a number form an action in the list:\n\n");
 				option=0;
 		}
 	}
-	//Nel caso non ci siano piu' files o dir
+	//In case there are no files or dirs
 	if((*nvari) < 1){
 		free(*vari);
 	}
 }
 
-//Faccio partire il reporter
+//Start the reporter
 void startReporter(){
-	printf("Faccio partire il reporter\n");
+	printf("Starting the reporter\n");
 	int f = fork();
 	while( f < 0 )
 		f=fork();
@@ -363,19 +355,19 @@ void startReporter(){
 	waitpid(f, &status, 000);
 }
 
-//Chiudo il programma
+//Close the programm
 void ending(int analpid){
 	int status;
 	printf("Quitting...\n");
 	waitpid(analpid,&status, 000);
-	printf("\nGrazie per aver utilizzato il programma di analisi.\n");
-	printf("E ricordatevi sempre:\n");
-	printf("\033[1m\033[33m\t\t Se volete qualita', il nostro nome e' GEFF!\033[0m\n");
+	printf("\nThank you for using the analysis program\n" );
+	printf("And always remember:\n");
+	printf("\033[1m\033[33m\t\t If you want quality, my name is GEFF!\033[0m\n");
 
 	exit(0);
 }
 
-//prendo un input o, se "q", esco
+//Get an input, if q then exit
 char *getInputorExit(int analpid){
 	char *ret = getIn();
 	if( !(strcmp(ret,"q") && strcmp(ret,"quit") && strcmp(ret,"exit")) ){
@@ -385,7 +377,7 @@ char *getInputorExit(int analpid){
 	return ret;
 }
 
-//Leggo i path dei file che mi vengono da A
+//Read files and path of files that come from A
 void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a[2], int pipe_to_a[2]){
 	char message[PIPE_BUF + 1];
 	read( pipe_from_a[READ], message, PIPE_BUF );
@@ -402,12 +394,13 @@ void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a
 	*elimin = calloc( *ninput, sizeof(int) );
 }
 
-//Faccio partire A per la prima volta
+
+//Start analizer for the first time
 int firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2], char ***input,int *ninput, int **elimin ){
 	pipe2(pipe_to_a,__O_DIRECT | O_NONBLOCK);
-	pipe2(pipe_from_a,__O_DIRECT);							//Controlla
+	pipe2(pipe_from_a,__O_DIRECT);
 
-	//dichiarazione
+	//Initialize
 	int lung=argc+7;
 	char *dich[lung];
 	dich[0] = ANAME;
@@ -436,7 +429,8 @@ int firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2]
 
 
 //UTIL FUNCIONTS
-//Prendi un input
+
+//Get an input
 char *getIn(){
 	int i = 1;
 	char *ret = malloc(i);
@@ -456,7 +450,7 @@ char *getIn(){
   return ret;
 }
 
-//conta le cifre di un numero naturale
+//Count the digits in a natural number
 int cifre( int num ){
 	int ret = 1;
 	while( num/10 != 0 ){
@@ -465,14 +459,14 @@ int cifre( int num ){
 	}
 	return ret;
 }
-//converte int in un char *
+//Convert an int in a char * and alloc it
 char *intToChar( int num ){
 	char *ret = calloc( cifre(num)+1, sizeof(char) );
 	sprintf(ret,"%d",num);
 	return ret;
 }
 
-//Guarda se una stringa contiene SOLO cifre
+//If a string contains onty numbers, return true
 int	isNum( char *pnum ){
 	int ret = 0;
 	if(pnum != NULL)
@@ -483,7 +477,7 @@ int	isNum( char *pnum ){
 	return ret;
 }
 
-//Copia il contenuto di array2 in arrey1 riallocandolo (allargandolo)
+//Copy the content of arrey2 in arrey1 by reallocating it
 void cpArray( char ***array1, int *narray1, char **array2, int narray2 ){
 	char *tmp[(*narray1)];
 	if( (*narray1) > 1 ){
@@ -505,39 +499,39 @@ void cpArray( char ***array1, int *narray1, char **array2, int narray2 ){
 	(*narray1) = *narray1 + narray2;
 }
 
-//Fa il print delle Opzioni nel menu' principale
+//Do the print of the options of the starting menu'
 void printOptions(){
 	int i=0;
-	printf("\nAZIONI:\n");
-	char *laz[AZIONI] = {"Analazer Menu'", "Reporter", "Lista Azioni"};
-	for(i=0;i<AZIONI; i++){
+	printf("\nACTIONS:\n");
+	char *laz[AZIONI] = {"Analazer Menu'", "Reporter", "Acion List"};
+	for( i = 0; i < AZIONI; i++ ){
 		printf("%d. %s\n",i+1,laz[i]);
 	}
 	printf("q/quit/exit  EXIT\n\n");
 }
 
-//Fa il print delle Opzioni nel menu' di Analize
+//Do the print of the options of the Analizer menu'
 void printOpAnal(){
 	int i=0;
-	char *lazAnal[AZIONIMENUANAL]={"Iniziare Analazer","Aggiungere file o cartelle","Impostare ricorsione su cartelle", "Impostare m", "Impostare n","Eliminare file o cartelle","reset impostazioni"};
+	char *lazAnal[AZIONIMENUANAL]={"Start Analazer","Add files or directories","Set recurtion on directories", "Set m", "Set n","Remove files or directories","reset settings"};
 	printf("\nANALIZER:\n");
-	printf("AZIONI:\n");
-	for(i=0;i<AZIONIMENUANAL;i++){
+	printf("ACTIONS:\n");
+	for( i=0; i < AZIONIMENUANAL; i++ ){
 		printf("%d. %s\n",i+1,lazAnal[i]);
 	}
-	printf("v/V visualizza linea di comando main attuale\n");
-	printf("b/back/return tornare al Menu'\n");
+	printf("v/V view the call line of analizer\n");
+	printf("b/back/return return to Menu'\n");
 }
 
-//Resetta la chiamata di Anal
+//Reset the call of analizer
 void presetAnal( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimin ){
-	printf("Sei sicuro di voler resettare la linea di dichiarazione di Analizer? S/n\n");
+	printf("Are you sure tou want to reset the call line of analizer? Y/n");
 	char *risp=getIn();
-	if(!(strcmp(risp,"S")&&strcmp(risp,"s"))){
-		printf("Elimino tutti i dati salvati di dichiarazione, continuare? S/n\n");
+	if(!(strcmp(risp,"Y")&&strcmp(risp,"y"))){
+		printf("Removing all the save data, continue?\n Y/n" );
 		free(risp);
 		risp=getIn();
-		if(!(strcmp(risp,"S") && strcmp(risp,"s"))){
+		if(!(strcmp(risp,"Y") && strcmp(risp,"y"))){
 			(*n)=3;(*m)=4;
 			if((*vari) != NULL){
 				freeStringArray(*vari,*nvari);
@@ -554,6 +548,7 @@ void presetAnal( int *n, int *m, char ***vari, int *nvari, int *rec, int **elimi
 	free(risp);
 }
 
+//Free an arrey of strings
 void freeStringArray(char **stringarray, int n){
 	int i = 0;
 	while(i < n){
