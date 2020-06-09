@@ -30,9 +30,8 @@ int main(int argc, char *argv[]){
       strcpy(message,"");
     }
 
-
     if(!removedFiles[i]){
- 	int fd  = openFile(argv[i + ARGS_Q_START_FILE_OFFSET]);
+	    int fd  = openFile(argv[i + ARGS_Q_START_FILE_OFFSET]);
       int size = computeSize(fd);
       //Per ogni file vado a calcolarmi l'offset, l'end e la stringa formato che andrò a scrivere nella pipe
       int offset = computeOffset(parte,denominatore,size);

@@ -86,11 +86,13 @@ void readInput(int argc, char *argv[], int *parte, int *denominatore, int *pipeR
 int openFile(char *name){
 	int last = strlen(name) ;
 	char temp[PATH_MAX + 1] = "";
-	strncpy(temp, name, last - 1);
+	sprintf(temp,"%s",  name);
+	temp[strlen(temp) - 1] = '\0';
+	printf("%sx, %sx\n", name, temp);
 	return errorOpenInQ(open(temp, O_RDONLY), temp);
 }
 
-void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore, char *message, int *argc, char **argv[]){
+void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore, char *message, int *argc, char ***argv){
   int byteRead = -1;
   do{
     char message1[PIPE_BUF+1]="";
@@ -120,7 +122,6 @@ void removeHandler(int pipeReadOnTheFly, int *removedFiles, int *writtenFiles, c
         }
       }
       sprintf(message,"%s",message1);
-      printf("IL MESSAGGIO È %s\n",message);
     }
 
   }while(strcmp(message,MOD_END) && byteRead!=0);
@@ -136,25 +137,22 @@ int idFile(char *file, int argc, char *argv[]){
   }
 }
 
-void appendToArgv(char **argv[],int *argc, char *file){
-    char **new_argv = malloc(((*argc)+2) * sizeof(char*));
+void appendToArgv(char ***argv,int *argc, char *file){
+    /*char **new_argv = malloc(((*argc)+2) * sizeof(char*));
     int i;
     for(i = 0; i < (*argc); i++){
         int length = strlen((*argv)[i])+1;
-        new_argv[i] = calloc(length, sizeof(char));
+	new_argv[i] = calloc(length, sizeof(char));
         sprintf(new_argv[i], "%s", (*argv)[i]);
     }
     new_argv[(*argc)] = calloc(strlen(file)+1,sizeof(char));
     sprintf(new_argv[(*argc)],"%s",file);
-    /*new_argv[(*argc)+1] = calloc(1,sizeof(char));
-	if((*argv)[*argc] != NULL){
-		int i = 0;
-		while(i < (*argc) + 1){
-			free((*argv)[i]);
-			i++;
-		}
-		free(*argv);
-	}*/
-    *argv = new_argv;
+    
+    //new_argv[(*argc)+1] = NULL;//calloc(1,sizeof(char));
+    (*argv) = new_argv;*/
+	(*argv) = realloc((*argv), (*argc) + 1);
+	(*argv[*argc]) = calloc(strlen(file) + 1, sizeof(char));
+    sprintf((*argv)[(*argc)],"%s",file);
+
     (*argc)++;
 }
