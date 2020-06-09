@@ -21,7 +21,7 @@ char* getFileNameFromMessage(char *message, int *childId, int n, char ***args_fo
 		t++;
 	}
 	temp = strtok(NULL , " ");
-	value = atoi(temp);		
+	value = atoi(temp);
 	column = value;
 	char *res = malloc((strlen(args_for_p[row][column]) + 1) * sizeof(char));
 	sprintf(res, "%s", args_for_p[row][column]);
@@ -53,7 +53,7 @@ int **initResMatrix(int nFiles){
 
 
 void readMessage(char *message, int **value, int *childId, int n, char ***args_for_p, char ** file_list, int nFiles, int *finished, int *file_finished){
-	/*FORMATO MESSAGGIO: 
+	/*FORMATO MESSAGGIO:
 	 * childId FileNumberInChildID value1 value2 . . . value 256\n
 	 */
 	char *filename = getFileNameFromMessage(message, childId, n, args_for_p, finished);
@@ -98,13 +98,33 @@ int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, c
 			i++;
 		}
 		//TUTTI I P TERMINANO E I FILE AGGIUNTI NON SONO STATI LETTI
-	}	
+		if(pipe_from_M != -1 && byteRead==0){
+			int i = 0;
+			while(i<(*n)){
+				close((*pipe_for_P)[i][READ]);
+				close((*pipe_for_P)[i][WRITE]);
+				close((*pipe_control)[i][READ]);
+				close((*pipe_control)[i][WRITE]);
+				i++;
+			}
+			printf("PRIMA DELLE FREE\n");
+			freePipeMatrix(*pipe_for_P,*n);
+			freePipeMatrix(*pipe_control,*n);
+			freeArgsForP(*p_argv_matrix,*n);
+			printf("DOPO LE FREE\n");
+
+			//CREA I NUOVI PROCESSI
+			char **new_files;
+			int new_files_size = filesNotRead(*files, nfiles, *finished, &new_files);	//PRENDI I FILE PER CUI MANCA DATI
+			(*pipe_for_P) = initPipeMatrix(*n);
+			(*pipe_control) = initPipeMatrix(*n);
+			(*p_argv_matrix) = createArgsForP(*n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
+			(*p_pid_array) = startAllP(*n, *pipe_for_P, *pipe_control, *p_argv_matrix);
+			byteRead = new_files_size;
+		}
+
+	}
 	free(n_files_for_P);
 	free(finished);
-	free(n_files_for_P);
-	return data;
+	//free(n_files_for_P);
 }
-
-
-
-

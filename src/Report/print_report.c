@@ -8,9 +8,9 @@ int main(int argc, char *argv[]){
     int ret = 0;
 
     if(argc == 2 && strcmp(argv[1],"-h") == 0){
-	char manreport[PATH_MAX] = "";
-	sprintf(manreport, "%sreport_usage.txt", MANPATH);
-        execvp("/bin/cat","cat", manreport,0);
+	char *manreport[PATH_MAX] = {"/bin/more","",NULL};
+	sprintf(manreport[1], "%sreport_usage.txt", MANPATH);
+        execvp(manreport[0], manreport);
     }else{
 
         int reporting = 1, control;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
             int nselection = 0;
             int *dirSelection = NULL;
             int nDirSelection = 0;
-            
+
             switch (control){
                 case 1:
                     printFileSelection();
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
                         getFileSelection(fileNames,nfiles,&selection, &nselection);
                     }
                     printReports(reports,fileNames,nfiles,selection,nselection,0);
-                    
+
                 break;
 
                 case 2:
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
                     {
                         printf("%d ",categoriesSelection[i]);
                     }
-                    
+
                     printCategoriesReports(reports,fileNames,nfiles,selection,nselection,categoriesSelection);
                 break;
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
                     }
                     reporting = 0;
                 break;
-            }   
+            }
         }
 
         close(fd);
