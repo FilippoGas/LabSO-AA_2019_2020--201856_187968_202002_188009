@@ -12,7 +12,6 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 		if(byte > 0){
 			(*content)[i] = (char *)calloc((PIPE_BUF + 1), sizeof(char));
 			sprintf((*content)[i], "%s", message);
-			printf("%s\n", (*content)[i]);
 			i++;
 			if(i >= size){
 				size *= 2;
@@ -22,7 +21,6 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 		}
 	}while(strcmp(MOD_END, (*content)[i - 1]) && byte != 0);
 	if(type == 0 || type == 1){
-		printf("VALIDO I FILE\n");
 		char **file_list, **dir_list;
 		int nfiles, ndirs;
 		validateInput(*content, i - 1, &file_list, &dir_list, &nfiles, &ndirs);
@@ -33,13 +31,11 @@ int getModContent(int pipe_d, char ***content, int *realsize, int type, int r){
 		(*content) = getAllFullPath(file_list, nfiles, dir_content, dir_content_size, &res);
 		freeStringArray(file_list, nfiles);
 		freeStringArray(dir_content, dir_content_size);
-		printf("HO VALIDATO I FILE\n");
 
 	}
 	else{
 		res = 1;
 	}
-	printf("Ho finito di leggere la pipe di controllo\n");
 	return res;
 }
 
@@ -76,28 +72,23 @@ int execChangeOnTheFly(int pipe_from_M, int *n, int *m, char ****p_argv_matrix, 
 	char mod_type[PIPE_BUF + 1];
 	int byte = read(pipe_from_M, mod_type, PIPE_BUF);
 	if(byte > 0){
-	printf("MI E ARRIVATO UN COMANDO DI CAMBIO\n");
 		char **mods;
 		int realsize;
 		int nmods = getModContent(pipe_from_M, &mods, &realsize, getType(mod_type), r);
 		if(!strcmp(mod_type, MOD_REMOVE)){
-			printf("DEVO TOGLIERE FILE\n");
 			removeFiles(mods, nmods, files, nfiles, data, *p_argv_matrix, n_files_for_P, finished, *n, *m, file_finished);
 			res = 1;
 		}
 		else if(!strcmp(mod_type, MOD_ADD)){
-			printf("DEVO AGGIUNGERE FILE\n");
 			addFiles(mods, nmods, files, nfiles, data, *p_argv_matrix, n_files_for_P, *n, file_finished);
 			res = 2;
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_M)){
-			printf("DEVO CAMBIARE M\n");
 			changeM(mods, nmods, m, *n, p_argv_matrix, *files, *nfiles, finished, pipe_for_P, pipe_control, p_pid_array);
 			res = 3;
 
 		}
 		else if(!strcmp(mod_type, MOD_CHANGE_N)){
-			printf("DEVO CAMBIARE N\n");
 			changeN(mods, nmods, *m, n, p_argv_matrix, *files, *nfiles, finished, pipe_for_P, pipe_control, p_pid_array);
 			res = 4;
 		}
@@ -131,12 +122,9 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 	while(i < nmods){
 		removeFile(mods[i], files, *nfiles, data, file_finished);
 		int index = getPWithFile(p_argv_matrix, n, mods[i], pipes);
-		printf("GETP TERMINA\n");
 		if(!stopped[index]){
 			int byte = write(atoi(p_argv_matrix[index][PIPE_CONTROL_WRITE_IN_P]), MOD_REMOVE, strlen(MOD_REMOVE));
-			printf("INDEX VALE' %d",index);
 			perror("");
-			printf("\tSCRIVO IL MEX DI RIMOZIONE SULLA PIPE, I BYTE SONO %d\n", byte);
 			stopped[index] = 1;
 		}
 		write(pipes[index], mods[i], strlen(mods[i]));
@@ -158,7 +146,6 @@ void removeFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data
 
 void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **file_finished){
 	int i = findFile(to_remove, *files, nfiles);
-	printf("I VALE %d\n",i);
 	int j = i;
 	if(i != -1){
 		free((*files)[i]);
@@ -179,7 +166,6 @@ void removeFile(char *to_remove, char ***files, int nfiles, int ***data, int **f
 	else{
 		fprintf(stderr, "Cannot find file to remove\n");
 	}
-	printf("REMOVE FINITO\n");
 }
 
 int findFile(char *in, char **files, int nfiles){
@@ -191,7 +177,6 @@ int findFile(char *in, char **files, int nfiles){
 		}
 		i++;
 	}
-	printf("FIND FILE FINITO, RES VALE %d\n",res);
 	return res;
 }
 
@@ -226,8 +211,6 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 			write(atoi(p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]), MOD_ADD, strlen(MOD_ADD));
 			stopped[index_P_min] = 1;
 			//perror("");
-			//printArgumentMatrix(p_argv_matrix, n);
-			printf("index_P_min: %d, ARGOMENTO MATRIX: %s\n", index_P_min, p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]);
 		}
 		write(atoi(p_argv_matrix[index_P_min][PIPE_CONTROL_WRITE_IN_P]), mods[i], strlen(mods[i]));
 		//perror("");
@@ -239,9 +222,7 @@ void addFiles(char **mods, int nmods, char ***files, int *nfiles, int ***data, c
 	i = 0;
 	while(i < n){
 		if(stopped[i]){
-			printf("STO CHIUDENDO IL MESS DAGGIUNTA PER P \n");
 			write(atoi(p_argv_matrix[i][PIPE_CONTROL_WRITE_IN_P]), MOD_END, strlen(MOD_END));
-			printf("i: %d, ARGOMENTO MATRIX: %s\n", i, p_argv_matrix[i][PIPE_CONTROL_WRITE_IN_P]);
 		}
 		i++;
 	}
@@ -319,7 +300,6 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 
 	//CHIUDI LE PIPE IN LETTURA
 	while(i<n){
-		printf("CHIUDO LE PIPE\n");
 		close((*pipe_for_P)[i][READ]);
 		close((*pipe_for_P)[i][WRITE]);
 		close((*pipe_control)[i][READ]);
@@ -330,15 +310,11 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	freePipeMatrix(*pipe_for_P,n);
 	freePipeMatrix(*pipe_control,n);
 	freeArgsForP(*p_argv_matrix,n);
-	printf(" HO DEALLOCATO LE PIPE E LA STRINGA DEGLI ARGOMENTI\n");
 	//Killa i processi
 	//killAllP(**p_pid_array,n);
 	i=0;
-	printf("Prima del while di uccsisione\n");
 	while(i<n){
-		printf("DEVO UCCIDERE IL PROCESSO %d\n", (*p_pid_array)[i]);
 		errorSysCall(kill((*p_pid_array)[i],SIGTERM));
-		printf("KILLO I PROCESSI P\n");
 		i++;
 	}
 	free(*p_pid_array);
@@ -351,11 +327,9 @@ void changeM(char **mods, int nmods, int *m, int n, char ****p_argv_matrix, char
 	//RICREO TUTTI I FIGLI P COME ACCADE CON ALL'INIZIO DI A (CI SONO TUTTE LE FUNZIONI GIA` FATTE, ANDANDO POI A MODIFICARE TUTTI GLI ARRAY CHE SONO PASSATI CON I NUOVI DATI
 	//FILES NON VA MODIFICATO IN QUANTO I FILEVENGONO CERCATI IN QUELL'ARRAY E SE VENGONO ELIMINATI QUELLI COMPLETI SI PERDONO I DATI ALLA FINE
 	//POI IL CAMBIO DI N VA FATTO PRATICAMENTE UGUALE
-	printf("RICREO LE PIPE\n");
 	(*pipe_for_P) = initPipeMatrix(n);
 	(*pipe_control) = initPipeMatrix(n);
 	(*p_argv_matrix) = createArgsForP(n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
-	printf("RISTARTO TUTTI I PROCESSI P\n");
 	(*p_pid_array) = startAllP(n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 
 }
@@ -420,6 +394,5 @@ int filesNotRead(char **files, int nfiles, int *finished, int oldm, char ***new_
 		i++;
 	}
 	(*new_files) = (char **)realloc((*new_files), (res + 1) * sizeof(char *));
-	printf("FILES NOT READ FINITO\n");
 	return res;
 }

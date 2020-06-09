@@ -121,10 +121,10 @@ int eseguiAnal( char **execAnal,int lung){
 		exit(-1);
 	}
 	else {
-    int i = 1;
+    /*int i = 1;
     for( i=1; i < lung - 1; i++){
         free(execAnal[i]);
-    }
+    }*/
 	}
 	return f;
 }
@@ -317,7 +317,6 @@ void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin
 
 		leggo_input_pipe(vari, nvari, elimin, pipe_from_a, pipe_to_a);
 		close(pipe_to_a[READ]);
-		printf( "Analizer partito\n" );
 		}
 	}
 	else{
@@ -466,7 +465,6 @@ void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a
 	for(i=0; i < (*ninput); i++ ){
 		char message1[PIPE_BUF + 1] = "";
 		read( pipe_from_a[READ], message1, PIPE_BUF );
-		printf("%s\n", message1);
 		(*input)[i] = calloc( strlen(message1) + 1, sizeof(char) );
 		sprintf( (*input)[i], "%s", message1);
 	}
@@ -496,7 +494,6 @@ int firstStartAnal( char *argv[], int argc, int pipe_to_a[2], int pipe_from_a[2]
 	dich[i + 4] = intToChar( pipe_from_a[WRITE] );
 	dich[i + 5] = NULL;
 	int analpid = eseguiAnal(dich,lung);
-	printf("analpid dopo eseguiAnal = %d\n",analpid);
 	close(pipe_to_a[READ]);
 	close(pipe_from_a[WRITE]);
 	for(; first_dim > i + 6; i++ ){

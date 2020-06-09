@@ -6,7 +6,6 @@ int m;
 
 void killHandler(int signal){
 	int i=0;
-	printf("IL SIGTERM e` stato dichiarato\n");
 	while(i<m){
 		kill(pids_Q[i],SIGTERM);
 		perror("");
@@ -17,7 +16,6 @@ void killHandler(int signal){
 
 int main(int argc, char *argv[]){
 	signal(SIGTERM, killHandler);
-	printf("Allocato l'handler\n");
 	sleep(15);
 	int pipe_read, pipe_write, pipe_control[2];
 	char **files;
@@ -37,13 +35,7 @@ int main(int argc, char *argv[]){
 		pipe_control_for_Q = initPipes(m);
 	//Creo le chiamate per le Q
 	char ***argvQ = create_ArgvQ(m, pipe_for_Q, pipe_control_for_Q, files, nfiles);
-	printArgumentMatrix(argvQ, m);
-	int z=0;
-	printf("SONO P E QUESTA È LA MATRICE DELLE PIPE\n");
-	while(z<m){
-		printf("%d %d\n",pipe_control_for_Q[z][READ],pipe_control_for_Q[z][WRITE]);
-		z++;
-	}
+	
 	//Creo le Q
 	pids_Q = startAllQ(pipe_for_Q, pipe_control_for_Q, argvQ, m);
 

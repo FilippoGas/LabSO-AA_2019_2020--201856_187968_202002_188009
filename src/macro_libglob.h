@@ -15,9 +15,9 @@
 
 #define ALPHABET_SIZE 256
 
-#define FIFO_NAME "/TestArea/Report/AtoR" 	//PlaceHolder
+#define FIFO_NAME "/etc/AtoR" 	//PlaceHolder
 
-#define REPORT_FILE "/TestArea/Report/AtoR.txt" 	//PlaceHolder
+#define REPORT_FILE "/.help/AtoR.txt" 	//PlaceHolder
 
 #define SETN 0		//Code of command to set n
 
@@ -37,15 +37,15 @@
 
 #define DIRECTORY 1	//Code for a found directory in input
 
-#define MANPATH "/LabSO-AA_2019_2020--201856_187968_202002_188009/src/ManFiles/"	//Path of the help files PLACEHOLDER
+#define MANPATH "/.help/"	//Path of the help files PLACEHOLDER
 
-#define PNAME "/TestArea/Executable/P.out"		//PLACEHOLDER
+#define PNAME "/bin/processP"		//PLACEHOLDER
 
-#define QNAME "/TestArea/Executable/Q.out"		//PLACEHOLDER
+#define QNAME "/bin/processQ"		//PLACEHOLDER
 
-#define RNAME "/TestArea/Executable/Report.out"		//PLACEHOLDER
+#define RNAME "/bin/report"		//PLACEHOLDER
 
-#define ANAME "/TestArea/Executable/A.out"		//PLACEHOLDER
+#define ANAME "/bin/analizer"		//PLACEHOLDER
 
 #define INTMAXCHAR 13					//TO VERIFY
 
