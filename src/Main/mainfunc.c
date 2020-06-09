@@ -127,7 +127,7 @@ void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 	if(nvari > 0){
 		int nnomi = printlist(vari, nvari, elimin );
 		if( nnomi > 0 ){
-			printf("Which file do you want to remove? Che file vuoi eliminare?\n");
+			printf("Which file do you want to remove?\n");
 			printf("If you want to return to analizer menu' type q .\n");
 			printf("Type one of the previous numbers.\n" );
 			char *cnum = getIn();
@@ -199,7 +199,7 @@ void addtoArray( char ***array, int *ndata, char *add, int **elimin ){
 void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid ){
 	//DEBUG
 	printf("Type one or more dirs or files\n" );
-	printf("To undo don't write nothing\n");
+	printf("To undo don't write anything\n");
 	char *aggiunta = getIn();
 	char *puntat = aggiunta;
 	char *ptr = index(aggiunta,' ');
@@ -223,7 +223,6 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 		strcpy(tmp,puntat);
 		addtoArray(vari,nvari,tmp,elimin);
 		sms_addfile( (*vari)[(*nvari) - 1], pipe );
-		printf("NOTE: If you added a directory and want to see the files in it, restart Analizer\n");
 	}
 	free(aggiunta);
 }
