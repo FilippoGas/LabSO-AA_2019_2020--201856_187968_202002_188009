@@ -26,5 +26,8 @@ void sms_change_mn(char *num,char selec,int pipe[2]){
 
 }
 void sms_endmessage(int pipe[2]){
-  write(pipe[WRITE],MOD_END, strlen(MOD_END));
+  int test = write(pipe[WRITE],MOD_END, strlen(MOD_END));
+  if(test == -1){
+  	printf("There isn't an isntance of analizer running, please restart it to apply changes\n");
+  }
 }

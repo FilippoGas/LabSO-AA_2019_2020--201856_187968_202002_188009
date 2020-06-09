@@ -24,23 +24,7 @@ void setmN( int *num, char selez, int pipe[2],int analpid){
 		char *cnum = getIn();
 		if(isNum(cnum)&&atoi(cnum)>0){
 			(*num) = atoi(cnum);
-			int status;
-			waitpid(analpid,&status,WNOHANG);
-
-			if(WIFEXITED(status) != 0){
-				if(WEXITSTATUS(status) > 0 ){
-				sms_change_mn(cnum,selez,pipe);
-			}
-			else{
-				printf("Non c'e' nessun analizer in esecuzione,\n");
-				printf("per attuare le modifiche farlo partire\n");//DEBUG
-			}
-		}
-		else{
-			printf("Non c'e' nessun analizer in esecuzione,\n");
-			printf("per attuare le modifiche farlo partire\n");//DEBUG
-		}
-
+			sms_change_mn(cnum,selez,pipe);
 			exit = 1;
 		}
 		else{
@@ -186,23 +170,7 @@ void elimSelec(char **vari, int nvari, int *elimin, int pipe[2], int analpid){
 				}
 				printf("Finisce il for\n");
 				i--;
-				int status;
-				waitpid(analpid,&status,WNOHANG);
-				if(WIFEXITED(status) != 0){
-					if(WEXITSTATUS(status) > 0){
-						sms_rmfile(vari[i],pipe);
-					}
-					else{
-						printf("Non c'e' nessun analizer in esecuzione,\n");
-						printf("per attuare le modifiche farlo partire\n");//DEBUG
-					}
-				}
-					else{
-						printf("Non c'e' nessun analizer in esecuzione,\n");
-						printf("per attuare le modifiche farlo partire\n");//DEBUG
-					}
-
-
+				sms_rmfile(vari[i],pipe);
 				printf("Eliminto \"%s\"\n",vari[i]);
 			}
 			free(cnum);
@@ -250,21 +218,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 			char *tmp = calloc( lung + 1, sizeof(char) );
 			strncat( tmp, puntat, lung );
 			addtoArray( vari, nvari, tmp, elimin );
-
-			int status;
-			waitpid(analpid,&status,WNOHANG);
-			if(WIFEXITED(status) != 0){
-				if( WEXITSTATUS(status) > 0 ){
-					sms_addfile( (*vari)[(*nvari) - 1], pipe );
-				}
-				else{
-					printf("L'analizer non e' attivo per cambiare le modifiche farlo partire\n");
-				}
-			}
-			else{
-				printf("L'analizer non e' attivo per cambiare le modifiche farlo partire\n");
-			}
-
+			sms_addfile( (*vari)[(*nvari) - 1], pipe );
 			puntat = ptr+1;
 		}
 		else{
@@ -277,19 +231,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 		char *tmp=malloc(lung+1);
 		strcpy(tmp,puntat);
 		addtoArray(vari,nvari,tmp,elimin);
-		int status;
-		waitpid(analpid,&status,WNOHANG);
-		if(WIFEXITED(status) != 0){
-			if(  WEXITSTATUS(status) > 0 ){
-				sms_addfile( (*vari)[(*nvari) - 1], pipe );
-			}
-			else{
-				printf("L'analizer non e' attivo per cambiare le modifiche farlo partire\n");
-			}
-		}
-		else{
-			printf("L'analizer non e' attivo per cambiare le modifiche farlo partire\n");
-		}
+		sms_addfile( (*vari)[(*nvari) - 1], pipe );
 	}
 	free(aggiunta);
 }
@@ -297,9 +239,8 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 
 void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin, int pipe_to_a[2],int pipe_from_a[2],int *analpid){
 	int status;
-	waitpid(*analpid, &status, WNOHANG);
-	if(WIFEXITED(status) != 0){
-		if( WEXITSTATUS(status) <= 0){
+	int test = waitpid(*analpid, &status, WNOHANG);
+	if(test != 0){
 		int lung = (*nvari) + NCHIAMATECOST;
 		pipe2( pipe_to_a, __O_DIRECT | O_NONBLOCK );
 		pipe2( pipe_from_a, __O_DIRECT );
@@ -317,7 +258,6 @@ void startAnal(int *n, int *m, char ***vari, int *nvari, int *rec , int **elimin
 
 		leggo_input_pipe(vari, nvari, elimin, pipe_from_a, pipe_to_a);
 		close(pipe_to_a[READ]);
-		}
 	}
 	else{
 		printf( "L'analizer e' ancora in esecuzione, aspettare la sua terminazione\n" );
@@ -426,18 +366,8 @@ void startReporter(){
 //Chiudo il programma
 void ending(int analpid){
 	int status;
-	waitpid(analpid,&status,WNOHANG);
-	if(WIFEXITED(status) != 0)//{
-		if(  WEXITSTATUS(status) > 0 ){
-			printf("Sto chiundendo");
-			fflush(stdout);
-			while( WIFEXITED(status) != 0 && WEXITSTATUS(status)>0){
-				waitpid(analpid,&status,WNOHANG);
-				sleep(1);
-				printf(" .");
-				fflush(stdout);
-			}
-		}
+	printf("Quitting...\n");
+	waitpid(analpid,&status, 000);
 	printf("\nGrazie per aver utilizzato il programma di analisi.\n");
 	printf("E ricordatevi sempre:\n");
 	printf("\033[1m\033[33m\t\t Se volete qualita', il nostro nome e' GEFF!\033[0m\n");

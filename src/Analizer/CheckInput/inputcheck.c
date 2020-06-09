@@ -28,16 +28,16 @@ int typeOfCommand(char *value){
 
 void optionN(int *n, char *value){
 	(*n) = atoi(value);
-	if((*n) < 1){
-		fprintf(stderr, "n has to be a positive value, resetting default (n = 4)\n");
+	if((*n) < 1 || (*n) > 1000){
+		fprintf(stderr, "n has to be a small positive value, resetting default (n = 4)\n");
 		(*n) = 4;
 	}
 }
 
 void optionM(int *m, char *value){
 	(*m) = atoi(value);
-	if((*m) < 1){
-		fprintf(stderr, "m has to be a positive value, resetting default (m = 3)\n");
+	if((*m) < 1 || (*m) > 1000){
+		fprintf(stderr, "m has to be a small positive value, resetting default (m = 3)\n");
 		(*m) = 3;
 	}
 }
@@ -175,7 +175,8 @@ void validateInput(char **input, int ninput, char ***files, char ***dirs, int *n
 			}
 			else{
 				perror("stat");
-				exit(-1);
+				fprintf(stderr, "Object %s ignored.\n", in);
+				res = 10;
 			}
 		}
 		else{
