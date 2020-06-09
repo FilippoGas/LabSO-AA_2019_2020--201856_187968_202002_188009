@@ -387,7 +387,7 @@ char *getInputorExit(int analpid){
 
 //Leggo i path dei file che mi vengono da A
 void leggo_input_pipe( char ***input, int *ninput, int **elimin, int pipe_from_a[2], int pipe_to_a[2]){
-	char message[PIPE_BUF + 1];
+	char message[PIPE_BUF + 1] = "";
 	read( pipe_from_a[READ], message, PIPE_BUF );
 	(*ninput) = atoi(message);
 	(*input)=calloc( (*ninput), sizeof(char *) );

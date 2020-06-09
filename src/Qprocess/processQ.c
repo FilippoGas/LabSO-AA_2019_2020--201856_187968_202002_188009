@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
   close(pipeRead);
   //Salva i file descriptor in un array
   int i=0;
-  sleep(3);
+  //sleep(3);
   while(i<argc - ARGS_Q_START_FILE_OFFSET){
     //CONTROLLER SULLA PIPE DEI MESSAGGI DA P
     int byteRead = read(pipeReadOnTheFly,message,PIPE_BUF);

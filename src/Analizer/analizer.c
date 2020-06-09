@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
 		char dummy[1];
 		while((read(pipe_from_main[READ], dummy, 1)) < 0);
 	}
-	sleep(15);
+	//sleep(15);
 	// apro una pipe per P
 	int **pipe_for_P = initPipeMatrix(n);
 	int **pipe_for_control_P = NULL;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 	int nP = 0;
 	//printf("A INIZIA A LEGGERE\n");
 	int **data = readFromPipes(&pipe_for_P, &pipe_for_control_P, &p_pid_array, &p_argv_matrix, &n, &def_file_list, &def_file_list_size, pipe_from_main[READ], &m, recursive);
-	//printf("A ha finito di leggere\n");
+	printf("A ha finito di leggere\n");
 
 
 	/*if(pipe_from_main[READ] != -1 && pipe_from_main[WRITE] != -1){
@@ -73,9 +73,10 @@ int main(int argc, char *argv[]){
 	unlink(FIFO_NAME);
 	int i = 0;
 	int fd = open(REPORT_FILE, O_WRONLY | O_CREAT | O_TRUNC);
+	printf("%d\n", fd);
 	writeToReport(data, def_file_list, def_file_list_size, fd);
 
-
+	printf("DOPO WRITE TO REPORT\n");
 
 	free(p_pid_array);
 	closePipeMatrix(pipe_for_P, n, READ);

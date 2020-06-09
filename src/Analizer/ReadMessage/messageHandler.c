@@ -98,7 +98,7 @@ int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, c
 			i++;
 		}
 		//TUTTI I P TERMINANO E I FILE AGGIUNTI NON SONO STATI LETTI
-		if(pipe_from_M != -1 && byteRead==0){
+		/*if(pipe_from_M != -1 && byteRead==0){
 			int i = 0;
 			while(i<(*n)){
 				close((*pipe_for_P)[i][READ]);
@@ -121,10 +121,11 @@ int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, c
 			(*p_argv_matrix) = createArgsForP(*n, *m, new_files, new_files_size, *pipe_for_P, *pipe_control); 	//ANDRA` A SOSTITUIRE QUELLA VECCHIA
 			(*p_pid_array) = startAllP(*n, *pipe_for_P, *pipe_control, *p_argv_matrix);
 			byteRead = new_files_size;
-		}
+		}*/
 
 	}
-	free(n_files_for_P);
+	//free(n_files_for_P);
 	free(finished);
 	//free(n_files_for_P);
+	return data;
 }
