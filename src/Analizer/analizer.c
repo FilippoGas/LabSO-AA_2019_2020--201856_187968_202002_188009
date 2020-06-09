@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
 		char dummy[1];
 		while((read(pipe_from_main[READ], dummy, 1)) < 0);
 	}
-	//sleep(15);
+	sleep(15);
 	// apro una pipe per P
 	int **pipe_for_P = initPipeMatrix(n);
 	int **pipe_for_control_P = NULL;

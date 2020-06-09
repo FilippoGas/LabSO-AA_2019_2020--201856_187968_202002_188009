@@ -98,7 +98,7 @@ int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, c
 			i++;
 		}
 		//TUTTI I P TERMINANO E I FILE AGGIUNTI NON SONO STATI LETTI
-		/*if(pipe_from_M != -1 && byteRead==0){
+	/*	if(pipe_from_M != -1 && byteRead==0){
 			int i = 0;
 			while(i<(*n)){
 				close((*pipe_for_P)[i][READ]);
