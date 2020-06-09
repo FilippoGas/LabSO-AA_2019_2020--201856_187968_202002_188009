@@ -43,7 +43,6 @@ char *contentToString(int *data){
 		sprintf(res, "%s %d", res, data[i]);
 		i++;
 	}
-	sprintf(res, "%s", res);
 	addPadding(res, PIPE_BUF - 1);
 	addNewLine(res);
 	return res;

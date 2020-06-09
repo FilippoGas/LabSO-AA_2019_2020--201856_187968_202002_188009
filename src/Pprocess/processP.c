@@ -1,5 +1,4 @@
 #include "processPfunc.h"
-#include "../Debug/utility.h"
 
 int *pids_Q;
 int m;
@@ -16,7 +15,7 @@ void killHandler(int signal){
 
 int main(int argc, char *argv[]){
 	signal(SIGTERM, killHandler);
-	sleep(15);
+	//sleep(15);
 	int pipe_read, pipe_write, pipe_control[2];
 	char **files;
 	//./p m pipe_read pipe_write files

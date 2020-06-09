@@ -146,7 +146,7 @@ void appendToArgv(char **argv[],int *argc, char *file){
     }
     new_argv[(*argc)] = calloc(strlen(file)+1,sizeof(char));
     sprintf(new_argv[(*argc)],"%s",file);
-    new_argv[(*argc)+1] = malloc(sizeof(char));
+    /*new_argv[(*argc)+1] = calloc(1,sizeof(char));
 	if((*argv)[*argc] != NULL){
 		int i = 0;
 		while(i < (*argc) + 1){
@@ -154,7 +154,7 @@ void appendToArgv(char **argv[],int *argc, char *file){
 			i++;
 		}
 		free(*argv);
-	}
+	}*/
     *argv = new_argv;
     (*argc)++;
 }
