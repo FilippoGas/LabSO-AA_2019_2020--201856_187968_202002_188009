@@ -105,6 +105,7 @@ void addHandler(int pipeReadOnTheFly, int pipeWrite, int parte, int denominatore
         appendToArgv(argv,argc,message1);
       }
       sprintf(message,"%s",message1);
+    printf("IL MESSAGGIO RICEVUTO %s\n",message);
     }
   }while(strcmp(message,MOD_END) && byteRead!=0);
 }
@@ -150,9 +151,10 @@ void appendToArgv(char ***argv,int *argc, char *file){
     
     //new_argv[(*argc)+1] = NULL;//calloc(1,sizeof(char));
     (*argv) = new_argv;*/
-	(*argv) = realloc((*argv), (*argc) + 1);
-	(*argv[*argc]) = calloc(strlen(file) + 1, sizeof(char));
+	(*argv) = realloc((*argv), (*argc) + 2);
+	(*argv)[*argc] = calloc(strlen(file) + 1, sizeof(char));
+	printf("Sto aggiungendo nella posizione %d %s\n", (*argc), (*argv)[*argc]);
     sprintf((*argv)[(*argc)],"%s",file);
-
+	(*argv)[(*argc) + 1] = NULL;
     (*argc)++;
 }
