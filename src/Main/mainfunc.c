@@ -223,6 +223,7 @@ void addFile( char ***vari, int *nvari, int **elimin, int pipe[2], int analpid )
 		strcpy(tmp,puntat);
 		addtoArray(vari,nvari,tmp,elimin);
 		sms_addfile( (*vari)[(*nvari) - 1], pipe );
+		printf("NOTE: If you added a directory and want to see the files in it, restart Analizer\n");
 	}
 	free(aggiunta);
 }
