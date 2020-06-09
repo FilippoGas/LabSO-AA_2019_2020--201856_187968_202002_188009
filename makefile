@@ -2,58 +2,95 @@
 
 
 CC = gcc -std=gnu90
-
-GP = src/ 						#Ground Path
-PM = $(GP)Main/				#Main Path
-PR = $(GP)Report/			#Report Path
-PA = $(GP)Analizer/ 	#Analizer Path
-PP = $(GP)Pprocess/ 	#P Path
-PQ = $(GP)Qprocess/		#Q Path
-EP = $(GP)Executable/	#Executable Path
+#Ground Path
+GP = ./src/
+PM = $(GP)Main/#Main Path
+PR = $(GP)Report/#Report Path
+PA = $(GP)Analizer/#Analizer Path
+PP = $(GP)Pprocess/#P Path
+PQ = $(GP)Qprocess/#Q Path
+BN = /bin/
+TM = /tmp/
 #Compile for Main
-OM = $(PM)main.c $(PM)mainfunc.c $(PM)messages.c
+OM = $(TM)main.o $(TM)mainfunc.o $(TM)messages.o
 #Compile for Analizer
-OA = $(PA)analizer.c $(GP)macro_libglob.c $(PA)CheckInput/pPreprocessing.c $(PA)CheckInput/inputcheck.c $(PA)OnTheFly/onTheFlyHandler.c $(PA)ReadMessage/messageHandler.c $(PA)WriteToReport/messageToReport.c
+OA = $(TM)analizer.o $(TM)macro_libglob.o $(TM)pPreprocessing.o $(TM)inputcheck.o $(TM)onTheFlyHandlerA.o $(TM)messageHandler.o $(TM)messageToReport.o
 #Compile for Report
-OR = $(PR)report.c $(PR)print_report.c
+OR = $(TM)report.o $(TM)print_report.o
 #Compile for P
-OP = $(PP)processP.c $(PP)processPfunc.c $(PP)OnTheFly/onTheFlyHandler.c
+OP = $(TM)processP.o $(TM)processPfunc.o $(TM)onTheFlyHandlerP.o
 #Compile for Q
-OQ = $(PQ)processQ.c $(PQ)processQfunc.c $(GP)macro_libglob.c
+OQ = $(TM)processQ.o $(TM)processQfunc.o $(TM)macro_libglob.o
+
 
 build:
-	@make main
-	@make report
-	@make processP
-	@make processQ
-	@make analizer
+	@[ -d /bin/ ] || mkdir /bin/
+	@make -s /bin/main
+	@make -s /bin/report
+	@make -s /bin/processP
+	@make -s /bin/processQ
+	@make -s /bin/analizer
 
-analizer: $(OA)
-	@$(CC) -o $(EP)A.out $(OA)
+/bin/main: $(OM)
+	@$(CC) -o $@ $^
+/bin/analizer: $(OA)
+	@$(CC) -o $@ $^
+/bin/report: $(OR)
+	@$(CC) -o $@ $^
+/bin/processP: $(OP)
+	@$(CC) -o $@ $^
+/bin/processQ: $(OQ)
+	@$(CC) -o $@ $^
+
+/tmp/analizer.o:
+	@$(CC) -c $(PA)analizer.c -o $(TM)analizer.o
+/tmp/macro_libglob.o:
+	@$(CC) -c $(PA)macro_libglob.c -o $(TM)macro_libglob.o
+/tmp/inputcheck.o:
+	@$(CC) -c $(PA)CheckInput/inputcheck.c -o $(TM)inputcheck.o
+/tmp/pPreprocessing.o:
+	@$(CC) -c $(PA)CheckInput/pPreprocessing.c -o $(TM)pPreprocessing.o
+/tmp/onTheFlyHandlerA.o:
+	@$(CC) -c $(PA)OnTheFly/onTheFlyHandler.c -o $(TM)onTheFlyHandlerA.o
+/tmp/messageHandler.o:
+	@$(CC) -c $(PA)ReadMessage/messageHandler.c -o $(TM)messageHandler.o
+/tmp/messageToReport.o:
+	@$(CC) -c $(PA)WriteToReport/messageToReport.c -o $(TM)messageToReport.o
 
 
-main: $(OM)
-	@$(CC) -o $(EP)M.out $(OM)
+
+/tmp/main.o:
+	@$(CC) -c $(PM)main.c -o $(TM)main.o
+/tmp/messages.o:
+	@$(CC) -c $(PM)messages.c -o $(TM)messages.o
+/tmp/mainfunc.o:
+	@$(CC) -c $(PM)mainfunc.c -o $(TM)mainfunc.o
+
+/tmp/report.o:
+	@$(CC) -c $(PR)report.c -o $(TM)report.o
+/tmp/print_report.o:
+	@$(CC) -c $(PR)print_report.c -o $(TM)print_report.o
 
 
-report: $(OR)
-	@$(CC) -o $(EP)R.out $(OR)
+/tmp/processP.o:
+	@$(CC) -c $(PP)processP.c -o $(TM)processP.o
+/tmp/processPfunc.o:
+	@$(CC) -c $(PP)processPfunc.c -o $(TM)processPfunc.o
+/tmp/onTheFlyHandlerP.o:
+	@$(CC) -c $(PP)OnTheFly/onTheFlyHandler.c -o $(TM)onTheFlyHandlerP.o
 
-
-processP: $(OP)
-	@$(CC) -o $(EP)P.out $(OP)
-
-
-processQ: $(OQ)
-	@$(CC) -o $(EP)Q.out $(OQ)
+/tmp/processQ.o:
+	@$(CC) -c $(PQ)processQ.c -o processQ.o
+/tmp/processQfunc.o:
+	@$(CC) -c $(PQ)processQfunc.c -o processQfunc.o
 
 
 clean:
-  #@rm $(EP)*.out
-	#@rm file temporanei e il report
+	#@rm *.out
+	#@rm file temporanei e il rBNort
 
 start:
-	./$(EP)M.out
+	./$(BN)M.out
 
 help:
 	@echo Comandi Makefile:
