@@ -8,8 +8,11 @@ int main(int argc, char *argv[]){
     int ret = 0;
 
     if(argc == 2 && strcmp(argv[1],"-h") == 0){
-	char *manreport[PATH_MAX] = {"/bin/more","",NULL};
-	sprintf(manreport[1], "%sreport_usage.txt", MANPATH);
+      char stringa[PATH_MAX];
+      sprintf(stringa, "%sreport_usage.txt", MANPATH);
+	char *manreport[PATH_MAX] = {"/bin/more",stringa,NULL};
+  printf("SONO NEL REPORT\n");
+
         execvp(manreport[0], manreport);
     }else{
 

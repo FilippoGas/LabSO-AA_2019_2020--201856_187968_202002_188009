@@ -8,7 +8,7 @@ int main( int argc, char *argv[] ){
 	int *elimin,ninput = 0;
 
 	char errorFile[PATH_MAX] = MANPATH;
-	strcat(errorFile, "analizer_usage.txt");
+	strcat(errorFile, "main_usage.txt");
 	char *args[] = {"more", errorFile, NULL};
 	int i=0;
 	for( i=0; i < argc; i++ ){
