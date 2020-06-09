@@ -23,18 +23,27 @@ OP = $(TM)processP.o $(TM)processPfunc.o $(TM)onTheFlyHandlerP.o
 OQ = $(TM)processQ.o $(TM)processQfunc.o $(TM)macro_libglob.o
 
 
-build:
+build: /bin/main /bin/analizer /bin/report /bin/processP /bin/processQ
 	@[ -d /bin/ ] || mkdir /bin/
-	@make -s /bin/main
-	@make -s /bin/report
-	@make -s /bin/processP
-	@make -s /bin/processQ
-	@make -s /bin/analizer
+	@[ -d /.help/ ] || mkdir /.help/
+	@cp ./src/ManFiles/analizer_usage.txt /.help/
+	@cp ./src/ManFiles/report_usage.txt /.help/
+	@cp ./src/ManFiles/main_usage.txt /.help/
+
+clean:	/tmp/analizer.o /tmp/macro_libglob.o /tmp/inputcheck.o /tmp/pPreprocessing.o /tmp/onTheFlyHandlerA.o /tmp/messageHandler.o /tmp/messageToReport.o /tmp/main.o /tmp/messages.o /tmp/mainfunc.o /tmp/report.o /tmp/print_report.o /tmp/report.o /tmp/print_report.o /tmp/processP.o /tmp/processPfunc.o /tmp/onTheFlyHandlerP.o /tmp/processQ.o /tmp/processQfunc.o
+	@rm -f $^
+
+help:
+	@echo Commands Makefile:
+	@echo "\<make build\>: Install the programs"
+	@echo "\<make clean\>: Remove temporary files."
+	@echo "\<make start\>: Start main."
+
 
 /bin/main: $(OM)
 	@$(CC) -o $@ $^
 /bin/analizer: $(OA)
-	@$(CC) -o $@ $^
+	@$(CC) -o $@ $^ -lm
 /bin/report: $(OR)
 	@$(CC) -o $@ $^
 /bin/processP: $(OP)
@@ -45,7 +54,7 @@ build:
 /tmp/analizer.o:
 	@$(CC) -c $(PA)analizer.c -o $(TM)analizer.o
 /tmp/macro_libglob.o:
-	@$(CC) -c $(PA)macro_libglob.c -o $(TM)macro_libglob.o
+	@$(CC) -c $(GP)macro_libglob.c -o $(TM)macro_libglob.o
 /tmp/inputcheck.o:
 	@$(CC) -c $(PA)CheckInput/inputcheck.c -o $(TM)inputcheck.o
 /tmp/pPreprocessing.o:
@@ -80,21 +89,9 @@ build:
 	@$(CC) -c $(PP)OnTheFly/onTheFlyHandler.c -o $(TM)onTheFlyHandlerP.o
 
 /tmp/processQ.o:
-	@$(CC) -c $(PQ)processQ.c -o processQ.o
+	@$(CC) -c $(PQ)processQ.c -o $(TM)processQ.o
 /tmp/processQfunc.o:
-	@$(CC) -c $(PQ)processQfunc.c -o processQfunc.o
+	@$(CC) -c $(PQ)processQfunc.c -o $(TM)processQfunc.o
 
 
-clean:
-	#@rm *.out
-	#@rm file temporanei e il rBNort
 
-start:
-	./$(BN)M.out
-
-help:
-	@echo Comandi Makefile:
-	@echo "\<make build\>: Compila tutto il programma;"
-	@echo "\<make clean\>: Rimuove i file temporanei, nota bisogna ricompilare dopo aver usato questo comando."
-	@echo "\<make start\>: Fa partire il Main"
-	#@echo his is the \<Makefile\>, use \<make build\> to recompile everything and \<make clean\> to clean all the trash that you left behind
