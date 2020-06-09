@@ -97,6 +97,7 @@ int **readFromPipes(int ***pipe_for_P, int ***pipe_control, int **p_pid_array, c
 			byteRead += temp;
 			i++;
 		}
+		//TUTTI I P TERMINANO E I FILE AGGIUNTI NON SONO STATI LETTI
 	}	
 	free(n_files_for_P);
 	free(finished);
